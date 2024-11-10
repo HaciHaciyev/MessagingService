@@ -5,10 +5,13 @@ import core.project.messaging.application.dto.Message;
 import core.project.messaging.application.dto.MessageType;
 import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.domain.value_objects.Username;
+import core.project.messaging.infrastructure.cache.MessagesService;
+import core.project.messaging.infrastructure.cache.PartnershipRequestsService;
 import core.project.messaging.infrastructure.repository.inbound.InboundUserRepository;
 import core.project.messaging.infrastructure.repository.outbound.OutboundUserRepository;
 import core.project.messaging.infrastructure.utilities.containers.Pair;
 import core.project.messaging.infrastructure.utilities.containers.Result;
+import core.project.messaging.infrastructure.utilities.containers.StatusPair;
 import core.project.messaging.infrastructure.utilities.json.JsonUtilities;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,8 +19,7 @@ import jakarta.websocket.Session;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,13 +31,15 @@ import static core.project.messaging.infrastructure.utilities.web.WSUtilities.se
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class UserSessionService {
 
+    private final MessagesService messagesService;
+
     private final InboundUserRepository inboundUserRepository;
 
     private final OutboundUserRepository outboundUserRepository;
 
-    private static final ConcurrentHashMap<Username, Pair<Session, UserAccount>> sessions = new ConcurrentHashMap<>();
+    private final PartnershipRequestsService partnershipRequestsService;
 
-    private static final ConcurrentHashMap<Username, Pair<UserAccount, Queue<Message>>> partnershipRequests = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Username, Pair<Session, UserAccount>> sessions = new ConcurrentHashMap<>();
 
     public void handleOnOpen(Session session, Username username) {
         CompletableFuture.runAsync(() -> {
@@ -71,13 +75,9 @@ public class UserSessionService {
         });
     }
 
-    public void handleOnClose(Session session, Username username) {
-        sessions.remove(username);
-        closeSession(session, "Session is closed.");
-    }
-
     private void messages(Session session, Username username) {
-        partnershipRequests.get(username).getSecond().forEach(message -> sendMessage(session, message.message()));
+        messagesService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
+        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
     }
 
     private void handleWebSocketMessage(JsonNode messageNode, MessageType type, Session session, UserAccount user) {
@@ -88,79 +88,110 @@ public class UserSessionService {
         }
 
         if (type.equals(PARTNERSHIP_REQUEST)) {
-            final Result<Username, Throwable> username = JsonUtilities.usernameOfPartner(messageNode);
-            if (!username.success()) {
+            final Result<Username, Throwable> addressee = JsonUtilities.usernameOfPartner(messageNode);
+            if (!addressee.success()) {
                 sendMessage(session, "Invalid partner username.");
                 return;
             }
 
-            partnershipRequest(session, user, message.value(), username.value());
+            partnershipRequest(session, user, message.value(), addressee.value());
             return;
         }
 
         sendMessage(session, "Invalid message type.");
     }
 
-    private void partnershipRequest(Session session, UserAccount user, String message, Username usernameOfPartner) {
-        final boolean isPartnerHaveActiveSession = sessions.containsKey(usernameOfPartner);
-        if (isPartnerHaveActiveSession) {
-            processPartnershipRequest(Pair.of(session, user), sessions.get(usernameOfPartner), new Message(message));
+    private void partnershipRequest(Session session, UserAccount addresser, String message, Username addressee) {
+        if (sessions.containsKey(addressee)) {
+            processPartnershipRequest(Pair.of(session, addresser), sessions.get(addressee), new Message(message));
             return;
         }
 
-        processPartnershipRequest(usernameOfPartner, new Message(message), Pair.of(session, user));
+        processPartnershipRequest(Pair.of(session, addresser), addressee, new Message(message));
     }
 
-    private void processPartnershipRequest(final Username partner, final Message message, final Pair<Session, UserAccount> firstUserPair) {
-        final Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(partner);
+    public void handleOnClose(Session session, Username username) {
+        sessions.remove(username);
+        closeSession(session, "Session is closed.");
+    }
+
+    private void processPartnershipRequest(final Pair<Session, UserAccount> addresserPair,
+                                           final Pair<Session, UserAccount> addresseePair,
+                                           final Message message) {
+
+        final UserAccount addresserAccount = addresserPair.getSecond();
+        final String addresser = addresserAccount.getUsername().username();
+
+        final UserAccount addresseeAccount = addresseePair.getSecond();
+        final String addressee = addresseeAccount.getUsername().username();
+
+        partnershipRequestsService.put(addressee, addresser, message.message());
+
+        final StatusPair<String> isPartnershipCreated = isPartnershipCreated(addresser, addressee);
+        if (isPartnershipCreated.status()) {
+            addresserAccount.addPartner(addresseeAccount);
+            addresseeAccount.addPartner(addresserAccount);
+            inboundUserRepository.addPartnership(addresseeAccount, addresserAccount);
+
+            final String messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
+            sendMessage(addresserPair.getFirst(), messageOfResult);
+            sendMessage(addresseePair.getFirst(), messageOfResult);
+
+            partnershipRequestsService.delete(addressee, addresser);
+            partnershipRequestsService.delete(addresser, addressee);
+            return;
+        }
+
+        sendMessage(addresseePair.getFirst(), invitationMessage(message.message(), addresserAccount));
+        sendMessage(addresserPair.getFirst(), String.format("Wait for user {%s} answer.", addressee));
+    }
+
+    private void processPartnershipRequest(final Pair<Session, UserAccount> addresserPair,
+                                           final Username addressee,
+                                           final Message message) {
+
+        final Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(addressee);
         if (!result.success()) {
-            sendMessage(firstUserPair.getFirst(), "This account is not exists.");
+            sendMessage(addresserPair.getFirst(), "This account is not exists.");
             return;
         }
 
-        final UserAccount firstUser = firstUserPair.getSecond();
-        final UserAccount secondUser = result.value();
+        final UserAccount addresserAccount = addresserPair.getSecond();
+        final String addresser = addresserAccount.getUsername().username();
 
-        firstUser.addPartner(secondUser);
-        final boolean isPartnershipCreated = firstUser.getPartners().contains(secondUser) && secondUser.getPartners().contains(firstUser);
-        if (isPartnershipCreated) {
-            sendMessage(firstUserPair.getFirst(), successfullyAddedPartnershipMessage(firstUser, secondUser));
-            partnershipRequests.computeIfAbsent(partner, k -> Pair.of(secondUser, new LinkedList<>())).getSecond().add(message);
-            inboundUserRepository.addPartnership(firstUser, secondUser);
+        final UserAccount addresseeAccount = result.value();
+
+        partnershipRequestsService.put(addressee.username(), addresser, message.message());
+
+        final StatusPair<String> isPartnershipCreated = isPartnershipCreated(addresser, addressee.username());
+        if (isPartnershipCreated.status()) {
+            addresserAccount.addPartner(addresseeAccount);
+            addresseeAccount.addPartner(addresserAccount);
+            inboundUserRepository.addPartnership(addresseeAccount, addresserAccount);
+
+            final String messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
+            sendMessage(addresserPair.getFirst(), messageOfResult);
+            messagesService.put(addressee.username(), addresser, message.message());
+
+            partnershipRequestsService.delete(addressee.username(), addresser);
+            partnershipRequestsService.delete(addresser, addressee.username());
             return;
         }
 
-        sendMessage(firstUserPair.getFirst(), "Wait for user %s answer.".formatted(partner.username()));
-        partnershipRequests.computeIfAbsent(partner, k -> Pair.of(secondUser, new LinkedList<>())).getSecond().add(message);
+        sendMessage(addresserPair.getFirst(), String.format("Wait for user {%s} answer.", addressee));
     }
 
-    private void processPartnershipRequest(final Pair<Session, UserAccount> firstUserPair,
-                                           final Pair<Session, UserAccount> secondUserPair, final Message message) {
-
-        final UserAccount firstUser = firstUserPair.getSecond();
-        final UserAccount secondUser = secondUserPair.getSecond();
-
-        firstUser.addPartner(secondUser);
-        Log.infof("""
-                First user partners: %s.
-                Second user partners: %s.
-                """, firstUser.getPartners(), secondUser.getPartners()
-        );
-
-        final boolean isPartnershipCreated = firstUser.getPartners().contains(secondUser) && secondUser.getPartners().contains(firstUser);
-        if (isPartnershipCreated) {
-            sendMessage(firstUserPair.getFirst(), successfullyAddedPartnershipMessage(firstUser, secondUser));
-            sendMessage(secondUserPair.getFirst(), successfullyAddedPartnershipMessage(secondUser, firstUser));
-            inboundUserRepository.addPartnership(firstUser, secondUser);
-            return;
+    private StatusPair<String> isPartnershipCreated(String addresser, String addressee) {
+        final Map<String, String> requests = partnershipRequestsService.getAll(addresser);
+        if (requests.containsKey(addressee)) {
+            return StatusPair.ofTrue(requests.get(addressee));
         }
 
-        sendMessage(firstUserPair.getFirst(), "Wait for user answer.");
-        sendMessage(secondUserPair.getFirst(), invitationMessage(message.message(), firstUser));
+        return StatusPair.ofFalse();
     }
 
-    private static String invitationMessage(String message, UserAccount firstUser) {
-        return "User %s invite you for partnership {%s}.".formatted(firstUser.getUsername().username(), message);
+    private static String invitationMessage(String message, UserAccount addresser) {
+        return "User {%s} invite you for partnership {%s}.".formatted(addresser.getUsername().username(), message);
     }
 
     private static String successfullyAddedPartnershipMessage(UserAccount firstUser, UserAccount secondUser) {
