@@ -78,7 +78,7 @@ public class UserSessionService {
 
     private void messages(Session session, Username username) {
         messagesService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
-        partnershipRequestsService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
+        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
     }
 
     private void handleWebSocketMessage(JsonNode messageNode, MessageType type, Session session, UserAccount user) {
