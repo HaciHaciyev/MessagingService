@@ -42,6 +42,11 @@ public class UserSessionHandler {
             return;
         }
 
+        if (message.length() > 255) {
+            WSUtilities.sendMessage(session, "This message is to long.");
+            return;
+        }
+
         final Result<JsonWebToken, IllegalArgumentException> jwt = jwtUtility.extractJWT(session);
         if (validateToken(session, jwt)) {
             return;

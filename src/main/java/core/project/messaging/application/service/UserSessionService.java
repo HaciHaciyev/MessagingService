@@ -20,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -76,8 +77,8 @@ public class UserSessionService {
     }
 
     private void messages(Session session, Username username) {
-        messagesService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
-        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
+        messagesService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
+        partnershipRequestsService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
     }
 
     private void handleWebSocketMessage(JsonNode messageNode, MessageType type, Session session, UserAccount user) {
@@ -102,17 +103,18 @@ public class UserSessionService {
     }
 
     private void partnershipRequest(Session session, UserAccount addresser, String message, Username addressee) {
-        if (sessions.containsKey(addressee)) {
-            processPartnershipRequest(Pair.of(session, addresser), sessions.get(addressee), new Message(message));
+        final Message messageWrap = Result.ofThrowable(() -> new Message(message)).orElse(null);
+        if (Objects.isNull(messageWrap)) {
+            sendMessage(session, "Invalid message.");
             return;
         }
 
-        processPartnershipRequest(Pair.of(session, addresser), addressee, new Message(message));
-    }
+        if (sessions.containsKey(addressee)) {
+            processPartnershipRequest(Pair.of(session, addresser), sessions.get(addressee), messageWrap);
+            return;
+        }
 
-    public void handleOnClose(Session session, Username username) {
-        sessions.remove(username);
-        closeSession(session, "Session is closed.");
+        processPartnershipRequest(Pair.of(session, addresser), addressee, messageWrap);
     }
 
     private void processPartnershipRequest(final Pair<Session, UserAccount> addresserPair,
@@ -196,5 +198,10 @@ public class UserSessionService {
 
     private static String successfullyAddedPartnershipMessage(UserAccount firstUser, UserAccount secondUser) {
         return "Partnership {%s - %s} successfully added.".formatted(firstUser.getUsername().username(), secondUser.getUsername().username());
+    }
+
+    public void handleOnClose(Session session, Username username) {
+        sessions.remove(username);
+        closeSession(session, "Session is closed.");
     }
 }

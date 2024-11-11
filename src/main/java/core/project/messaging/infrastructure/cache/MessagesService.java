@@ -37,6 +37,22 @@ public class MessagesService {
         return hashCommands.hgetall(String.format(KEY_FORMAT, addressee));
     }
 
+    public StatusPair<String> poll(String addressee, String addresser) {
+        String message = hashCommands.hget(String.format(KEY_FORMAT, addressee), addresser);
+        if (Objects.nonNull(message)) {
+            hashCommands.hdel(addressee, addresser);
+            return StatusPair.ofTrue(message);
+        }
+
+        return StatusPair.ofFalse();
+    }
+
+    public Map<String, String> pollAll(String addressee) {
+        Map<String, String> result = hashCommands.hgetall(String.format(KEY_FORMAT, addressee));
+        hashCommands.hdel(String.format(KEY_FORMAT, addressee));
+        return result;
+    }
+
     public void delete(String addressee, String addresser) {
         hashCommands.hdel(String.format(KEY_FORMAT, addressee), addresser);
     }
