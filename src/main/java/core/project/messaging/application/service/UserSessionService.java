@@ -57,9 +57,7 @@ public class UserSessionService {
 
     private void messages(Session session, Username username) {
         messagesService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
-        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> {
-            sendMessage(session, String.format("%s: {%s}", user, message));
-        });
+        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
     }
 
     public void handleOnMessage(Session session, Username username, String message) {

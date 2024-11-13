@@ -47,7 +47,7 @@ public class JwtUtility {
                 .sign();
     }
 
-    public Result<JsonWebToken, IllegalArgumentException> extractJWT(final Session session) {
+    public Result<JsonWebToken, Throwable> extractJWT(final Session session) {
         final List<String> token = session.getRequestParameterMap().get("token");
         if (Objects.isNull(token)) {
             return Result.failure(new IllegalArgumentException("Token is do not defined."));
@@ -60,7 +60,7 @@ public class JwtUtility {
         try {
             return Result.success(jwtParser.parse(token.getFirst()));
         } catch (ParseException e) {
-            throw new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid JWT token.").build());
+            return Result.failure(new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid JWT token.").build()));
         }
     }
 }

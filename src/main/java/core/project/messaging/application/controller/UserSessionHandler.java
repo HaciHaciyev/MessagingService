@@ -26,7 +26,7 @@ public class UserSessionHandler {
 
     @OnOpen
     public final void onOpen(Session session) {
-        final Result<JsonWebToken, IllegalArgumentException> jwt = jwtUtility.extractJWT(session);
+        final Result<JsonWebToken, Throwable> jwt = jwtUtility.extractJWT(session);
         if (validateToken(session, jwt)) {
             return;
         }
@@ -47,7 +47,7 @@ public class UserSessionHandler {
             return;
         }
 
-        final Result<JsonWebToken, IllegalArgumentException> jwt = jwtUtility.extractJWT(session);
+        final Result<JsonWebToken, Throwable> jwt = jwtUtility.extractJWT(session);
         if (validateToken(session, jwt)) {
             return;
         }
@@ -58,7 +58,7 @@ public class UserSessionHandler {
 
     @OnClose
     public final void onClose(Session session) {
-        final Result<JsonWebToken, IllegalArgumentException> jwt = jwtUtility.extractJWT(session);
+        final Result<JsonWebToken, Throwable> jwt = jwtUtility.extractJWT(session);
         if (validateToken(session, jwt)) {
             return;
         }
@@ -67,7 +67,7 @@ public class UserSessionHandler {
         userSessionService.handleOnClose(session, username);
     }
 
-    private static boolean validateToken(Session session, Result<JsonWebToken, IllegalArgumentException> jwt) {
+    private static boolean validateToken(Session session, Result<JsonWebToken, Throwable> jwt) {
         if (!jwt.success()) {
             WSUtilities.sendMessage(session, "Token is required.");
             WSUtilities.closeSession(session, "You are don`t authorized.");
