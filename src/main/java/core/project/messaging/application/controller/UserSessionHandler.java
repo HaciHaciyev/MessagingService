@@ -21,7 +21,6 @@ import java.util.Objects;
 public class UserSessionHandler {
 
     private final JwtUtility jwtUtility;
-
     private final UserSessionService userSessionService;
 
     @OnOpen
