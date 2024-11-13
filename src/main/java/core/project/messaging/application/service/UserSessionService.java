@@ -55,6 +55,13 @@ public class UserSessionService {
         });
     }
 
+    private void messages(Session session, Username username) {
+        messagesService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
+        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> {
+            sendMessage(session, String.format("%s: {%s}", user, message));
+        });
+    }
+
     public void handleOnMessage(Session session, Username username, String message) {
         final Pair<Session, UserAccount> sessionUser = sessions.get(username);
 
@@ -74,11 +81,6 @@ public class UserSessionService {
             Log.debugf("Handling %s for user {%s}", messageType, username.username());
             handleWebSocketMessage(messageNode.value(), messageType.value(), sessionUser.getFirst(), sessionUser.getSecond());
         });
-    }
-
-    private void messages(Session session, Username username) {
-        messagesService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
-        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
     }
 
     private void handleWebSocketMessage(JsonNode messageNode, MessageType type, Session session, UserAccount user) {

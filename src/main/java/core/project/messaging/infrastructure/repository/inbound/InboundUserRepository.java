@@ -4,6 +4,8 @@ import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.infrastructure.config.jdbc.JDBC;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.time.LocalDateTime;
+
 @ApplicationScoped
 public class InboundUserRepository {
 
@@ -11,8 +13,8 @@ public class InboundUserRepository {
 
     private static final String INSERT_NEW_PARTNERSHIP = """
             INSERT INTO UserPartnership
-                (user_id, partner_id)
-                VALUES (?,?)
+                (user_id, partner_id, created_at)
+                VALUES (?,?,?)
             """;
 
     public InboundUserRepository(JDBC jdbc) {
@@ -25,6 +27,8 @@ public class InboundUserRepository {
             throw new IllegalArgumentException("Illegal function usage.");
         }
 
-        jdbc.write(INSERT_NEW_PARTNERSHIP, firstUser.getId().toString(), secondUser.getId().toString()).ifFailure(Throwable::printStackTrace);
+        jdbc
+                .write(INSERT_NEW_PARTNERSHIP, firstUser.getId().toString(), secondUser.getId().toString(), LocalDateTime.now())
+                .ifFailure(Throwable::printStackTrace);
     }
 }
