@@ -5,7 +5,6 @@ import core.project.messaging.application.dto.Message;
 import core.project.messaging.application.dto.MessageType;
 import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.domain.value_objects.Username;
-import core.project.messaging.infrastructure.cache.MessagesService;
 import core.project.messaging.infrastructure.cache.PartnershipRequestsService;
 import core.project.messaging.infrastructure.repository.inbound.InboundUserRepository;
 import core.project.messaging.infrastructure.repository.outbound.OutboundUserRepository;
@@ -32,8 +31,6 @@ import static core.project.messaging.infrastructure.utilities.web.WSUtilities.se
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class UserSessionService {
 
-    private final MessagesService messagesService;
-
     private final InboundUserRepository inboundUserRepository;
 
     private final OutboundUserRepository outboundUserRepository;
@@ -43,7 +40,7 @@ public class UserSessionService {
     private static final ConcurrentHashMap<Username, Pair<Session, UserAccount>> sessions = new ConcurrentHashMap<>();
 
     public void handleOnOpen(Session session, Username username) {
-        CompletableFuture.runAsync(() -> {
+        CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
             Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(username);
             if (!result.success()) {
                 sendMessage(session, "This account is do not founded.");
@@ -51,13 +48,18 @@ public class UserSessionService {
             }
 
             sessions.put(username, Pair.of(session, result.value()));
-            CompletableFuture.runAsync(() -> messages(session, username));
         });
+
+        completableFuture.thenRun(() -> messages(session, username));
     }
 
     private void messages(Session session, Username username) {
-        messagesService.pollAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
-        partnershipRequestsService.getAll(username.username()).forEach((user, message) -> sendMessage(session, String.format("%s: {%s}", user, message)));
+        partnershipRequestsService
+                .getAll(username.username())
+                .forEach((user, message) -> {
+                    Log.info(user + message);
+                    sendMessage(session, String.format("%s: {%s}", user, message));
+                });
     }
 
     public void handleOnMessage(Session session, Username username, String message) {
@@ -173,14 +175,14 @@ public class UserSessionService {
 
             final String messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
             sendMessage(addresserPair.getFirst(), messageOfResult);
-            messagesService.put(addressee.username(), addresser, message.message());
+            partnershipRequestsService.put(addressee.username(), addresser, message.message());
 
             partnershipRequestsService.delete(addressee.username(), addresser);
             partnershipRequestsService.delete(addresser, addressee.username());
             return;
         }
 
-        sendMessage(addresserPair.getFirst(), String.format("Wait for user {%s} answer.", addressee));
+        sendMessage(addresserPair.getFirst(), String.format("Wait for user {%s} answer.", addressee.username()));
     }
 
     private StatusPair<String> isPartnershipCreated(String addresser, String addressee) {
