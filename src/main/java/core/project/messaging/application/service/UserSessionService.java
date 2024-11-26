@@ -47,6 +47,7 @@ public class UserSessionService {
                 return;
             }
 
+            Log.infof("Putting %s to sessions", username);
             sessions.put(username, Pair.of(session, result.value()));
         });
 
@@ -64,6 +65,7 @@ public class UserSessionService {
 
     public void handleOnMessage(Session session, Username username, String message) {
         final Pair<Session, UserAccount> sessionUser = sessions.get(username);
+        Log.infof("Sessions -> %s", sessions.keySet());
 
         final Result<MessageType, Throwable> messageType = JsonUtilities.messageType(message);
         if (!messageType.success()) {
@@ -77,8 +79,8 @@ public class UserSessionService {
             return;
         }
 
+        Log.infof("Handling %s of user -> %s", messageType.value(), username.username());
         CompletableFuture.runAsync(() -> {
-            Log.debugf("Handling %s for user {%s}", messageType, username.username());
             handleWebSocketMessage(messageNode.value(), messageType.value(), sessionUser.getFirst(), sessionUser.getSecond());
         });
     }

@@ -42,7 +42,7 @@ public class JsonUtilities {
     }
 
     public static Result<Username, Throwable> usernameOfPartner(JsonNode messageNode) {
-        return Result.ofThrowable(() -> new Username(messageNode.get("usernameOfPartner").asText()));
+        return Result.ofThrowable(() -> new Username(messageNode.get("partner").asText()));
     }
 
 }
