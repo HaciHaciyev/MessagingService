@@ -15,6 +15,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Singleton
 public class JwtUtility {
@@ -47,20 +48,20 @@ public class JwtUtility {
                 .sign();
     }
 
-    public Result<JsonWebToken, Throwable> extractJWT(final Session session) {
+    public Optional<JsonWebToken> extractJWT(final Session session) {
         final List<String> token = session.getRequestParameterMap().get("token");
         if (Objects.isNull(token)) {
-            return Result.failure(new IllegalArgumentException("Token is do not defined."));
+            return Optional.empty();
         }
 
         if (token.isEmpty()) {
-            return Result.failure(new IllegalArgumentException("Token is do not defined."));
+            return Optional.empty();
         }
 
         try {
-            return Result.success(jwtParser.parse(token.getFirst()));
+            return Optional.of(jwtParser.parse(token.getFirst()));
         } catch (ParseException e) {
-            return Result.failure(new WebApplicationException(Response.status(Response.Status.UNAUTHORIZED).entity("Invalid JWT token.").build()));
+            return Optional.empty();
         }
     }
 }
