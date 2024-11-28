@@ -1,8 +1,6 @@
 package core.project.messaging.application.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import core.project.messaging.application.dto.Message;
-import core.project.messaging.application.dto.MessageType;
 import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.domain.value_objects.Username;
 import core.project.messaging.infrastructure.cache.PartnershipRequestsService;
@@ -11,7 +9,6 @@ import core.project.messaging.infrastructure.repository.outbound.OutboundUserRep
 import core.project.messaging.infrastructure.utilities.containers.Pair;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import core.project.messaging.infrastructure.utilities.containers.StatusPair;
-import core.project.messaging.infrastructure.utilities.json.JsonUtilities;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
@@ -19,7 +16,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,18 +36,18 @@ public class UserSessionService {
     private static final ConcurrentHashMap<Username, Pair<Session, UserAccount>> sessions = new ConcurrentHashMap<>();
 
     public void handleOnOpen(Session session, Username username) {
-        CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(username);
-            if (!result.success()) {
-                sendMessage(session, "This account is do not founded.");
-                return;
-            }
 
-            Log.infof("Putting %s to sessions", username);
-            sessions.put(username, Pair.of(session, result.value()));
-        });
+            result.handle(
+                    userAccount -> {
+                        Log.infof("Putting %s to sessions", username);
+                        sessions.put(username, Pair.of(session, result.value()));
+                    },
+                    throwable -> sendMessage(session, Message.error("This account is do not founded."))
+            );
 
-        completableFuture.thenRun(() -> messages(session, username));
+        }).thenRun(() -> messages(session, username));
     }
 
     private void messages(Session session, Username username) {
@@ -59,66 +55,40 @@ public class UserSessionService {
                 .getAll(username.username())
                 .forEach((user, message) -> {
                     Log.info(user + message);
-                    sendMessage(session, String.format("%s: {%s}", user, message));
+                    sendMessage(session, Message.info(String.format("%s: {%s}", user, message)));
                 });
     }
 
-    public void handleOnMessage(Session session, Username username, String message) {
+    public void handleOnMessage(Session session, Username username, Message message) {
         final Pair<Session, UserAccount> sessionUser = sessions.get(username);
         Log.infof("Sessions -> %s", sessions.keySet());
 
-        final Result<MessageType, Throwable> messageType = JsonUtilities.messageType(message);
-        if (!messageType.success()) {
-            sendMessage(session, "Invalid message type.");
-            return;
-        }
-
-        final Result<JsonNode, Throwable> messageNode = JsonUtilities.jsonTree(message);
-        if (!messageNode.success()) {
-            sendMessage(session, "Invalid message.");
-            return;
-        }
-
-        Log.infof("Handling %s of user -> %s", messageType.value(), username.username());
-        CompletableFuture.runAsync(() -> {
-            handleWebSocketMessage(messageNode.value(), messageType.value(), sessionUser.getFirst(), sessionUser.getSecond());
-        });
+        Log.infof("Handling %s of user -> %s", message.type(), username.username());
+        CompletableFuture.runAsync(() -> handleWebSocketMessage(message, sessionUser.getFirst(), sessionUser.getSecond()));
     }
 
-    private void handleWebSocketMessage(JsonNode messageNode, MessageType type, Session session, UserAccount user) {
-        final Result<String, Throwable> message = JsonUtilities.message(messageNode);
-        if (!message.success()) {
-            sendMessage(session, "Message can`t be null.");
-            return;
-        }
-
-        if (type.equals(PARTNERSHIP_REQUEST)) {
-            final Result<Username, Throwable> addressee = JsonUtilities.usernameOfPartner(messageNode);
-            if (!addressee.success()) {
-                sendMessage(session, "Invalid partner username.");
+    private void handleWebSocketMessage(Message message, Session session, UserAccount user) {
+        if (message.type().equals(PARTNERSHIP_REQUEST)) {
+            String addressee = message.partner();
+            if (addressee == null  || addressee.isEmpty()) {
+                sendMessage(session, Message.error("Invalid partner username."));
                 return;
             }
 
-            partnershipRequest(session, user, message.value(), addressee.value());
+            partnershipRequest(session, user, message, new Username(addressee));
             return;
         }
 
-        sendMessage(session, "Invalid message type.");
+        sendMessage(session, Message.error("Invalid message type."));
     }
 
-    private void partnershipRequest(Session session, UserAccount addresser, String message, Username addressee) {
-        final Message messageWrap = Result.ofThrowable(() -> new Message(message)).orElse(null);
-        if (Objects.isNull(messageWrap)) {
-            sendMessage(session, "Invalid message.");
-            return;
-        }
-
+    private void partnershipRequest(Session session, UserAccount addresser, Message message, Username addressee) {
         if (sessions.containsKey(addressee)) {
-            processPartnershipRequest(Pair.of(session, addresser), sessions.get(addressee), messageWrap);
+            processPartnershipRequest(Pair.of(session, addresser), sessions.get(addressee), message);
             return;
         }
 
-        processPartnershipRequest(Pair.of(session, addresser), addressee, messageWrap);
+        processPartnershipRequest(Pair.of(session, addresser), addressee, message);
     }
 
     private void processPartnershipRequest(final Pair<Session, UserAccount> addresserPair,
@@ -139,7 +109,7 @@ public class UserSessionService {
             addresseeAccount.addPartner(addresserAccount);
             inboundUserRepository.addPartnership(addresseeAccount, addresserAccount);
 
-            final String messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
+            final Message messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
             sendMessage(addresserPair.getFirst(), messageOfResult);
             sendMessage(addresseePair.getFirst(), messageOfResult);
 
@@ -149,7 +119,7 @@ public class UserSessionService {
         }
 
         sendMessage(addresseePair.getFirst(), invitationMessage(message.message(), addresserAccount));
-        sendMessage(addresserPair.getFirst(), String.format("Wait for user {%s} answer.", addressee));
+        sendMessage(addresserPair.getFirst(), Message.userInfo(String.format("Wait for user {%s} answer.", addressee)));
     }
 
     private void processPartnershipRequest(final Pair<Session, UserAccount> addresserPair,
@@ -158,7 +128,7 @@ public class UserSessionService {
 
         final Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(addressee);
         if (!result.success()) {
-            sendMessage(addresserPair.getFirst(), "This account is not exists.");
+            sendMessage(addresserPair.getFirst(), Message.error("This account is not exists."));
             return;
         }
 
@@ -175,7 +145,7 @@ public class UserSessionService {
             addresseeAccount.addPartner(addresserAccount);
             inboundUserRepository.addPartnership(addresseeAccount, addresserAccount);
 
-            final String messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
+            final Message messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
             sendMessage(addresserPair.getFirst(), messageOfResult);
             partnershipRequestsService.put(addressee.username(), addresser, message.message());
 
@@ -184,7 +154,7 @@ public class UserSessionService {
             return;
         }
 
-        sendMessage(addresserPair.getFirst(), String.format("Wait for user {%s} answer.", addressee.username()));
+        sendMessage(addresserPair.getFirst(), Message.userInfo(String.format("Wait for user {%s} answer.", addressee.username())));
     }
 
     private StatusPair<String> isPartnershipCreated(String addresser, String addressee) {
@@ -196,12 +166,12 @@ public class UserSessionService {
         return StatusPair.ofFalse();
     }
 
-    private static String invitationMessage(String message, UserAccount addresser) {
-        return "User {%s} invite you for partnership {%s}.".formatted(addresser.getUsername().username(), message);
+    private static Message invitationMessage(String message, UserAccount addresser) {
+        return Message.userInfo("User {%s} invite you for partnership {%s}.".formatted(addresser.getUsername().username(), message));
     }
 
-    private static String successfullyAddedPartnershipMessage(UserAccount firstUser, UserAccount secondUser) {
-        return "Partnership {%s - %s} successfully added.".formatted(firstUser.getUsername().username(), secondUser.getUsername().username());
+    private static Message successfullyAddedPartnershipMessage(UserAccount firstUser, UserAccount secondUser) {
+        return Message.userInfo("Partnership {%s - %s} successfully added.".formatted(firstUser.getUsername().username(), secondUser.getUsername().username()));
     }
 
     public void handleOnClose(Session session, Username username) {
