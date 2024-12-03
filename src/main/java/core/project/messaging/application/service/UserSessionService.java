@@ -36,18 +36,10 @@ public class UserSessionService {
     private static final ConcurrentHashMap<Username, Pair<Session, UserAccount>> sessions = new ConcurrentHashMap<>();
 
     public void handleOnOpen(Session session, Username username) {
-        CompletableFuture.runAsync(() -> {
-            Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(username);
-
-            result.handle(
-                    userAccount -> {
-                        Log.infof("Putting %s to sessions", username);
-                        sessions.put(username, Pair.of(session, result.value()));
-                    },
-                    throwable -> sendMessage(session, Message.error("This account is do not founded."))
-            );
-
-        }).thenRun(() -> messages(session, username));
+        CompletableFuture.runAsync(() -> outboundUserRepository.findByUsername(username).handle(
+                userAccount -> sessions.put(username, Pair.of(session, userAccount)),
+                throwable -> sendMessage(session, Message.error("This account is do not founded.")))
+        ).thenRun(() -> messages(session, username));
     }
 
     private void messages(Session session, Username username) {
@@ -60,8 +52,8 @@ public class UserSessionService {
     }
 
     public void handleOnMessage(Session session, Username username, Message message) {
-        final Pair<Session, UserAccount> sessionUser = sessions.get(username);
         Log.infof("Sessions -> %s", sessions.keySet());
+        final Pair<Session, UserAccount> sessionUser = Pair.of(session, sessions.get(username).getSecond());
 
         Log.infof("Handling %s of user -> %s", message.type(), username.username());
         CompletableFuture.runAsync(() -> handleWebSocketMessage(message, sessionUser.getFirst(), sessionUser.getSecond()));
