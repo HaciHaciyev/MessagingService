@@ -4,8 +4,8 @@ import core.project.messaging.application.dto.Message;
 import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.domain.value_objects.Username;
 import core.project.messaging.infrastructure.cache.PartnershipRequestsService;
-import core.project.messaging.infrastructure.repository.inbound.InboundUserRepository;
-import core.project.messaging.infrastructure.repository.outbound.OutboundUserRepository;
+import core.project.messaging.infrastructure.dal.repository.inbound.InboundUserRepository;
+import core.project.messaging.infrastructure.dal.repository.outbound.OutboundUserRepository;
 import core.project.messaging.infrastructure.utilities.containers.Pair;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import core.project.messaging.infrastructure.utilities.containers.StatusPair;
@@ -20,8 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static core.project.messaging.application.dto.MessageType.PARTNERSHIP_REQUEST;
-import static core.project.messaging.infrastructure.utilities.web.WSUtilities.closeSession;
-import static core.project.messaging.infrastructure.utilities.web.WSUtilities.sendMessage;
+import static core.project.messaging.application.util.WSUtilities.*;
 
 @ApplicationScoped
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)

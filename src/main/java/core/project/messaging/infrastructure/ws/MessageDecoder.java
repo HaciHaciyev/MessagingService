@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.config.application;
+package core.project.messaging.infrastructure.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import core.project.messaging.application.dto.Message;

@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.utilities.json;
+package core.project.messaging.application.util;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;

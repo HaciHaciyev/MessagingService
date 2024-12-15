@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.utilities.web;
+package core.project.messaging.application.util;
 
 import core.project.messaging.application.dto.Message;
 import io.quarkus.logging.Log;

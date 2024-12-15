@@ -1,7 +1,7 @@
 package core.project.messaging.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import core.project.messaging.infrastructure.utilities.json.JsonUtilities;
+import core.project.messaging.application.util.JsonUtilities;
 
 import java.util.Objects;
 

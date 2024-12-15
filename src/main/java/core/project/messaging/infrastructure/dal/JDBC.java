@@ -1,11 +1,9 @@
-package core.project.messaging.infrastructure.config.jdbc;
+package core.project.messaging.infrastructure.dal;
 
 import core.project.messaging.infrastructure.exceptions.DataNotFoundException;
 import core.project.messaging.infrastructure.exceptions.InvalidDataArgumentException;
 import core.project.messaging.infrastructure.exceptions.RepositoryDataException;
 import core.project.messaging.infrastructure.utilities.containers.Result;
-import core.project.messaging.infrastructure.utilities.repository.ResultSetExtractor;
-import core.project.messaging.infrastructure.utilities.repository.RowMapper;
 import io.quarkus.logging.Log;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;

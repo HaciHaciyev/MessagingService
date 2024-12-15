@@ -1,7 +1,7 @@
-package core.project.messaging.infrastructure.repository.inbound;
+package core.project.messaging.infrastructure.dal.repository.inbound;
 
 import core.project.messaging.domain.entities.UserAccount;
-import core.project.messaging.infrastructure.config.jdbc.JDBC;
+import core.project.messaging.infrastructure.dal.JDBC;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;

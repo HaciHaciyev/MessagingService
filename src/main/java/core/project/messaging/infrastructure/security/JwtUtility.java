@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.config.security;
+package core.project.messaging.infrastructure.security;
 
 import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.infrastructure.utilities.containers.Result;

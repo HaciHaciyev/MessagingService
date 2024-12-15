@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.utilities.repository;
+package core.project.messaging.infrastructure.dal;
 
 import core.project.messaging.infrastructure.exceptions.RepositoryDataException;
 import jakarta.annotation.Nullable;
@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @FunctionalInterface
-public interface ResultSetExtractor<T> {
+public interface RowMapper<T> {
     @Nullable
-    T extractData(ResultSet rs) throws SQLException, RepositoryDataException;
+    T extractData(ResultSet rs, int rowNum) throws SQLException, RepositoryDataException;
 }
