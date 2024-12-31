@@ -12,12 +12,13 @@ import core.project.messaging.infrastructure.utilities.containers.Result;
 import core.project.messaging.infrastructure.utilities.containers.StatusPair;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
 @ApplicationScoped
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class PartnershipsService {
 
     private final InboundUserRepository inboundUserRepository;
