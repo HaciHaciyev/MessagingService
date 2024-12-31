@@ -21,7 +21,7 @@ public class JsonUtilities {
         try {
             return objectMapper.writeValueAsString(message);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            Log.errorf("Can`t parse message: %s", e);
         }
 
         return "";

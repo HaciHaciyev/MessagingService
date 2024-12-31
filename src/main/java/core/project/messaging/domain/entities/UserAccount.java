@@ -1,5 +1,6 @@
 package core.project.messaging.domain.entities;
 
+import core.project.messaging.domain.enumerations.UserRole;
 import core.project.messaging.domain.events.AccountEvents;
 import core.project.messaging.domain.value_objects.*;
 import lombok.AccessLevel;

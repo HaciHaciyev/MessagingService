@@ -1,4 +1,4 @@
-package core.project.messaging.application.controller;
+package core.project.messaging.application.controller.ws;
 
 import core.project.messaging.application.dto.Message;
 import core.project.messaging.application.service.UserSessionService;

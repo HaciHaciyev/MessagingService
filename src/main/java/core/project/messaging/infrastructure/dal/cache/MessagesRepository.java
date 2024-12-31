@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.cache;
+package core.project.messaging.infrastructure.dal.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import core.project.messaging.infrastructure.utilities.containers.StatusPair;
@@ -10,13 +10,13 @@ import java.util.Map;
 import java.util.Objects;
 
 @ApplicationScoped
-public class PartnershipRequestsService {
+public class MessagesRepository {
 
-    private static final String KEY_FORMAT = "Partnership requests {%s}";
+    private static final String KEY_FORMAT = "Messages {%s}";
 
     private final HashCommands<String, String, String> hashCommands;
 
-    PartnershipRequestsService(RedisDataSource redisDataSource) {
+    MessagesRepository(RedisDataSource redisDataSource) {
         this.hashCommands = redisDataSource.hash(new TypeReference<>(){});
     }
 

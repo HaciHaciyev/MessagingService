@@ -1,6 +1,7 @@
 package core.project.messaging.infrastructure.dal.repository.outbound;
 
 import core.project.messaging.domain.entities.UserAccount;
+import core.project.messaging.domain.enumerations.UserRole;
 import core.project.messaging.domain.events.AccountEvents;
 import core.project.messaging.domain.value_objects.*;
 import core.project.messaging.infrastructure.dal.JDBC;
