@@ -29,12 +29,12 @@ public class UserSessionHandler {
 
     @OnOpen
     public final void onOpen(Session session) {
-        validateToken(session).ifPresent(token -> userSessionService.handleOnOpen(session, new Username(token.getName())));
+        validateToken(session).ifPresent(token -> userSessionService.onOpen(session, new Username(token.getName())));
     }
 
     @OnMessage
     public final void onMessage(Session session, Message message) {
-        validateToken(session).ifPresent(token -> userSessionService.handleOnMessage(session, new Username(token.getName()), message));
+        validateToken(session).ifPresent(token -> userSessionService.onMessage(session, new Username(token.getName()), message));
     }
 
     @OnClose

@@ -11,7 +11,6 @@ import core.project.messaging.infrastructure.utilities.containers.Pair;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import core.project.messaging.infrastructure.utilities.containers.StatusPair;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.websocket.Session;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -31,14 +30,8 @@ public class PartnershipsService {
         return requestsRepository.getAll(username);
     }
 
-    public Pair<MessageAddressee, Message> partnershipRequest(final Pair<Session, UserAccount> addresserPair,
-                                                              final Pair<Session, UserAccount> addresseePair,
-                                                              final Message message) {
-
-        final UserAccount addresserAccount = addresserPair.getSecond();
+    public Pair<MessageAddressee, Message> partnershipRequest(final UserAccount addresserAccount, final UserAccount addresseeAccount, final Message message) {
         final String addresser = addresserAccount.getUsername().username();
-
-        final UserAccount addresseeAccount = addresseePair.getSecond();
         final String addressee = addresseeAccount.getUsername().username();
 
         requestsRepository.put(addressee, addresser, message.message());
@@ -59,11 +52,7 @@ public class PartnershipsService {
         return Pair.of(MessageAddressee.ONLY_ADDRESSEE, invitationMessage(message.message(), addresserAccount));
     }
 
-    public Pair<MessageAddressee, Message> partnershipRequest(final Pair<Session, UserAccount> addresserPair,
-                                                              final Username addressee,
-                                                              final Message message) {
-
-        final UserAccount addresserAccount = addresserPair.getSecond();
+    public Pair<MessageAddressee, Message> partnershipRequest(final UserAccount addresserAccount, final Username addressee, final Message message) {
         final String addresser = addresserAccount.getUsername().username();
 
         final Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(addressee);
