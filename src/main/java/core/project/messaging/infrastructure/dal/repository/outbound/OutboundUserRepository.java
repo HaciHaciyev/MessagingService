@@ -4,7 +4,6 @@ import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.domain.enumerations.UserRole;
 import core.project.messaging.domain.events.AccountEvents;
 import core.project.messaging.domain.value_objects.*;
-import core.project.messaging.infrastructure.dal.util.exceptions.DataNotFoundException;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
@@ -68,55 +67,31 @@ public class OutboundUserRepository {
     }
 
     public boolean isEmailExists(Email verifiableEmail) {
-        Result<Integer, Throwable> result = jdbc.readObjectOf(
-                FIND_EMAIL,
-                Integer.class,
-                verifiableEmail.email()
-        );
-
-        if (!result.success()) {
-            if (result.throwable() instanceof DataNotFoundException) {
-                return false;
-            }
-
-            Log.info(result.throwable());
-        }
-
-        return result.value() != null && result.value() > 0;
+        return jdbc.readObjectOf(FIND_EMAIL, Integer.class, verifiableEmail.email())
+                .mapSuccess(count -> count != null && count > 0)
+                .orElseGet(() -> {
+                    Log.error("Error checking email existence.");
+                    return false;
+                });
     }
 
     public boolean isUsernameExists(Username verifiableUsername) {
-        Result<Integer, Throwable> result = jdbc.readObjectOf(
-                FIND_USERNAME,
-                Integer.class,
-                verifiableUsername.username()
-        );
-
-        if (!result.success()) {
-            if (result.throwable() instanceof DataNotFoundException) {
-                return false;
-            }
-
-            Log.info(result.throwable());
-        }
-
-        return result.value() != null && result.value() > 0;
+        return jdbc.readObjectOf(FIND_USERNAME, Integer.class, verifiableUsername.username())
+                .mapSuccess(count -> count != null && count > 0)
+                .orElseGet(() -> {
+                    Log.error("Error checking username existence.");
+                    return false;
+                });
     }
 
     public boolean havePartnership(UserAccount user, UserAccount partner) {
-        Result<Boolean, Throwable> result = jdbc.readObjectOf(
-                IS_PARTNERSHIP_EXISTS, Boolean.class, user.getId(), partner.getId(), partner.getId(), user.getId()
-        );
-
-        if (!result.success()) {
-            if (result.throwable() instanceof DataNotFoundException) {
-                return false;
-            }
-
-            Log.info(result.throwable());
-        }
-
-        return result.value();
+        return jdbc.readObjectOf(IS_PARTNERSHIP_EXISTS,
+                Boolean.class,
+                user.getId(),
+                partner.getId(),
+                partner.getId(),
+                user.getId())
+                .value();
     }
 
     public Result<UserAccount, Throwable> findById(UUID userId) {
