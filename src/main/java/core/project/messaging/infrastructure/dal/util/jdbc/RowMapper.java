@@ -1,6 +1,6 @@
-package core.project.messaging.infrastructure.dal;
+package core.project.messaging.infrastructure.dal.util.jdbc;
 
-import core.project.messaging.infrastructure.exceptions.RepositoryDataException;
+import core.project.messaging.infrastructure.dal.util.exceptions.RepositoryDataException;
 import jakarta.annotation.Nullable;
 
 import java.sql.ResultSet;

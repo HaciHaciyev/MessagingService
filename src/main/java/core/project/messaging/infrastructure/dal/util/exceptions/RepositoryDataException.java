@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.exceptions;
+package core.project.messaging.infrastructure.dal.util.exceptions;
 
 public class RepositoryDataException extends RuntimeException {
 

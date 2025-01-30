@@ -1,21 +1,25 @@
 package core.project.messaging.infrastructure.dal.repository.inbound;
 
 import core.project.messaging.domain.entities.UserAccount;
-import core.project.messaging.infrastructure.dal.JDBC;
+import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;
+
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
 
 @ApplicationScoped
 public class InboundUserRepository {
 
     private final JDBC jdbc;
 
-    private static final String INSERT_NEW_PARTNERSHIP = """
-            INSERT INTO UserPartnership
-                (user_id, partner_id, created_at)
-                VALUES (?,?,?)
-            """;
+    static final String INSERT_NEW_PARTNERSHIP = insert()
+            .into("UserPartnership")
+            .columns("user_id",
+                    "partner_id",
+                    "created_at")
+            .values(3)
+            .build();
 
     public InboundUserRepository(JDBC jdbc) {
         this.jdbc = jdbc;

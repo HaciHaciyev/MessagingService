@@ -4,8 +4,8 @@ import core.project.messaging.domain.entities.UserAccount;
 import core.project.messaging.domain.enumerations.UserRole;
 import core.project.messaging.domain.events.AccountEvents;
 import core.project.messaging.domain.value_objects.*;
-import core.project.messaging.infrastructure.dal.JDBC;
-import core.project.messaging.infrastructure.exceptions.DataNotFoundException;
+import core.project.messaging.infrastructure.dal.util.exceptions.DataNotFoundException;
+import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,21 +16,52 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
+
 @Transactional
 @ApplicationScoped
 public class OutboundUserRepository {
 
     private final JDBC jdbc;
 
-    private static final String FIND_EMAIL = "SELECT COUNT(email) FROM UserAccount WHERE email = ?";
-    private static final String FIND_USERNAME = "SELECT COUNT(username) FROM UserAccount WHERE username = ?";
-    private static final String FIND_BY_ID = "SELECT * FROM UserAccount WHERE id = ?";
-    private static final String FIND_BY_USERNAME = "SELECT * FROM UserAccount WHERE username = ?";
-    private static final String FIND_BY_EMAIL = "SELECT * FROM UserAccount WHERE email = ?";
-    private static final String IS_PARTNERSHIP_EXISTS = """
-            SELECT * FROM UserPartnership
-            WHERE (user_id = ? AND partner_id = ?) OR (user_id = ? AND partner_id = ?);
-            """;
+    static final String FIND_EMAIL = select()
+            .count("*")
+            .from("UserAccount")
+            .where("email = ?")
+            .build();
+
+    static final String FIND_USERNAME = select()
+            .count("*")
+            .from("UserAccount")
+            .where("username = ?")
+            .build();
+
+    static final String FIND_BY_ID = select()
+            .all()
+            .from("UserAccount")
+            .where("id = ?")
+            .build();
+
+    static final String FIND_BY_USERNAME = select()
+            .all()
+            .from("UserAccount")
+            .where("username = ?")
+            .build();
+
+    static final String FIND_BY_EMAIL = select()
+            .all()
+            .from("UserAccount")
+            .where("email = ?")
+            .build();
+
+    static final String IS_PARTNERSHIP_EXISTS = select()
+            .all()
+            .from("UserPartnership")
+            .where("(user_id = ?")
+            .and("partner_id = ?)")
+            .or("(user_id = ?")
+            .and("partner_id = ?)")
+            .build();
 
     OutboundUserRepository(JDBC jdbc) {
         this.jdbc = jdbc;
@@ -44,13 +75,11 @@ public class OutboundUserRepository {
         );
 
         if (!result.success()) {
-
             if (result.throwable() instanceof DataNotFoundException) {
                 return false;
-            } else {
-                Log.info(result.throwable());
             }
 
+            Log.info(result.throwable());
         }
 
         return result.value() != null && result.value() > 0;
@@ -64,13 +93,11 @@ public class OutboundUserRepository {
         );
 
         if (!result.success()) {
-
             if (result.throwable() instanceof DataNotFoundException) {
                 return false;
-            } else {
-                Log.info(result.throwable());
             }
 
+            Log.info(result.throwable());
         }
 
         return result.value() != null && result.value() > 0;
@@ -84,9 +111,9 @@ public class OutboundUserRepository {
         if (!result.success()) {
             if (result.throwable() instanceof DataNotFoundException) {
                 return false;
-            } else {
-                Log.info(result.throwable());
             }
+
+            Log.info(result.throwable());
         }
 
         return result.value();
