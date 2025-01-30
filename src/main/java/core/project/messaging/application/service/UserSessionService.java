@@ -7,6 +7,7 @@ import core.project.messaging.domain.services.PartnershipsService;
 import core.project.messaging.domain.value_objects.Username;
 import core.project.messaging.infrastructure.dal.cache.SessionStorage;
 import core.project.messaging.infrastructure.dal.repository.outbound.OutboundUserRepository;
+import core.project.messaging.infrastructure.security.JwtUtility;
 import core.project.messaging.infrastructure.utilities.containers.Pair;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
@@ -15,6 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -28,6 +30,8 @@ import static java.util.Objects.isNull;
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class UserSessionService {
 
+    private final JwtUtility jwtUtility;
+
     private final SessionStorage sessionStorage;
 
     private final PartnershipsService partnershipsService;
@@ -38,7 +42,7 @@ public class UserSessionService {
         CompletableFuture.runAsync(() -> {
             Result<UserAccount, Throwable> account = outboundUserRepository.findByUsername(username);
             if (!account.success()) {
-                closeAndRemoveSession("This account does`t exist.", session);
+                closeSession(session, "This account does`t exist.");
                 return;
             }
 
@@ -59,6 +63,16 @@ public class UserSessionService {
         }
 
         CompletableFuture.runAsync(() -> handleMessage(message, session, userAccount.orElseThrow()));
+    }
+
+    public Optional<JsonWebToken> validateToken(Session session) {
+        return jwtUtility
+                .extractJWT(session)
+                .or(() -> {
+                    closeSession(session, Message.error("You are not authorized. Token is required."));
+                    sessionStorage.remove(session);
+                    return Optional.empty();
+                });
     }
 
     private void handleMessage(Message message, Session session, UserAccount user) {
@@ -99,8 +113,8 @@ public class UserSessionService {
         send(messages, session, null);
     }
 
-    public void handleOnClose(Session session, Username username) {
-        sessionStorage.remove(username);
+    public void handleOnClose(Session session) {
+        sessionStorage.remove(session);
         closeSession(session, "Session is closed.");
     }
 
@@ -118,11 +132,7 @@ public class UserSessionService {
     private void closeAndRemoveSession(String message, Session session) {
         Log.error(message);
         closeSession(session, Message.error(message));
-
-        extractAccount(session).ifPresentOrElse(
-                account -> sessionStorage.remove(account.getUsername()),
-                () -> Log.error("Session does not have a user account.")
-        );
+        sessionStorage.remove(session);
     }
 
     public Optional<UserAccount> extractAccount(Session session) {
