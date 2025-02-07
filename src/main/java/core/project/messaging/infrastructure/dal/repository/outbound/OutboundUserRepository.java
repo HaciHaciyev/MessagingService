@@ -13,9 +13,12 @@ import jakarta.transaction.Transactional;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.selectDistinct;
 
 @Transactional
 @ApplicationScoped
@@ -62,6 +65,18 @@ public class OutboundUserRepository {
             .and("partner_id = ?)")
             .build();
 
+    static final String GET_PARTNERS_USERNAMES = selectDistinct()
+            .caseStatement()
+            .when("user_account.username = ?").then("partner.username")
+            .elseCase("user_account.username")
+            .endAs("username")
+            .fromAs("UserPartnership", "up")
+            .joinAs("UserAccount", "partner", "up.partner_id = partner.id")
+            .joinAs("UserAccount", "user_account", "up.user_id = user_account.id")
+            .where("user_account.username = ?")
+            .or("partner.username = ?")
+            .limitAndOffset();
+
     OutboundUserRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -82,6 +97,18 @@ public class OutboundUserRepository {
                     Log.error("Error checking username existence.");
                     return false;
                 });
+    }
+
+    public Result<List<String>, Throwable> listOfPartners(String username, int pageNumber) {
+        return jdbc.readListOf(
+                GET_PARTNERS_USERNAMES,
+                rs -> rs.getString("username"),
+                Objects.requireNonNull(username),
+                username,
+                username,
+                10,
+                pageNumber
+        );
     }
 
     public boolean havePartnership(UserAccount user, UserAccount partner) {
