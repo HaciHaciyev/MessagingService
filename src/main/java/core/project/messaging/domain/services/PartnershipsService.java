@@ -34,6 +34,12 @@ public class PartnershipsService {
         final String addresser = addresserAccount.getUsername().username();
         final String addressee = addresseeAccount.getUsername().username();
 
+        final boolean isRequestRetried = requestsRepository.get(addressee, addresser).status();
+        if (isRequestRetried) {
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER,
+                    Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
+        }
+
         requestsRepository.put(addressee, addresser, message.message());
 
         final StatusPair<String> isPartnershipCreated = isPartnershipCreated(addresser, addressee);
@@ -62,6 +68,12 @@ public class PartnershipsService {
         }
 
         final UserAccount addresseeAccount = result.value();
+
+        final boolean isRequestRetried = requestsRepository.get(addressee.username(), addresser).status();
+        if (isRequestRetried) {
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER,
+                    Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
+        }
 
         requestsRepository.put(addressee.username(), addresser, message.message());
 
