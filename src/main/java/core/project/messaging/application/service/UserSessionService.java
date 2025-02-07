@@ -77,7 +77,7 @@ public class UserSessionService {
         switch (message.type()) {
             case PARTNERSHIP_REQUEST -> {
                 String addressee = message.partner();
-                if (Username.validate(addressee)) {
+                if (!Username.validate(addressee)) {
                     sendMessage(session, Message.error("Partner user name is required for partnership creation."));
                     return;
                 }
@@ -86,7 +86,7 @@ public class UserSessionService {
             }
             case PARTNERSHIP_DECLINE -> {
                 String addressee = message.partner();
-                if (Username.validate(addressee)) {
+                if (!Username.validate(addressee)) {
                     sendMessage(session, Message.error("Partner user name is required for partnership declining."));
                     return;
                 }
