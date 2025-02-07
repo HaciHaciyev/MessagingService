@@ -83,6 +83,10 @@ public class PartnershipsService {
         return Pair.of(MessageAddressee.ONLY_ADDRESSER, messageOfResult);
     }
 
+    public void partnershipDecline(final UserAccount user, final Username partner) {
+        requestsRepository.delete(user.getUsername().username(), partner.username());
+    }
+
     private StatusPair<String> isPartnershipCreated(String addresser, String addressee) {
         final Map<String, String> requests = getAll(addresser);
         return requests.containsKey(addressee) ? StatusPair.ofTrue(requests.get(addressee)) : StatusPair.ofFalse();

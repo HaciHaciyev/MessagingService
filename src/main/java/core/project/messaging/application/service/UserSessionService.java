@@ -22,9 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static core.project.messaging.application.dto.MessageType.PARTNERSHIP_REQUEST;
 import static core.project.messaging.application.util.WSUtilities.*;
-import static java.util.Objects.isNull;
 
 @ApplicationScoped
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
@@ -76,18 +74,27 @@ public class UserSessionService {
     }
 
     private void handleMessage(Message message, Session session, UserAccount user) {
-        if (message.type().equals(PARTNERSHIP_REQUEST)) {
-            String addressee = message.partner();
-            if (isNull(addressee)) {
-                sendMessage(session, Message.error("Partner user name is required for partnership game."));
-                return;
+        switch (message.type()) {
+            case PARTNERSHIP_REQUEST -> {
+                String addressee = message.partner();
+                if (Username.validate(addressee)) {
+                    sendMessage(session, Message.error("Partner user name is required for partnership creation."));
+                    return;
+                }
+
+                partnershipRequest(session, user, message, new Username(addressee));
             }
+            case PARTNERSHIP_DECLINE -> {
+                String addressee = message.partner();
+                if (Username.validate(addressee)) {
+                    sendMessage(session, Message.error("Partner user name is required for partnership declining."));
+                    return;
+                }
 
-            partnershipRequest(session, user, message, new Username(addressee));
-            return;
+                partnershipsService.partnershipDecline(user, new Username(addressee));
+            }
+            default -> sendMessage(session, Message.error("Invalid message type."));
         }
-
-        sendMessage(session, Message.error("Invalid message type."));
     }
 
     private void partnershipRequest(Session session, UserAccount addresser, Message message, Username addressee) {
