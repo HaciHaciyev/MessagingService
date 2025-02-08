@@ -40,6 +40,11 @@ public class PartnershipsService {
                     Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
         }
 
+        final boolean isAlreadyHavePartnership = outboundUserRepository.havePartnership(addresserAccount, addresseeAccount);
+        if (isAlreadyHavePartnership) {
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER, Message.error("You can`t invite someone who has partnership with you already."));
+        }
+
         requestsRepository.put(addressee, addresser, message.message());
 
         final StatusPair<String> isPartnershipCreated = isPartnershipCreated(addresser, addressee);
@@ -73,6 +78,11 @@ public class PartnershipsService {
         if (isRequestRetried) {
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
                     Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
+        }
+
+        final boolean isAlreadyHavePartnership = outboundUserRepository.havePartnership(addresserAccount, addresseeAccount);
+        if (isAlreadyHavePartnership) {
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER, Message.error("You can`t invite someone who has partnership with you already."));
         }
 
         requestsRepository.put(addressee.username(), addresser, message.message());
