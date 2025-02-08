@@ -114,10 +114,10 @@ public class OutboundUserRepository {
     public boolean havePartnership(UserAccount user, UserAccount partner) {
         return jdbc.readObjectOf(IS_PARTNERSHIP_EXISTS,
                 Boolean.class,
-                user.getId(),
-                partner.getId(),
-                partner.getId(),
-                user.getId())
+                user.getId().toString(),
+                partner.getId().toString(),
+                partner.getId().toString(),
+                user.getId().toString())
                 .value();
     }
 
