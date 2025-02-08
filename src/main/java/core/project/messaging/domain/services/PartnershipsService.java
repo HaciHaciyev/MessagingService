@@ -109,6 +109,6 @@ public class PartnershipsService {
     }
 
     private static Message invitationMessage(String message, UserAccount addresser) {
-        return Message.userInfo("User {%s} invite you for partnership {%s}.".formatted(addresser.getUsername().username(), message));
+        return Message.partnershipRequest("User {%s} invite you for partnership {%s}.".formatted(addresser.getUsername().username(), message));
     }
 }

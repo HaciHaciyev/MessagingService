@@ -47,7 +47,7 @@ public class UserSessionService {
             sessionStorage.put(session, Objects.requireNonNull(account.orElseThrow()));
             partnershipsService
                     .getAll(username.username())
-                    .forEach((user, message) -> sendMessage(session, Message.info(String.format("%s: {%s}", user, message))));
+                    .forEach((user, message) -> sendMessage(session, Message.partnershipRequest(String.format("%s: {%s}", user, message))));
         });
     }
 
