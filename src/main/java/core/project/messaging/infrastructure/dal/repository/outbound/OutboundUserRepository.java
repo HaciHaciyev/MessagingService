@@ -57,7 +57,7 @@ public class OutboundUserRepository {
             .build();
 
     static final String IS_PARTNERSHIP_EXISTS = select()
-            .all()
+            .count("*")
             .from("UserPartnership")
             .where("(user_id = ?")
             .and("partner_id = ?)")
