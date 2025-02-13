@@ -24,8 +24,8 @@ public record Message(MessageType type, String message, String partner) {
         return new Message(MessageType.USER_INFO, message, null);
     }
 
-    public static Message partnershipRequest(String message) {
-        return new Message(MessageType.PARTNERSHIP_REQUEST, message, null);
+    public static Message partnershipRequest(String message, String partner) {
+        return new Message(MessageType.PARTNERSHIP_REQUEST, message, partner);
     }
 
     @Override
