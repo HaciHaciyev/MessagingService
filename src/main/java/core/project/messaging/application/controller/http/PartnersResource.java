@@ -21,8 +21,8 @@ public class PartnersResource {
 
     @GET
     @Path("/partners")
-    public Response partners(@QueryParam("pageNumber") int pageNumber) {
-        return Response.ok(partnersQueryService.listOfPartners(jwt.getName(), pageNumber)).build();
+    public Response partners(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
+        return Response.ok(partnersQueryService.listOfPartners(jwt.getName(), pageNumber, pageSize)).build();
     }
 
     @DELETE

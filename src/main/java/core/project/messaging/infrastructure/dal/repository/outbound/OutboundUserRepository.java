@@ -99,15 +99,10 @@ public class OutboundUserRepository {
                 });
     }
 
-    public Result<List<String>, Throwable> listOfPartners(String username, int pageNumber) {
-        return jdbc.readListOf(
-                GET_PARTNERS_USERNAMES,
+    public Result<List<String>, Throwable> listOfPartners(String username, int limit, int offSet) {
+        return jdbc.readListOf(GET_PARTNERS_USERNAMES,
                 rs -> rs.getString("username"),
-                Objects.requireNonNull(username),
-                username,
-                username,
-                10,
-                pageNumber
+                Objects.requireNonNull(username), username, username, limit, offSet
         );
     }
 

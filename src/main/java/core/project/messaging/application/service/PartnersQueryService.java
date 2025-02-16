@@ -20,7 +20,7 @@ public class PartnersQueryService {
         this.outboundUserRepository = outboundUserRepository;
     }
 
-    public Object listOfPartners(String username, int pageNumber) {
+    public Object listOfPartners(String username, int pageNumber, int pageSize) {
         if (!Username.validate(username)) {
             throw new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity("Invalid username").build());
         }
@@ -28,8 +28,10 @@ public class PartnersQueryService {
             pageNumber = 0;
         }
 
+        int limit = buildLimit(pageSize);
+        int offSet = buildOffSet(limit, pageNumber);
         return outboundUserRepository
-                .listOfPartners(username, pageNumber)
+                .listOfPartners(username, limit, offSet)
                 .orElseThrow(
                         () -> new WebApplicationException(Response.status(Response.Status.BAD_REQUEST).entity("User does not exist.\uD83D\uDC7B").build())
                 );
@@ -58,5 +60,25 @@ public class PartnersQueryService {
         }
 
         inboundUserRepository.removePartnership(userAccount, partnerAccount);
+    }
+
+    public static int buildLimit(Integer pageSize) {
+        int limit;
+        if (pageSize > 0 && pageSize <= 25) {
+            limit = pageSize;
+        } else {
+            limit = 10;
+        }
+        return limit;
+    }
+
+    public static int buildOffSet(Integer limit, Integer pageNumber) {
+        int offSet;
+        if (limit > 0 && pageNumber > 0) {
+            offSet = (pageNumber - 1) * limit;
+        } else {
+            offSet = 0;
+        }
+        return offSet;
     }
 }
