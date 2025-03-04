@@ -1,8 +1,8 @@
-package core.project.messaging.domain.entities;
+package core.project.messaging.domain.user.entities;
 
-import core.project.messaging.domain.enumerations.UserRole;
-import core.project.messaging.domain.events.AccountEvents;
-import core.project.messaging.domain.value_objects.*;
+import core.project.messaging.domain.user.enumerations.UserRole;
+import core.project.messaging.domain.user.events.AccountEvents;
+import core.project.messaging.domain.user.value_objects.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

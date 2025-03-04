@@ -1,4 +1,4 @@
-package core.project.messaging.domain.events;
+package core.project.messaging.domain.user.events;
 
 import java.time.LocalDateTime;
 import java.util.Objects;

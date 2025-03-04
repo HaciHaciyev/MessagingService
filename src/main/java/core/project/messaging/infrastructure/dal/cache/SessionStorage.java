@@ -1,7 +1,7 @@
 package core.project.messaging.infrastructure.dal.cache;
 
-import core.project.messaging.domain.entities.UserAccount;
-import core.project.messaging.domain.value_objects.Username;
+import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.value_objects.Username;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
 

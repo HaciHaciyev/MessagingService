@@ -1,4 +1,4 @@
-package core.project.messaging.domain.enumerations;
+package core.project.messaging.domain.user.enumerations;
 
 import lombok.Getter;
 

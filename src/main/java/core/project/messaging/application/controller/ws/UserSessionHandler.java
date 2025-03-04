@@ -2,7 +2,7 @@ package core.project.messaging.application.controller.ws;
 
 import core.project.messaging.application.dto.Message;
 import core.project.messaging.application.service.UserSessionService;
-import core.project.messaging.domain.value_objects.Username;
+import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.ws.MessageDecoder;
 import core.project.messaging.infrastructure.ws.MessageEncoder;
 import jakarta.websocket.OnClose;

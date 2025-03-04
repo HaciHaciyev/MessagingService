@@ -1,4 +1,4 @@
-package core.project.messaging.domain.value_objects;
+package core.project.messaging.domain.user.value_objects;
 
 import java.util.Objects;
 import java.util.regex.Matcher;

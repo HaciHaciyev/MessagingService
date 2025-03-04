@@ -1,9 +1,9 @@
-package core.project.messaging.domain.services;
+package core.project.messaging.domain.user.services;
 
 import core.project.messaging.application.dto.Message;
-import core.project.messaging.domain.entities.UserAccount;
-import core.project.messaging.domain.enumerations.MessageAddressee;
-import core.project.messaging.domain.value_objects.Username;
+import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.enumerations.MessageAddressee;
+import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.cache.PartnershipRequestsRepository;
 import core.project.messaging.infrastructure.dal.repository.inbound.InboundUserRepository;
 import core.project.messaging.infrastructure.dal.repository.outbound.OutboundUserRepository;

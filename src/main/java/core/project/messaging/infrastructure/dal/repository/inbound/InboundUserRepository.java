@@ -1,6 +1,6 @@
 package core.project.messaging.infrastructure.dal.repository.inbound;
 
-import core.project.messaging.domain.entities.UserAccount;
+import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import jakarta.enterprise.context.ApplicationScoped;
 

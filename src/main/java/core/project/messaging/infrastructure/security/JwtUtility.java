@@ -1,15 +1,12 @@
 package core.project.messaging.infrastructure.security;
 
-import core.project.messaging.domain.entities.UserAccount;
-import core.project.messaging.infrastructure.utilities.containers.Result;
+import core.project.messaging.domain.user.entities.UserAccount;
 import io.quarkus.logging.Log;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.inject.Singleton;
 import jakarta.websocket.Session;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.time.Duration;
