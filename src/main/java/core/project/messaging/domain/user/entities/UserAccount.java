@@ -16,6 +16,8 @@ import java.util.UUID;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserAccount {
     private final UUID id;
+    private final Firstname firstname;
+    private final Surname surname;
     private final Username username;
     private final Email email;
     private final Password password;
@@ -25,22 +27,27 @@ public class UserAccount {
     private final AccountEvents accountEvents;
     private final Set<UserAccount> partners;
 
-    public static UserAccount of(Username username, Email email, Password password) {
+    public static UserAccount of(Firstname firstname, Surname surname, Username username, Email email, Password password) {
+        Objects.requireNonNull(firstname);
+        Objects.requireNonNull(surname);
         Objects.requireNonNull(username);
         Objects.requireNonNull(email);
         Objects.requireNonNull(password);
 
         return new UserAccount(
-                UUID.randomUUID(), username, email, password, UserRole.NONE, false, Rating.defaultRating(), AccountEvents.defaultEvents(), new HashSet<>()
+                UUID.randomUUID(), firstname, surname, username, email, password,
+                UserRole.NONE, false, Rating.defaultRating(), AccountEvents.defaultEvents(), new HashSet<>()
         );
     }
 
     /**
      * this method is used to call only from repository
      */
-    public static UserAccount fromRepository(UUID id, Username username, Email email, Password password,
+    public static UserAccount fromRepository(UUID id, Firstname firstname, Surname surname, Username username, Email email, Password password,
                                              UserRole userRole, boolean enabled, Rating rating, AccountEvents events) {
         Objects.requireNonNull(id);
+        Objects.requireNonNull(firstname);
+        Objects.requireNonNull(surname);
         Objects.requireNonNull(username);
         Objects.requireNonNull(email);
         Objects.requireNonNull(password);
@@ -48,7 +55,7 @@ public class UserAccount {
         Objects.requireNonNull(rating);
         Objects.requireNonNull(events);
 
-        return new UserAccount(id, username, email, password, userRole, enabled, rating, events, new HashSet<>());
+        return new UserAccount(id, firstname, surname, username, email, password, userRole, enabled, rating, events, new HashSet<>());
     }
 
     public boolean isEnabled() {

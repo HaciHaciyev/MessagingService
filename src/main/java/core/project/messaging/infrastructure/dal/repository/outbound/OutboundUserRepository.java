@@ -129,8 +129,6 @@ public class OutboundUserRepository {
     }
 
     private UserAccount userAccountMapper(final ResultSet rs) throws SQLException {
-        Log.infof("The user account %s was taken from the database", rs.getString("username"));
-
         var events = new AccountEvents(
                 rs.getObject("creation_date", Timestamp.class).toLocalDateTime(),
                 rs.getObject("last_updated_date", Timestamp.class).toLocalDateTime()
@@ -144,6 +142,8 @@ public class OutboundUserRepository {
 
         return UserAccount.fromRepository(
                 UUID.fromString(rs.getString("id")),
+                new Firstname(rs.getString("firstname")),
+                new Surname(rs.getString("surname")),
                 new Username(rs.getString("username")),
                 new Email(rs.getString("email")),
                 new Password(rs.getString("password")),
