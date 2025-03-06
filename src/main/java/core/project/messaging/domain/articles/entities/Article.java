@@ -1,59 +1,53 @@
 package core.project.messaging.domain.articles.entities;
 
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
-import core.project.messaging.domain.articles.enumerations.ArticleTag;
+import core.project.messaging.domain.articles.values_objects.ArticleTag;
 import core.project.messaging.domain.articles.events.ArticleEvents;
-import core.project.messaging.domain.articles.values_objects.Content;
-import core.project.messaging.domain.articles.values_objects.Header;
-import core.project.messaging.domain.articles.values_objects.Summary;
+import core.project.messaging.domain.articles.values_objects.*;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class Article {
     private final UUID id;
     private final UUID authorId;
-    private Header header;
-    private Summary summary;
-    private Content content;
-    private ArticleStatus status;
-    private int views;
-    private int likes;
-    private final ArticleEvents events;
-    private final Set<Comment> comments;
     private final Set<ArticleTag> tags;
 
-    public Article(UUID id, UUID authorId, Header header, Summary summary, Content content,
-                   ArticleStatus status, int views, int likes, ArticleEvents events, Set<Comment> comments,
-                   Set<ArticleTag> tags) {
-        Objects.requireNonNull(id, "ID must not be null.");
-        Objects.requireNonNull(authorId, "Author ID must not be null.");
-        Objects.requireNonNull(header, "Header must not be null.");
-        Objects.requireNonNull(summary, "Summary must not be null.");
-        Objects.requireNonNull(content, "Content must not be null.");
-        Objects.requireNonNull(status, "Status must not be null.");
-        Objects.requireNonNull(events, "Events must not be null.");
-        Objects.requireNonNull(comments, "Comments must not be null.");
-        Objects.requireNonNull(tags, "Tags must not be null.");
-        if (likes < 0) {
-            throw new IllegalArgumentException("Likes must be greater than 0.");
-        }
-        if (views < 0) {
-            throw new IllegalArgumentException("Views must be greater than 0.");
-        }
+    private Header header;
+    private Summary summary;
+    private Body body;
+    private ArticleStatus status;
+    private ArticleEvents events;
+
+    private Article(UUID id, UUID authorId, Set<ArticleTag> tags, Header header, Summary summary, Body body,
+                    ArticleStatus status, ArticleEvents events) {
+
+        Objects.requireNonNull(id, "Article id cannot be null.");
+        Objects.requireNonNull(authorId, "Author ID cannot be null.");
+        Objects.requireNonNull(tags, "Article tags cannot be null.");
+        Objects.requireNonNull(header, "Article header cannot be null.");
+        Objects.requireNonNull(summary, "Article summary cannot be null.");
+        Objects.requireNonNull(body, "Article body cannot be null.");
+        Objects.requireNonNull(status, "Article status cannot be null.");
+        Objects.requireNonNull(events, "Article events cannot be null.");
 
         this.id = id;
         this.authorId = authorId;
+        this.tags = tags;
         this.header = header;
         this.summary = summary;
-        this.content = content;
+        this.body = body;
         this.status = status;
-        this.views = views;
-        this.likes = likes;
         this.events = events;
-        this.comments = comments;
-        this.tags = tags;
+    }
+
+    public static Article of(UUID authorId, Set<ArticleTag> tags, Header header, Summary summary, Body body, ArticleStatus status) {
+        return new Article(UUID.randomUUID(), authorId, tags, header, summary, body, status, ArticleEvents.defaultEvents());
+    }
+
+    public static Article fromRepository(UUID id, UUID authorId, Set<ArticleTag> tags, Header header, Summary summary, Body body,
+                                         ArticleStatus status, ArticleEvents events) {
+        return new Article(id, authorId, tags, header, summary, body, status, events);
     }
 
     public UUID id() {
@@ -64,39 +58,125 @@ public class Article {
         return authorId;
     }
 
+    public ArticleEvents events() {
+        return events;
+    }
+
+    private void updateEvent() {
+        this.events = new ArticleEvents(events.creationDate(), LocalDateTime.now());
+    }
+
     public Header header() {
         return header;
+    }
+
+    public void changeHeader(Header header) {
+        Objects.requireNonNull(header, "Header cannot be null.");
+        this.header = header;
+        updateEvent();
     }
 
     public Summary summary() {
         return summary;
     }
 
-    public Content content() {
-        return content;
+    public void changeSummary(Summary summary) {
+        Objects.requireNonNull(summary, "Summary must not be null.");
+        this.summary = summary;
+        updateEvent();
+    }
+
+    public Body body() {
+        return body;
+    }
+
+    public void changeBody(Body body) {
+        Objects.requireNonNull(body, "Body must not be null.");
+        this.body = body;
+        updateEvent();
     }
 
     public ArticleStatus status() {
         return status;
     }
 
-    public int views() {
-        return views;
+    public void publish() {
+        this.status = ArticleStatus.PUBLISHED;
+        updateEvent();
     }
 
-    public int likes() {
-        return likes;
-    }
-
-    public ArticleEvents events() {
-        return events;
-    }
-
-    public Set<Comment> comments() {
-        return comments;
+    public void archive() {
+        this.status = ArticleStatus.ARCHIVED;
+        updateEvent();
     }
 
     public Set<ArticleTag> tags() {
-        return tags;
+        return new HashSet<>(tags);
+    }
+
+    public boolean addTag(ArticleTag tag) {
+        Objects.requireNonNull(tag, "Tag must not be null.");
+        if (tags.size() == 13) {
+            return false;
+        }
+
+        tags.add(tag);
+        updateEvent();
+        return true;
+    }
+
+    public void removeTag(ArticleTag tag) {
+        Objects.requireNonNull(tag, "Tag must not be null.");
+        tags.remove(tag);
+        updateEvent();
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (!(o instanceof Article article)) return false;
+
+        return id.equals(article.id) &&
+                authorId.equals(article.authorId) &&
+                tags.equals(article.tags) &&
+                Objects.equals(header, article.header) &&
+                Objects.equals(summary, article.summary) &&
+                Objects.equals(body, article.body) &&
+                status == article.status &&
+                Objects.equals(events, article.events);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + authorId.hashCode();
+        result = 31 * result + tags.hashCode();
+        result = 31 * result + Objects.hashCode(header);
+        result = 31 * result + Objects.hashCode(summary);
+        result = 31 * result + Objects.hashCode(body);
+        result = 31 * result + Objects.hashCode(status);
+        result = 31 * result + Objects.hashCode(events);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("""
+                Article {
+                    ID: %s,
+                    Author ID: %s,
+                    Creation date: %s,
+                    Last updated date: %s,
+                    Tags: %s,
+                    Header: %s,
+                    Status: %s
+                }
+                """, id,
+                authorId,
+                events.creationDate().toString(),
+                events.lastUpdateDate().toString(),
+                tags,
+                header.value(),
+                status
+        );
     }
 }

@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public record Content(String content) {
+public record Body(String value) {
 
     public static final int MAX_SIZE = 5120;
 
@@ -12,16 +12,16 @@ public record Content(String content) {
 
     public static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile(INVALID_CHARACTERS_REGEX);
 
-    public Content {
-        Objects.requireNonNull(content, "Content must not be null.");
-        if (content.isBlank()) {
+    public Body {
+        Objects.requireNonNull(value, "Content must not be null.");
+        if (value.isBlank()) {
             throw new IllegalArgumentException("Content is blank.");
         }
-        if (content.length() > MAX_SIZE) {
+        if (value.length() > MAX_SIZE) {
             throw new IllegalArgumentException("Content is too long: max size %d characters.".formatted(MAX_SIZE));
         }
 
-        Matcher matcher = INVALID_CHARACTERS_PATTERN.matcher(content);
+        Matcher matcher = INVALID_CHARACTERS_PATTERN.matcher(value);
         if (matcher.matches()) {
             throw new IllegalArgumentException("Content contains invalid characters.");
         }

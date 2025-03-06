@@ -10,7 +10,7 @@ public record ArticleEvents(LocalDateTime creationDate, LocalDateTime lastUpdate
         Objects.requireNonNull(lastUpdateDate);
     }
 
-    public ArticleEvents defaultEvents() {
+    public static ArticleEvents defaultEvents() {
         return new ArticleEvents(LocalDateTime.now(), LocalDateTime.now());
     }
 }

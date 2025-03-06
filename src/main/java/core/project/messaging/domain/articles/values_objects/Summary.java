@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public record Summary(String summary) {
+public record Summary(String value) {
 
     public static final int MAX_SIZE = 256;
 
@@ -13,15 +13,15 @@ public record Summary(String summary) {
     public static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile(INVALID_CHARACTERS_REGEX);
 
     public Summary {
-        Objects.requireNonNull(summary, "Summary must not be null.");
-        if (summary.isBlank()) {
+        Objects.requireNonNull(value, "Summary must not be null.");
+        if (value.isBlank()) {
             throw new IllegalArgumentException("Summary must not be blank.");
         }
-        if (summary.length() > MAX_SIZE) {
+        if (value.length() > MAX_SIZE) {
             throw new IllegalArgumentException("Summary must not exceed %d characters.".formatted(MAX_SIZE));
         }
 
-        Matcher matcher = INVALID_CHARACTERS_PATTERN.matcher(summary);
+        Matcher matcher = INVALID_CHARACTERS_PATTERN.matcher(value);
         if (matcher.matches()) {
             throw new IllegalArgumentException("Header contains invalid characters.");
         }

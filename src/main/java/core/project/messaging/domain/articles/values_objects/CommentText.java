@@ -4,26 +4,26 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public record Header(String value) {
+public record CommentText(String value) {
 
-    public static final int MAX_SIZE = 128;
+    public static final String DELETED_COMMENT = "Deleted comment.";
 
     public static final String INVALID_CHARACTERS_REGEX = "[\\\\p{C}]";
 
     public static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile(INVALID_CHARACTERS_REGEX);
 
-    public Header {
-        Objects.requireNonNull(value, "Header must not be null.");
+    public CommentText {
+        Objects.requireNonNull(value);
         if (value.isBlank()) {
-            throw new IllegalArgumentException("Header cannot be blank.");
+            throw new IllegalArgumentException("Comment text cannot be blank.");
         }
-        if (value.length() > MAX_SIZE) {
-            throw new IllegalArgumentException("Header is too long: max size %d.".formatted(MAX_SIZE));
+        if (value.length() > 56) {
+            throw new IllegalArgumentException("Comment text cannot be longer than 56 characters.");
         }
 
         Matcher matcher = INVALID_CHARACTERS_PATTERN.matcher(value);
         if (matcher.matches()) {
-            throw new IllegalArgumentException("Header contains invalid characters.");
+            throw new IllegalArgumentException("Content contains invalid characters.");
         }
     }
 }
