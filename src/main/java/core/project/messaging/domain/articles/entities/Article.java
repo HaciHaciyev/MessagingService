@@ -42,6 +42,10 @@ public class Article {
     }
 
     public static Article of(UUID authorId, Set<ArticleTag> tags, Header header, Summary summary, Body body, ArticleStatus status) {
+        if (status != null && status.equals(ArticleStatus.ARCHIVED)) {
+            throw new IllegalArgumentException("Article can`t be created with archived status.");
+        }
+
         return new Article(UUID.randomUUID(), authorId, tags, header, summary, body, status, ArticleEvents.defaultEvents());
     }
 
