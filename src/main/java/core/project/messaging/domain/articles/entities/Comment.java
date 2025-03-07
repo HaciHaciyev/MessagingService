@@ -1,7 +1,8 @@
 package core.project.messaging.domain.articles.entities;
 
-import core.project.messaging.domain.articles.enumerations.ReferenceOn;
 import core.project.messaging.domain.articles.values_objects.CommentText;
+import core.project.messaging.domain.articles.values_objects.Reference;
+import jakarta.annotation.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -12,25 +13,22 @@ public class Comment {
     private final UUID userId;
     private final UUID articleId;
     private CommentText text;
-    private final ReferenceOn referenceOn;
-    private final UUID referencedCommentId;
+    private final Reference reference;
+    private final @Nullable UUID respondToComment;
 
-    public Comment(UUID id, UUID userId, UUID articleId, CommentText value, ReferenceOn referenceOn, UUID referencedCommentId) {
+    public Comment(UUID id, UUID userId, UUID articleId, CommentText value, Reference reference, UUID respondToComment) {
         Objects.requireNonNull(id, "ID cannot be null.");
         Objects.requireNonNull(userId, "UserID cannot be null.");
         Objects.requireNonNull(articleId, "ArticleID cannot be null.");
-        Objects.requireNonNull(value, "Value cannot be null.");
-        Objects.requireNonNull(referenceOn, "Reference on cannot be null. Comment must be linked either to an another comment or article itself.");
-        if (referenceOn.equals(ReferenceOn.COMMENT)) {
-            Objects.requireNonNull(referencedCommentId, "A link to another comment cannot be null if the comment links to another comment.");
-        }
+        Objects.requireNonNull(value, "Comment text cannot be null.");
+        Objects.requireNonNull(reference, "Reference cannot be null.");
 
         this.id = id;
         this.userId = userId;
         this.articleId = articleId;
         this.text = value;
-        this.referenceOn = referenceOn;
-        this.referencedCommentId = referencedCommentId;
+        this.reference = reference;
+        this.respondToComment = respondToComment;
     }
 
     public UUID id() {
@@ -58,12 +56,12 @@ public class Comment {
         this.text = new CommentText(CommentText.DELETED_COMMENT);
     }
 
-    public ReferenceOn referenceOn() {
-        return referenceOn;
+    public Reference reference() {
+        return reference;
     }
 
-    public Optional<UUID> referencedCommentId() {
-        return Optional.ofNullable(referencedCommentId);
+    public Optional<UUID> respondToComment() {
+        return Optional.ofNullable(respondToComment);
     }
 
     @Override
@@ -71,17 +69,21 @@ public class Comment {
         if (!(o instanceof Comment comment)) return false;
 
         return id.equals(comment.id) &&
+                userId.equals(comment.userId) &&
+                articleId.equals(comment.articleId) &&
                 Objects.equals(text, comment.text) &&
-                referenceOn == comment.referenceOn &&
-                Objects.equals(referencedCommentId, comment.referencedCommentId);
+                reference.equals(comment.reference) &&
+                Objects.equals(respondToComment, comment.respondToComment);
     }
 
     @Override
     public int hashCode() {
         int result = id.hashCode();
+        result = 31 * result + userId.hashCode();
+        result = 31 * result + articleId.hashCode();
         result = 31 * result + Objects.hashCode(text);
-        result = 31 * result + referenceOn.hashCode();
-        result = 31 * result + Objects.hashCode(referencedCommentId);
+        result = 31 * result + reference.hashCode();
+        result = 31 * result + Objects.hashCode(respondToComment);
         return result;
     }
 
@@ -95,7 +97,8 @@ public class Comment {
                     Text: %s,
                     Referenced on: %s,
                     Referenced comment ID: %s
+                    Responded to comment: %s
                 }
-                """, id, userId, articleId, text.value(), referenceOn, referencedCommentId);
+                """, id, userId, articleId, text.value(), reference.commentType(), reference.parentCommentID(), respondToComment);
     }
 }
