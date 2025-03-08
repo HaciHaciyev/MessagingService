@@ -15,7 +15,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     private final JDBC jdbc;
 
     static final String SAVE_ARTICLE = insert()
-            .into("Articles")
+            .into("Article")
             .columns("id",
                     "author_id",
                     "header",
@@ -56,11 +56,11 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                 article.header().value(),
                 article.summary().value(),
                 article.body().value(),
-                article.status(),
+                article.status().toString(),
                 article.events().creationDate(),
                 article.events().lastUpdateDate()
         );
 
-        article.tags().forEach(articleTag -> jdbc.write(SAVE_ARTICLE_TAGS, articleTag, articleID, articleTag));
+        article.tags().forEach(articleTag -> jdbc.write(SAVE_ARTICLE_TAGS, articleTag.value(), articleID, articleTag.value()));
     }
 }
