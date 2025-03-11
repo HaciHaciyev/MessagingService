@@ -1,8 +1,10 @@
 package core.project.messaging.infrastructure.dal.repository.inbound;
 
 import core.project.messaging.domain.articles.entities.Article;
+import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -43,6 +45,12 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .build()
     );
 
+    static final String ARTICLE_VIEW = insert()
+            .into("Views")
+            .columns("id", "article_id", "reader_id", "creation_date")
+            .values(4)
+            .build();
+
     JdbcInboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -59,8 +67,20 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                 article.status().toString(),
                 article.events().creationDate(),
                 article.events().lastUpdateDate()
-        );
+        )
+                .ifFailure(throwable -> Log.errorf("Error saving article: %s", throwable.getMessage()));
 
         article.tags().forEach(articleTag -> jdbc.write(SAVE_ARTICLE_TAGS, articleTag.value(), articleID, articleTag.value()));
+    }
+
+    @Override
+    public void updateViews(View view) {
+        jdbc.write(ARTICLE_VIEW,
+                view.id().toString(),
+                view.articleID().toString(),
+                view.readerID().toString(),
+                view.viewedData()
+        )
+                .ifFailure(throwable -> Log.errorf("Error saving view: %s", throwable.getMessage()));
     }
 }

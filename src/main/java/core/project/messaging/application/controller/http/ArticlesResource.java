@@ -62,9 +62,9 @@ public class ArticlesResource {
     }
 */
     @GET
-    @Path("/findByID")
-    public Response findByID(@QueryParam("id") String id) {
-        return Response.ok(articlesService.findByID(id, jwt.getName())).build();
+    @Path("/viewArticle")
+    public Response viewArticle(@QueryParam("id") String id) {
+        return Response.ok(articlesService.viewArticle(id, jwt.getName())).build();
     }
 
 /*    @GET
