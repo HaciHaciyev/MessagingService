@@ -2,15 +2,11 @@ package core.project.messaging.application.service;
 
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.domain.articles.entities.Article;
-import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.services.ArticlesService;
-import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-
-import java.util.List;
 
 import static jakarta.ws.rs.core.Response.Status;
 
@@ -19,11 +15,8 @@ public class ArticlesApplicationService {
 
     private final ArticlesService articlesService;
 
-    private final OutboundArticleRepository outboundArticleRepository;
-
-    ArticlesApplicationService(ArticlesService articlesService, OutboundArticleRepository outboundArticleRepository) {
+    ArticlesApplicationService(ArticlesService articlesService) {
         this.articlesService = articlesService;
-        this.outboundArticleRepository = outboundArticleRepository;
     }
 
     public void save(ArticleForm articleForm, String username) {
@@ -43,13 +36,12 @@ public class ArticlesApplicationService {
         return article.value();
     }
 
-    public List<Article> pageOfArticles(int pageNumber, int pageSize, String username) {
-        if (!Username.validate(username)) {
-            throw getWebApplicationException(Response.Status.BAD_REQUEST, "Invalid username");
+    public void deleteView(String articleID, String username) {
+        try {
+            articlesService.deleteView(articleID, username);
+        } catch (IllegalArgumentException e) {
+            throw getWebApplicationException(Status.BAD_REQUEST, e.getMessage());
         }
-
-        return outboundArticleRepository.page(pageNumber, pageSize).orElseThrow(() ->
-                getWebApplicationException(Response.Status.BAD_REQUEST, "Can`t find an articles page"));
     }
 
     private static WebApplicationException getWebApplicationException(Response.Status badRequest, String o) {

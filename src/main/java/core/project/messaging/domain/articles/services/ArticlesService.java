@@ -88,4 +88,8 @@ public class ArticlesService {
         inboundArticleRepository.updateViews(view);
         return Result.success(article);
     }
+
+    public void deleteView(String articleID, String username) {
+        inboundArticleRepository.deleteView(UUID.fromString(articleID), new Username(username));
+    }
 }

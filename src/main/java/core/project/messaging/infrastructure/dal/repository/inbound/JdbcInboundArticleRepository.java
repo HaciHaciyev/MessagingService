@@ -3,11 +3,15 @@ package core.project.messaging.infrastructure.dal.repository.inbound;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
+import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
+import java.util.UUID;
+
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.delete;
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
 
 @Transactional
@@ -51,6 +55,12 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .values(4)
             .build();
 
+    static final String DELETE_VIEW = delete()
+            .from("Likes")
+            .where("article_id = ?")
+            .and("user_id = ?")
+            .build();
+
     JdbcInboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -82,5 +92,11 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                 view.viewedData()
         )
                 .ifFailure(throwable -> Log.errorf("Error saving view: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void deleteView(UUID articleID, Username reader) {
+        jdbc.write(DELETE_VIEW, articleID.toString(), reader.username())
+                .ifFailure(throwable -> Log.errorf("Error deleting view: %s", throwable.getMessage()));
     }
 }
