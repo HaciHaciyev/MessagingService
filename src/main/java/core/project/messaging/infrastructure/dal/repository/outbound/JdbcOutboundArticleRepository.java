@@ -29,9 +29,20 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
     private final JDBC jdbc;
 
     static final String ARTICLE = select()
-            .all()
-            .from("Articles")
-            .where("id = ?")
+            .column("a.id").as("id")
+            .column("a.author_id").as("author_id")
+            .column("a.header").as("header")
+            .column("a.summary").as("summary")
+            .column("a.body").as("body")
+            .column("a.status").as("status")
+            .column("a.creation_date").as("creation_date")
+            .column("a.last_updated").as("last_updated")
+            .count("v.id").as("views")
+            .count("l.article_id").as("likes")
+            .from("Articles a")
+            .join("Views v", "v.article_id = a.id")
+            .join("Likes l", "l.article_id = a.id")
+            .where("a.id = ?")
             .build();
 
     static final String ARTICLE_TAGS = select()
@@ -45,7 +56,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
     }
 
     @Override
-    public Result<Article, Throwable> findByID(UUID articleID) {
+    public Result<Article, Throwable> article(UUID articleID) {
         Result<List<ArticleTag>, Throwable> articleTags = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, articleID.toString());
         if (!articleTags.success()) {
             return Result.failure(articleTags.throwable());
@@ -79,6 +90,8 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                 UUID.fromString(rs.getString("id")),
                 UUID.fromString(rs.getString("author_id")),
                 new HashSet<>(),
+                rs.getLong("views"),
+                rs.getLong("likes"),
                 new Header(rs.getString("header")),
                 new Summary(rs.getString("summary")),
                 new Body(rs.getString("body")),

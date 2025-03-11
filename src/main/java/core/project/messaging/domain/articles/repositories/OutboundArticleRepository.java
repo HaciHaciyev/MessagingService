@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface OutboundArticleRepository {
 
-    Result<Article, Throwable> findByID(UUID id);
+    Result<Article, Throwable> article(UUID id);
 
     Result<List<Article>, Throwable> page(int pageNumber, int pageSize);
 }

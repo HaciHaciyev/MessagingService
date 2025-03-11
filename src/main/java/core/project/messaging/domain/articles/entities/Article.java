@@ -13,13 +13,16 @@ public class Article {
     private final UUID authorId;
     private final Set<ArticleTag> tags;
 
+    private long views;
+    private long likes;
     private Header header;
     private Summary summary;
     private Body body;
     private ArticleStatus status;
     private ArticleEvents events;
 
-    private Article(UUID id, UUID authorId, Set<ArticleTag> tags, Header header, Summary summary, Body body,
+    private Article(UUID id, UUID authorId, Set<ArticleTag> tags, long views, long likes,
+                    Header header, Summary summary, Body body,
                     ArticleStatus status, ArticleEvents events) {
 
         Objects.requireNonNull(id, "Article id cannot be null.");
@@ -46,12 +49,18 @@ public class Article {
             throw new IllegalArgumentException("Article can`t be created with archived status.");
         }
 
-        return new Article(UUID.randomUUID(), authorId, tags, header, summary, body, status, ArticleEvents.defaultEvents());
+        return new Article(UUID.randomUUID(), authorId, tags, 0L, 0L,
+                header, summary, body, status, ArticleEvents.defaultEvents());
     }
 
-    public static Article fromRepository(UUID id, UUID authorId, Set<ArticleTag> tags, Header header, Summary summary, Body body,
+    public static Article fromRepository(UUID id, UUID authorId, Set<ArticleTag> tags, long views, long likes,
+                                         Header header, Summary summary, Body body,
                                          ArticleStatus status, ArticleEvents events) {
-        return new Article(id, authorId, tags, header, summary, body, status, events);
+        if (views < 0 || likes < 0) {
+            throw new IllegalArgumentException("Views | likes can`t be negative.");
+        }
+
+        return new Article(id, authorId, tags, views, likes, header, summary, body, status, events);
     }
 
     public UUID id() {
@@ -68,6 +77,22 @@ public class Article {
 
     private void updateEvent() {
         this.events = new ArticleEvents(events.creationDate(), LocalDateTime.now());
+    }
+
+    public long views() {
+        return views;
+    }
+
+    public long incrementViews() {
+        return views++;
+    }
+
+    public long likes() {
+        return likes;
+    }
+
+    public long incrementLikes() {
+        return likes++;
     }
 
     public Header header() {

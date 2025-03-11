@@ -50,7 +50,7 @@ public class ArticlesApplicationService {
                     .orElseThrow(() -> getWebApplicationException(Status.BAD_REQUEST, "Account is not exists."));
 
             Article article = outboundArticleRepository
-                    .findByID(UUID.fromString(articleID))
+                    .article(UUID.fromString(articleID))
                     .orElseThrow(() -> getWebApplicationException(Status.BAD_REQUEST, "Article is not exists."));
 
             final boolean isNotPublished = !article.status().equals(ArticleStatus.PUBLISHED);
