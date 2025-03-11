@@ -3,12 +3,8 @@ package core.project.messaging.application.service;
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
-import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
-import core.project.messaging.domain.articles.values_objects.ArticleTag;
-import core.project.messaging.domain.articles.values_objects.Body;
-import core.project.messaging.domain.articles.values_objects.Header;
-import core.project.messaging.domain.articles.values_objects.Summary;
+import core.project.messaging.domain.articles.services.ArticlesService;
 import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.repository.outbound.OutboundUserRepository;
@@ -17,48 +13,31 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+
+import static jakarta.ws.rs.core.Response.Status;
 
 @ApplicationScoped
-public class ArticlesQueryService {
+public class ArticlesApplicationService {
+
+    private final ArticlesService articlesService;
 
     private final OutboundUserRepository outboundUserRepository;
 
-    private final InboundArticleRepository inboundArticleRepository;
-
     private final OutboundArticleRepository outboundArticleRepository;
 
-    ArticlesQueryService(InboundArticleRepository inboundArticleRepository,
-                         OutboundUserRepository outboundUserRepository,
-                         OutboundArticleRepository outboundArticleRepository) {
+    ArticlesApplicationService(ArticlesService articlesService,
+                               OutboundUserRepository outboundUserRepository,
+                               OutboundArticleRepository outboundArticleRepository) {
 
-        this.inboundArticleRepository = inboundArticleRepository;
+        this.articlesService = articlesService;
         this.outboundUserRepository = outboundUserRepository;
         this.outboundArticleRepository = outboundArticleRepository;
     }
 
-    public void save(ArticleForm articleForm, String name) {
+    public void save(ArticleForm articleForm, String username) {
         try {
-            Objects.requireNonNull(articleForm);
-
-            UserAccount userAccount = getUser(name);
-            Set<ArticleTag> articleTags = articleForm
-                    .tags()
-                    .stream()
-                    .map(ArticleTag::new)
-                    .collect(Collectors.toSet());
-
-            inboundArticleRepository.save(Article.of(
-                    userAccount.getId(),
-                    articleTags,
-                    new Header(articleForm.header()),
-                    new Summary(articleForm.summary()),
-                    new Body(articleForm.body()),
-                    articleForm.status()
-            ));
+            articlesService.save(articleForm, username);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
         }
@@ -66,10 +45,13 @@ public class ArticlesQueryService {
 
     public Article findByID(String articleID, String username) {
         try {
-            UserAccount user = getUser(username);
+            UserAccount user = outboundUserRepository
+                    .findByUsername(new Username(username))
+                    .orElseThrow(() -> getWebApplicationException(Status.BAD_REQUEST, "Account is not exists."));
+
             Article article = outboundArticleRepository
                     .findByID(UUID.fromString(articleID))
-                    .orElseThrow(() -> getWebApplicationException(Response.Status.BAD_REQUEST, "Article is not exists."));
+                    .orElseThrow(() -> getWebApplicationException(Status.BAD_REQUEST, "Article is not exists."));
 
             final boolean isNotPublished = !article.status().equals(ArticleStatus.PUBLISHED);
             final boolean isNotAuthor = !article.authorId().equals(user.getId());
@@ -98,11 +80,5 @@ public class ArticlesQueryService {
                 .status(badRequest)
                 .entity(o)
                 .build());
-    }
-
-    private UserAccount getUser(String username) {
-        return outboundUserRepository
-                .findByUsername(new Username(username))
-                .orElseThrow(() -> getWebApplicationException(Response.Status.BAD_REQUEST, "Account is not exists."));
     }
 }
