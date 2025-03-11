@@ -11,6 +11,8 @@ import core.project.messaging.infrastructure.utilities.containers.Pair;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import core.project.messaging.infrastructure.utilities.containers.StatusPair;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -107,6 +109,25 @@ public class PartnershipsService {
 
     public void partnershipDecline(final UserAccount user, final Username partner) {
         requestsRepository.delete(user.getUsername().username(), partner.username());
+    }
+
+    public void removePartner(String username, String partner) {
+        UserAccount userAccount = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("User does`t exists."));
+
+        UserAccount partnerAccount = outboundUserRepository
+                .findByUsername(new Username(partner))
+                .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
+
+        if (!outboundUserRepository.havePartnership(userAccount, partnerAccount)) {
+            throw new WebApplicationException(Response
+                    .status(Response.Status.BAD_REQUEST)
+                    .entity("This partnership not exists.")
+                    .build());
+        }
+
+        inboundUserRepository.removePartnership(userAccount, partnerAccount);
     }
 
     private StatusPair<String> isPartnershipCreated(String addresser, String addressee) {

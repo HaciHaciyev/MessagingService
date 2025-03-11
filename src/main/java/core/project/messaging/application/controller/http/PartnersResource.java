@@ -1,6 +1,6 @@
 package core.project.messaging.application.controller.http;
 
-import core.project.messaging.application.service.PartnersQueryService;
+import core.project.messaging.application.service.PartnersService;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -12,23 +12,23 @@ public class PartnersResource {
 
     private final JsonWebToken jwt;
 
-    private final PartnersQueryService partnersQueryService;
+    private final PartnersService partnersService;
 
-    PartnersResource(JsonWebToken jwt, PartnersQueryService partnersQueryService) {
+    PartnersResource(JsonWebToken jwt, PartnersService partnersService) {
         this.jwt = jwt;
-        this.partnersQueryService = partnersQueryService;
+        this.partnersService = partnersService;
     }
 
     @GET
     @Path("/partners")
     public Response partners(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
-        return Response.ok(partnersQueryService.listOfPartners(jwt.getName(), pageNumber, pageSize)).build();
+        return Response.ok(partnersService.listOfPartners(jwt.getName(), pageNumber, pageSize)).build();
     }
 
     @DELETE
     @Path("/remove-partner")
     public Response removePartner(@QueryParam("partner") String partner) {
-        partnersQueryService.removePartner(jwt.getName(), partner);
+        partnersService.removePartner(jwt.getName(), partner);
         return Response.noContent().build();
     }
 }
