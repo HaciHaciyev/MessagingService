@@ -113,4 +113,8 @@ public class ArticlesService {
         Like like = new Like(article.id(), user.getId(), LocalDateTime.now());
         inboundArticleRepository.updateLikes(like);
     }
+
+    public void deleteLike(String articleID, String username) {
+        inboundArticleRepository.deleteLike(UUID.fromString(articleID), new Username(username));
+    }
 }

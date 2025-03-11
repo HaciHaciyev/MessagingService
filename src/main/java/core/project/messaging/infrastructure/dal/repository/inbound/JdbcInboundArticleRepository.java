@@ -57,15 +57,21 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .build();
 
     static final String DELETE_VIEW = delete()
-            .from("Likes")
+            .from("Views")
             .where("article_id = ?")
-            .and("user_id = ?")
+            .and("reader_id = ?")
             .build();
 
     private static final String ARTICLE_LIKE = insert()
             .into("Likes")
             .columns("article_id", "user_id", "creation_date")
             .values(3)
+            .build();
+
+    private static final String DELETE_LIKE = delete()
+            .from("Likes")
+            .where("article_id = ?")
+            .and("user_id = ?")
             .build();
 
     JdbcInboundArticleRepository(JDBC jdbc) {
@@ -110,6 +116,12 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     @Override
     public void updateLikes(Like like) {
         jdbc.write(ARTICLE_LIKE, like.articleID().toString(), like.userId().toString(), like.likedAt())
+                .ifFailure(throwable -> Log.errorf("Error deleting like: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void deleteLike(UUID articleID, Username username) {
+        jdbc.write(DELETE_LIKE, articleID.toString(), username.username())
                 .ifFailure(throwable -> Log.errorf("Error deleting like: %s", throwable.getMessage()));
     }
 }

@@ -16,4 +16,6 @@ public interface InboundArticleRepository {
     void deleteView(UUID articleID, Username username);
 
     void updateLikes(Like like);
+
+    void deleteLike(UUID uuid, Username username);
 }

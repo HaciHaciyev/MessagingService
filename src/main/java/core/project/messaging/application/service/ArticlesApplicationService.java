@@ -52,6 +52,14 @@ public class ArticlesApplicationService {
         }
     }
 
+    public void deleteLike(String articleID, String username) {
+        try {
+            articlesService.deleteLike(articleID, username);
+        } catch (IllegalArgumentException e) {
+            throw getWebApplicationException(Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     private static WebApplicationException getWebApplicationException(Response.Status badRequest, String o) {
         return new WebApplicationException(Response
                 .status(badRequest)
