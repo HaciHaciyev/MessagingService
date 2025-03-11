@@ -10,6 +10,7 @@ import core.project.messaging.domain.articles.values_objects.Header;
 import core.project.messaging.domain.articles.values_objects.Summary;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import core.project.messaging.infrastructure.utilities.containers.Result;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
@@ -51,8 +52,25 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .where("article_id = ?")
             .build();
 
+    static final String VIEW = select()
+            .count("user_id")
+            .from("Views")
+            .where("article_id = ?")
+            .and("user_id = ?")
+            .build();
+
     JdbcOutboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
+    }
+
+    @Override
+    public boolean isViewExists(UUID articleID, UUID userID) {
+        return jdbc.readObjectOf(VIEW, Integer.class, articleID.toString(), userID.toString())
+                .mapSuccess(count -> count != null && count > 0)
+                .orElseGet(() -> {
+                    Log.error("Error checking email existence.");
+                    return false;
+                });
     }
 
     @Override

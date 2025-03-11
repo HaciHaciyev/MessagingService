@@ -3,6 +3,7 @@ package core.project.messaging.infrastructure.dal.repository.inbound;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
+import core.project.messaging.domain.articles.values_objects.Like;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import io.quarkus.logging.Log;
@@ -61,6 +62,12 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .and("user_id = ?")
             .build();
 
+    private static final String ARTICLE_LIKE = insert()
+            .into("Likes")
+            .columns("article_id", "user_id", "creation_date")
+            .values(3)
+            .build();
+
     JdbcInboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -98,5 +105,11 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     public void deleteView(UUID articleID, Username reader) {
         jdbc.write(DELETE_VIEW, articleID.toString(), reader.username())
                 .ifFailure(throwable -> Log.errorf("Error deleting view: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void updateLikes(Like like) {
+        jdbc.write(ARTICLE_LIKE, like.articleID().toString(), like.userId().toString(), like.likedAt())
+                .ifFailure(throwable -> Log.errorf("Error deleting like: %s", throwable.getMessage()));
     }
 }

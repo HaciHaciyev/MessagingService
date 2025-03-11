@@ -6,10 +6,7 @@ import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
-import core.project.messaging.domain.articles.values_objects.ArticleTag;
-import core.project.messaging.domain.articles.values_objects.Body;
-import core.project.messaging.domain.articles.values_objects.Header;
-import core.project.messaging.domain.articles.values_objects.Summary;
+import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.repository.outbound.OutboundUserRepository;
@@ -91,5 +88,29 @@ public class ArticlesService {
 
     public void deleteView(String articleID, String username) {
         inboundArticleRepository.deleteView(UUID.fromString(articleID), new Username(username));
+    }
+
+    public void likeArticle(String articleID, String username) {
+        Article article = outboundArticleRepository
+                .article(UUID.fromString(articleID))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find article"));
+
+        article.incrementLikes();
+
+        final boolean isNotPublished = !article.status().equals(ArticleStatus.PUBLISHED);
+        if (isNotPublished) {
+            throw new IllegalArgumentException("Article not found");
+        }
+
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!outboundArticleRepository.isViewExists(article.id(), user.getId())) {
+            throw new IllegalArgumentException("If a user has never read this article, he is not able to like it.");
+        }
+
+        Like like = new Like(article.id(), user.getId(), LocalDateTime.now());
+        inboundArticleRepository.updateLikes(like);
     }
 }

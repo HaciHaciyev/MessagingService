@@ -44,6 +44,14 @@ public class ArticlesApplicationService {
         }
     }
 
+    public void likeArticle(String articleID, String username) {
+        try {
+            articlesService.likeArticle(articleID, username);
+        } catch (IllegalArgumentException e) {
+            throw getWebApplicationException(Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     private static WebApplicationException getWebApplicationException(Response.Status badRequest, String o) {
         return new WebApplicationException(Response
                 .status(badRequest)

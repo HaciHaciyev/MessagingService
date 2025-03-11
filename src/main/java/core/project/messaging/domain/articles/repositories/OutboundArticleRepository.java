@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface OutboundArticleRepository {
 
     Result<Article, Throwable> article(UUID id);
+
+    boolean isViewExists(UUID articleID, UUID userID);
 }
