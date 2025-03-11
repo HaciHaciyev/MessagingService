@@ -16,6 +16,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -43,13 +44,7 @@ public class ArticlesQueryService {
         try {
             Objects.requireNonNull(articleForm);
 
-            UserAccount userAccount = outboundUserRepository
-                    .findByUsername(new Username(name))
-                    .orElseThrow(() -> new WebApplicationException(Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Account is not exists.")
-                            .build()));
-
+            UserAccount userAccount = getUser(name);
             Set<ArticleTag> articleTags = articleForm
                     .tags()
                     .stream()
@@ -65,45 +60,49 @@ public class ArticlesQueryService {
                     articleForm.status()
             ));
         } catch (NullPointerException | IllegalArgumentException e) {
-            throw new WebApplicationException(Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .entity(e.getMessage())
-                    .build());
+            throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
 
     public Article findByID(String articleID, String username) {
         try {
-            UserAccount user = outboundUserRepository
-                    .findByUsername(new Username(username))
-                    .orElseThrow(() -> new WebApplicationException(Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Account is not exists.")
-                            .build()));
-
+            UserAccount user = getUser(username);
             Article article = outboundArticleRepository
                     .findByID(UUID.fromString(articleID))
-                    .orElseThrow(() -> new WebApplicationException(Response
-                            .status(Response.Status.BAD_REQUEST)
-                            .entity("Article is not exists.")
-                            .build()));
+                    .orElseThrow(() -> getWebApplicationException(Response.Status.BAD_REQUEST, "Article is not exists."));
 
             final boolean isNotPublished = !article.status().equals(ArticleStatus.PUBLISHED);
             final boolean isNotAuthor = !article.authorId().equals(user.getId());
 
             if (isNotPublished && isNotAuthor) {
-                throw new WebApplicationException(Response
-                        .status(Response.Status.NOT_FOUND)
-                        .entity("Article not found")
-                        .build());
+                throw getWebApplicationException(Response.Status.NOT_FOUND, "Article not found");
             }
 
             return article;
         } catch (IllegalArgumentException e) {
-            throw new WebApplicationException(Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .entity(e.getMessage())
-                    .build());
+            throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
         }
+    }
+
+    public List<Article> pageOfArticles(int pageNumber, int pageSize, String username) {
+        if (!Username.validate(username)) {
+            throw getWebApplicationException(Response.Status.BAD_REQUEST, "Invalid username");
+        }
+
+        return outboundArticleRepository.page(pageNumber, pageSize).orElseThrow(() ->
+                getWebApplicationException(Response.Status.BAD_REQUEST, "Can`t find an articles page"));
+    }
+
+    private static WebApplicationException getWebApplicationException(Response.Status badRequest, String o) {
+        return new WebApplicationException(Response
+                .status(badRequest)
+                .entity(o)
+                .build());
+    }
+
+    private UserAccount getUser(String username) {
+        return outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> getWebApplicationException(Response.Status.BAD_REQUEST, "Account is not exists."));
     }
 }

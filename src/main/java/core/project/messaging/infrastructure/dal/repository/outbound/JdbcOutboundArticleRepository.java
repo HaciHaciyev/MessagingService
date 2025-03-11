@@ -60,6 +60,11 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
         return article;
     }
 
+    @Override
+    public Result<List<Article>, Throwable> page(int pageNumber, int pageSize) {
+        return null;
+    }
+
     private ArticleTag articleTagsMapper(ResultSet rs) throws SQLException {
         return new ArticleTag(rs.getString("tag"));
     }

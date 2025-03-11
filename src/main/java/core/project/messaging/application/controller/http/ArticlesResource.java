@@ -35,4 +35,10 @@ public class ArticlesResource {
     public Response findByID(@QueryParam("id") String id) {
         return Response.ok(articlesQueryService.findByID(id, jwt.getName())).build();
     }
+
+    @GET
+    @Path("/page")
+    public Response pageOfArticles(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
+        return Response.ok(articlesQueryService.pageOfArticles(pageNumber, pageSize, jwt.getName())).build();
+    }
 }
