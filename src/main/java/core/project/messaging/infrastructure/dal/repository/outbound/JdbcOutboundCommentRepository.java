@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.UUID;
 
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
@@ -46,6 +47,12 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .where("id = ?")
             .build();
 
+    static final String COMMENTS = select()
+            .all()
+            .from("Comments")
+            .where("article_id = ?")
+            .limitAndOffset();
+
     JdbcOutboundCommentRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -68,6 +75,11 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
     @Override
     public Result<Comment, Throwable> comment(UUID commentID) {
         return jdbc.read(COMMENT, this::commentMapper, commentID.toString());
+    }
+
+    @Override
+    public Result<List<Comment>, Throwable> page(UUID articleID, int limit, int offSet) {
+        return jdbc.readListOf(COMMENTS, this::commentMapper, articleID.toString(), limit, offSet);
     }
 
     private CommentInfo commentInfoMapper(ResultSet rs) throws SQLException {

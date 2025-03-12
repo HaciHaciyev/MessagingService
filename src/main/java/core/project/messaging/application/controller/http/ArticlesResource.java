@@ -27,91 +27,9 @@ public class ArticlesResource {
         return Response.ok().build();
     }
 
-    /*@PUT
-    @Path("/update")
-    public Response put(ArticleForm articleForm) {
-        String username = jwt.getName();
-        // TODO
-        return null;
-    }
-
-    @POST
-    @Path("/add-tag")
-    public Response addTag(@QueryParam("articleID") String articleID,
-                           @QueryParam("tag") String tag) {
-        String username = jwt.getName();
-        // TODO
-        return null;
-    }
-
-    @DELETE
-    @Path("/delete-tag")
-    public Response deleteTag(@QueryParam("articleID") String articleID,
-                              @QueryParam("tag") String tag) {
-        String username = jwt.getName();
-        // TODO
-        return null;
-    }
-
-    @DELETE
-    @Path("/delete")
-    public Response delete(@QueryParam("id") String id) {
-        String username = jwt.getName();
-        // TODO
-        return null;
-    }
-*/
     @GET
     @Path("/viewArticle")
     public Response viewArticle(@QueryParam("id") String id) {
         return Response.ok(articlesService.viewArticle(id, jwt.getName())).build();
     }
-
-/*    @GET
-    @Path("/page")
-    public Response pageOfArticles(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
-        // TODO later
-        return null;
-    }
-
-    @GET
-    @Path("/page")
-    public Response pageOfArticles(ArticlesQueryForm query,
-                                   @QueryParam("pageNumber") int pageNumber,
-                                   @QueryParam("pageSize") int pageSize) {
-        // TODO later
-        return null;
-    }
-
-    @GET
-    @Path("/page/history")
-    public Response historyOfArticles(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
-        // TODO later
-        return null;
-    }
-
-    @GET
-    @Path("/page/history")
-    public Response historyOfArticles(ArticlesQueryForm query,
-                                      @QueryParam("pageNumber") int pageNumber,
-                                      @QueryParam("pageSize") int pageSize) {
-        // TODO later
-        return null;
-    }
-
-    @GET
-    @Path("/drafted")
-    public Response draftedPages() {
-        String username = jwt.getName();
-        // TODO
-        return null;
-    }
-
-    @GET
-    @Path("/archived")
-    public Response archivedPages() {
-        String username = jwt.getName();
-        // TODO
-        return null;
-    }*/
 }

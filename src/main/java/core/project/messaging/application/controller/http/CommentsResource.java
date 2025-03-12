@@ -34,15 +34,13 @@ public class CommentsResource {
         return Response.accepted().build();
     }
 
-    /*@GET
+    @GET
     @Path("/page")
-    public Response commentPageOf(@QueryParam("articleID") String articleID,
-                                  @QueryParam("pageNumber") String pageNumber,
-                                  @QueryParam("pageSize") String pageSize) {
+    public Response commentsPageOf(@QueryParam("articleID") String articleID,
+                                  @QueryParam("pageNumber") int pageNumber,
+                                  @QueryParam("pageSize") int pageSize) {
 
-        String username = jwt.getName();
-        // TODO
-        return null;
+        return Response.ok(articlesApplicationService.commentsPageOf(articleID, pageNumber, pageSize)).build();
     }
 
     @GET
@@ -55,5 +53,5 @@ public class CommentsResource {
         String username = jwt.getName();
         // TODO
         return null;
-    }*/
+    }
 }

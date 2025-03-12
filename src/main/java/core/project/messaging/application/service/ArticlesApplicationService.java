@@ -3,6 +3,8 @@ package core.project.messaging.application.service;
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.dto.CommentForm;
 import core.project.messaging.domain.articles.entities.Article;
+import core.project.messaging.domain.articles.entities.Comment;
+import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
 import core.project.messaging.domain.articles.services.ArticlesService;
 import core.project.messaging.domain.articles.services.CommentsService;
 import core.project.messaging.infrastructure.utilities.containers.Result;
@@ -10,6 +12,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
+import java.util.UUID;
+
+import static core.project.messaging.application.service.PartnersService.buildLimit;
+import static core.project.messaging.application.service.PartnersService.buildOffSet;
 import static jakarta.ws.rs.core.Response.Status;
 
 @ApplicationScoped
@@ -19,9 +26,14 @@ public class ArticlesApplicationService {
 
     private final CommentsService commentsService;
 
-    ArticlesApplicationService(ArticlesService articlesService, CommentsService commentsService) {
+    private final OutboundCommentRepository outboundCommentRepository;
+
+    ArticlesApplicationService(ArticlesService articlesService,
+                               CommentsService commentsService,
+                               OutboundCommentRepository outboundCommentRepository) {
         this.articlesService = articlesService;
         this.commentsService = commentsService;
+        this.outboundCommentRepository = outboundCommentRepository;
     }
 
     public void save(ArticleForm articleForm, String username) {
@@ -77,6 +89,21 @@ public class ArticlesApplicationService {
         try {
             commentsService.deleteComment(commentID, username);
         } catch (NullPointerException | IllegalArgumentException e) {
+            throw getWebApplicationException(Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    public List<Comment> commentsPageOf(String articleID, int pageNumber, int pageSize) {
+        try {
+            int limit = buildLimit(pageSize);
+            int offSet = buildOffSet(limit, pageNumber);
+            return outboundCommentRepository
+                    .page(UUID.fromString(articleID), limit, offSet)
+                    .orElseThrow(() -> new WebApplicationException(Response
+                            .status(Status.NOT_FOUND)
+                            .entity("Can`t found comments")
+                            .build()));
+        } catch (IllegalArgumentException e) {
             throw getWebApplicationException(Status.BAD_REQUEST, e.getMessage());
         }
     }
