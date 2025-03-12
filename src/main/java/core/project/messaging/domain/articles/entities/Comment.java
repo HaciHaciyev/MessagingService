@@ -2,10 +2,8 @@ package core.project.messaging.domain.articles.entities;
 
 import core.project.messaging.domain.articles.values_objects.CommentText;
 import core.project.messaging.domain.articles.values_objects.Reference;
-import jakarta.annotation.Nullable;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 public class Comment {
@@ -14,9 +12,8 @@ public class Comment {
     private final UUID articleId;
     private CommentText text;
     private final Reference reference;
-    private final @Nullable UUID respondToComment;
 
-    public Comment(UUID id, UUID userId, UUID articleId, CommentText value, Reference reference, UUID respondToComment) {
+    public Comment(UUID id, UUID userId, UUID articleId, CommentText value, Reference reference) {
         Objects.requireNonNull(id, "ID cannot be null.");
         Objects.requireNonNull(userId, "UserID cannot be null.");
         Objects.requireNonNull(articleId, "ArticleID cannot be null.");
@@ -28,7 +25,6 @@ public class Comment {
         this.articleId = articleId;
         this.text = value;
         this.reference = reference;
-        this.respondToComment = respondToComment;
     }
 
     public UUID id() {
@@ -60,31 +56,21 @@ public class Comment {
         return reference;
     }
 
-    public Optional<UUID> respondToComment() {
-        return Optional.ofNullable(respondToComment);
-    }
-
     @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof Comment comment)) return false;
-
-        return id.equals(comment.id) &&
-                userId.equals(comment.userId) &&
-                articleId.equals(comment.articleId) &&
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Comment comment = (Comment) o;
+        return Objects.equals(id, comment.id) &&
+                Objects.equals(userId, comment.userId) &&
+                Objects.equals(articleId, comment.articleId) &&
                 Objects.equals(text, comment.text) &&
-                reference.equals(comment.reference) &&
-                Objects.equals(respondToComment, comment.respondToComment);
+                Objects.equals(reference, comment.reference);
     }
 
     @Override
     public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + userId.hashCode();
-        result = 31 * result + articleId.hashCode();
-        result = 31 * result + Objects.hashCode(text);
-        result = 31 * result + reference.hashCode();
-        result = 31 * result + Objects.hashCode(respondToComment);
-        return result;
+        return Objects.hash(id, userId, articleId, text, reference);
     }
 
     @Override
@@ -99,6 +85,12 @@ public class Comment {
                     Referenced comment ID: %s
                     Responded to comment: %s
                 }
-                """, id, userId, articleId, text.value(), reference.commentType(), reference.parentCommentID(), respondToComment);
+                """, id,
+                userId,
+                articleId,
+                text.value(),
+                reference.commentType(),
+                reference.parentCommentID(),
+                reference.respondTo());
     }
 }

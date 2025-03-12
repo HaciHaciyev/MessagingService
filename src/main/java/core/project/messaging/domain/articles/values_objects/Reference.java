@@ -6,12 +6,21 @@ import jakarta.annotation.Nullable;
 import java.util.Objects;
 import java.util.UUID;
 
-public record Reference(CommentType commentType, @Nullable UUID parentCommentID) {
+public record Reference(CommentType commentType,
+                        @Nullable UUID parentCommentID,
+                        @Nullable UUID respondTo) {
 
     public Reference {
         Objects.requireNonNull(commentType);
         if (commentType.equals(CommentType.CHILD)) {
             Objects.requireNonNull(parentCommentID);
+        }
+
+        final boolean parentHasUnexpectedReference = commentType.equals(CommentType.PARENT) &&
+                (Objects.nonNull(parentCommentID) || Objects.nonNull(respondTo));
+
+        if (parentHasUnexpectedReference) {
+            throw new IllegalArgumentException("Parent type comment can`t me referenced to another comment");
         }
     }
 }
