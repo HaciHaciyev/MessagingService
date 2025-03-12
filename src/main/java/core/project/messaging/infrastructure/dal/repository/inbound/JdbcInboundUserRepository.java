@@ -1,6 +1,7 @@
 package core.project.messaging.infrastructure.dal.repository.inbound;
 
 import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.repositories.InboundUserRepository;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -10,7 +11,7 @@ import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.dele
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
 
 @ApplicationScoped
-public class InboundUserRepository {
+public class JdbcInboundUserRepository implements InboundUserRepository {
 
     private final JDBC jdbc;
 
@@ -30,7 +31,7 @@ public class InboundUserRepository {
             .and("partner_id = ?)")
             .build();
 
-    public InboundUserRepository(JDBC jdbc) {
+    public JdbcInboundUserRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
 

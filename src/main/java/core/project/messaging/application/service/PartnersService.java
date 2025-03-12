@@ -1,8 +1,8 @@
 package core.project.messaging.application.service;
 
+import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.services.PartnershipsService;
 import core.project.messaging.domain.user.value_objects.Username;
-import core.project.messaging.infrastructure.dal.repository.outbound.OutboundUserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;

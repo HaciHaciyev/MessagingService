@@ -3,6 +3,7 @@ package core.project.messaging.infrastructure.dal.repository.outbound;
 import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.domain.user.enumerations.UserRole;
 import core.project.messaging.domain.user.events.AccountEvents;
+import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.*;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import core.project.messaging.infrastructure.utilities.containers.Result;
@@ -22,7 +23,7 @@ import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.sele
 
 @Transactional
 @ApplicationScoped
-public class OutboundUserRepository {
+public class JdbcOutboundUserRepository implements OutboundUserRepository {
 
     private final JDBC jdbc;
 
@@ -77,7 +78,7 @@ public class OutboundUserRepository {
             .or("partner.username = ?")
             .limitAndOffset();
 
-    OutboundUserRepository(JDBC jdbc) {
+    JdbcOutboundUserRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
 

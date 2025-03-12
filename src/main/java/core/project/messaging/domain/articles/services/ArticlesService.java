@@ -8,8 +8,8 @@ import core.project.messaging.domain.articles.repositories.InboundArticleReposit
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
-import core.project.messaging.infrastructure.dal.repository.outbound.OutboundUserRepository;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
 
