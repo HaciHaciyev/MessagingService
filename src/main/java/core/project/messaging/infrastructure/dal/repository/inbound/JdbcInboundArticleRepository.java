@@ -4,6 +4,7 @@ import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.Like;
+import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import io.quarkus.logging.Log;
@@ -58,8 +59,8 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
 
     static final String DELETE_VIEW = delete()
             .from("Views")
-            .where("article_id = ?")
-            .and("reader_id = ?")
+            .where("v.article_id = ?")
+            .and("v.reader_id = ?")
             .build();
 
     private static final String ARTICLE_LIKE = insert()
@@ -108,8 +109,8 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     }
 
     @Override
-    public void deleteView(UUID articleID, Username reader) {
-        jdbc.write(DELETE_VIEW, articleID.toString(), reader.username())
+    public void deleteView(UUID articleID, UUID reader) {
+        jdbc.write(DELETE_VIEW, articleID.toString(), reader.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting view: %s", throwable.getMessage()));
     }
 
@@ -120,8 +121,8 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     }
 
     @Override
-    public void deleteLike(UUID articleID, Username username) {
-        jdbc.write(DELETE_LIKE, articleID.toString(), username.username())
+    public void deleteLike(UUID articleID, UUID userID) {
+        jdbc.write(DELETE_LIKE, articleID.toString(), userID.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting like: %s", throwable.getMessage()));
     }
 }

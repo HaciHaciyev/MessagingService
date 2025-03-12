@@ -87,7 +87,11 @@ public class ArticlesService {
     }
 
     public void deleteView(String articleID, String username) {
-        inboundArticleRepository.deleteView(UUID.fromString(articleID), new Username(username));
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        inboundArticleRepository.deleteView(UUID.fromString(articleID), user.getId());
     }
 
     public void likeArticle(String articleID, String username) {
@@ -115,6 +119,10 @@ public class ArticlesService {
     }
 
     public void deleteLike(String articleID, String username) {
-        inboundArticleRepository.deleteLike(UUID.fromString(articleID), new Username(username));
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        inboundArticleRepository.deleteLike(UUID.fromString(articleID), user.getId());
     }
 }

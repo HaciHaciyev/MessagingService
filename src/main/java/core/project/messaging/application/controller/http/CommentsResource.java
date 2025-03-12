@@ -30,9 +30,8 @@ public class CommentsResource {
     @DELETE
     @Path("/delete")
     public Response delete(@QueryParam("commentID") String commentID) {
-        String username = jwt.getName();
-        // TODO
-        return null;
+        articlesApplicationService.deleteComment(commentID, jwt.getName());
+        return Response.accepted().build();
     }
 
     /*@GET
