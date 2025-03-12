@@ -53,6 +53,13 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .where("article_id = ?")
             .limitAndOffset();
 
+    static final String CHILD_COMMENTS = select()
+            .all()
+            .from("Comments")
+            .where("article_id = ?")
+            .and("parent_comment_id = ?")
+            .limitAndOffset();
+
     JdbcOutboundCommentRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -80,6 +87,11 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
     @Override
     public Result<List<Comment>, Throwable> page(UUID articleID, int limit, int offSet) {
         return jdbc.readListOf(COMMENTS, this::commentMapper, articleID.toString(), limit, offSet);
+    }
+
+    @Override
+    public Result<List<Comment>, Throwable> page(UUID articleID, UUID parentCommentID, int limit, int offSet) {
+        return jdbc.readListOf(CHILD_COMMENTS, this::commentMapper, articleID.toString(), parentCommentID.toString(), limit, offSet);
     }
 
     private CommentInfo commentInfoMapper(ResultSet rs) throws SQLException {

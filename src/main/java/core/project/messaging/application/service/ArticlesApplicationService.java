@@ -108,6 +108,21 @@ public class ArticlesApplicationService {
         }
     }
 
+    public List<Comment> commentsPageOf(String articleID, String parentCommentID, int pageNumber, int pageSize) {
+        try {
+            int limit = buildLimit(pageSize);
+            int offSet = buildOffSet(limit, pageNumber);
+            return outboundCommentRepository
+                    .page(UUID.fromString(articleID), UUID.fromString(parentCommentID), limit, offSet)
+                    .orElseThrow(() -> new WebApplicationException(Response
+                            .status(Status.NOT_FOUND)
+                            .entity("Can`t found comments")
+                            .build()));
+        } catch (IllegalArgumentException e) {
+            throw getWebApplicationException(Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     private static WebApplicationException getWebApplicationException(Response.Status badRequest, String message) {
         return new WebApplicationException(Response
                 .status(badRequest)

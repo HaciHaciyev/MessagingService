@@ -47,11 +47,9 @@ public class CommentsResource {
     @Path("/page")
     public Response commentPageOf(@QueryParam("articleID") String articleID,
                                   @QueryParam("parentCommentID") String parentCommentID,
-                                  @QueryParam("pageNumber") String pageNumber,
-                                  @QueryParam("pageSize") String pageSize) {
+                                  @QueryParam("pageNumber") int pageNumber,
+                                  @QueryParam("pageSize") int pageSize) {
 
-        String username = jwt.getName();
-        // TODO
-        return null;
+        return Response.ok(articlesApplicationService.commentsPageOf(articleID, parentCommentID, pageNumber, pageSize)).build();
     }
 }
