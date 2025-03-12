@@ -7,6 +7,9 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
+import java.util.UUID;
+
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.delete;
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
 
 @Transactional
@@ -28,6 +31,12 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
             .values(7)
             .build();
 
+    static final String DELETE_COMMENT = delete()
+            .from("Comments")
+            .where("id = ?")
+            .and("user_id = ?")
+            .build();
+
     JdbcInboundCommentRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -44,5 +53,11 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
                 comment.reference().respondTo().toString()
         )
                 .ifFailure(throwable -> Log.errorf("Error saving comment: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void deleteComment(UUID commentID, UUID authorID) {
+        jdbc.write(DELETE_COMMENT, commentID.toString(), authorID.toString())
+                .ifFailure(throwable -> Log.errorf("Error deleting comment: %s", throwable.getMessage()));
     }
 }

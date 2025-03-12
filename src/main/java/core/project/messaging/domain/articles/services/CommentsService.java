@@ -64,6 +64,14 @@ public class CommentsService {
         ));
     }
 
+    public void deleteComment(String commentID, String username) {
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
+
+        inboundCommentRepository.deleteComment(UUID.fromString(commentID), user.getId());
+    }
+
     private void validateRespondID(UUID respondTo, UUID parentCommentID, UUID articleID) {
         if (Objects.isNull(respondTo)) {
             return;
