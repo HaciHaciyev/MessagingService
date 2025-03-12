@@ -59,6 +59,12 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .and("user_id = ?")
             .build();
 
+    static final String IS_ARTICLE_EXISTS = select()
+            .count("id")
+            .from("Articles")
+            .where("id = ?")
+            .build();
+
     JdbcOutboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -68,7 +74,17 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
         return jdbc.readObjectOf(VIEW, Integer.class, articleID.toString(), userID.toString())
                 .mapSuccess(count -> count != null && count > 0)
                 .orElseGet(() -> {
-                    Log.error("Error checking email existence.");
+                    Log.error("Error checking view existence.");
+                    return false;
+                });
+    }
+
+    @Override
+    public boolean isArticleExists(UUID articleID) {
+        return jdbc.readObjectOf(IS_ARTICLE_EXISTS, Integer.class, articleID.toString())
+                .mapSuccess(count -> count != null && count > 0)
+                .orElseGet(() -> {
+                    Log.error("Error checking article existence.");
                     return false;
                 });
     }

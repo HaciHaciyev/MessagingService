@@ -1,0 +1,48 @@
+package core.project.messaging.infrastructure.dal.repository.inbound;
+
+import core.project.messaging.domain.articles.entities.Comment;
+import core.project.messaging.domain.articles.repositories.InboundCommentRepository;
+import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
+import io.quarkus.logging.Log;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
+
+@Transactional
+@ApplicationScoped
+public class JdbcInboundCommentRepository implements InboundCommentRepository {
+
+    private final JDBC jdbc;
+
+    static final String SAVE_COMMENT = insert()
+            .into("Comments")
+            .columns("id",
+                    "article_id",
+                    "user_id",
+                    "text",
+                    "comment_type",
+                    "parent_comment_id",
+                    "respond_to_comment"
+            )
+            .values(7)
+            .build();
+
+    JdbcInboundCommentRepository(JDBC jdbc) {
+        this.jdbc = jdbc;
+    }
+
+    @Override
+    public void save(Comment comment) {
+        jdbc.write(SAVE_COMMENT,
+                comment.id().toString(),
+                comment.articleId().toString(),
+                comment.userId().toString(),
+                comment.text().value(),
+                comment.reference().commentType().toString(),
+                comment.reference().parentCommentID().toString(),
+                comment.reference().respondTo().toString()
+        )
+                .ifFailure(throwable -> Log.errorf("Error saving comment: %s", throwable.getMessage()));
+    }
+}
