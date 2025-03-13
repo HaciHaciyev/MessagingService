@@ -1,8 +1,6 @@
 package core.project.messaging.infrastructure.events;
 
-import core.project.messaging.domain.articles.events.ArticleEvents;
-import core.project.messaging.domain.articles.events.ArticlesEventsPublisher;
-import core.project.messaging.domain.articles.events.CommentEvents;
+import core.project.messaging.domain.articles.events.*;
 import io.vertx.core.eventbus.EventBus;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -14,12 +12,12 @@ public class QuarkusArticlesEventsPublisher implements ArticlesEventsPublisher {
     EventBus eventBus;
 
     @Override
-    public void publish(ArticleEvents articleEvent) {
+    public void publish(ArticleUpdatedEvent articleEvent) {
         eventBus.publish("articles", articleEvent);
     }
 
     @Override
-    public void publish(CommentEvents commentEvent) {
+    public void publish(CommentEditedEvent commentEvent) {
         eventBus.publish("comments", commentEvent);
     }
 }

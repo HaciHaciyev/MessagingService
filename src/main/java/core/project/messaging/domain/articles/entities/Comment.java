@@ -63,7 +63,7 @@ public class Comment {
 
     private CommentEditedEvent updateEvent() {
         this.events = new CommentEvents(events.creationDate(), LocalDateTime.now());
-        return new CommentEditedEvent();
+        return new CommentEditedEvent(id());
     }
 
     @Override

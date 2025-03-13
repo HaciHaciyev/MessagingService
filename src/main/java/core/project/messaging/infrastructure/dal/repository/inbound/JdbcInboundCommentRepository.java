@@ -1,6 +1,7 @@
 package core.project.messaging.infrastructure.dal.repository.inbound;
 
 import core.project.messaging.domain.articles.entities.Comment;
+import core.project.messaging.domain.articles.events.CommentEditedEvent;
 import core.project.messaging.domain.articles.repositories.InboundCommentRepository;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import io.quarkus.logging.Log;
@@ -43,6 +44,11 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
             .where("id = ?")
             .build();
 
+    static final String UPDATE_DATE = update("Comments")
+            .set("last_updated = ?")
+            .where("id = ?")
+            .build();
+
     JdbcInboundCommentRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -73,5 +79,11 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
     public void updateCommentText(Comment comment) {
         jdbc.write(UPDATE_COMMENT, comment.text().value(), comment.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error updating comment: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void updateEvent(CommentEditedEvent commentEvent) {
+        jdbc.write(UPDATE_DATE, commentEvent.data(), commentEvent.commentID().toString())
+                .ifFailure(throwable -> Log.errorf("Error updating comment date: %s", throwable.getMessage()));
     }
 }

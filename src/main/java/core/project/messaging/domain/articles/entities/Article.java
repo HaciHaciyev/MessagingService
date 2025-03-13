@@ -83,7 +83,7 @@ public class Article {
 
     private ArticleUpdatedEvent updateEvent() {
         this.events = new ArticleEvents(events.creationDate(), LocalDateTime.now());
-        return new ArticleUpdatedEvent();
+        return new ArticleUpdatedEvent(id);
     }
 
     public long views() {
