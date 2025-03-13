@@ -48,6 +48,9 @@ public class Article {
         if (status != null && status.equals(ArticleStatus.ARCHIVED)) {
             throw new IllegalArgumentException("Article can`t be created with archived status.");
         }
+        if (tags.size() < 3|| tags.size() > 8) {
+            throw new IllegalArgumentException("You need at least create 3 tags for Article and no more than 8.");
+        }
 
         return new Article(UUID.randomUUID(), authorId, tags, 0L, 0L,
                 header, summary, body, status, ArticleEvents.defaultEvents());
