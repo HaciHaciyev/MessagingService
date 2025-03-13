@@ -4,8 +4,6 @@ import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.Like;
-import core.project.messaging.domain.user.entities.UserAccount;
-import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,8 +11,7 @@ import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.delete;
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.*;
 
 @Transactional
 @ApplicationScoped
@@ -75,6 +72,11 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .and("user_id = ?")
             .build();
 
+    static final String ARTICLE_STATUS = update("Articles")
+            .set("status = ?")
+            .where("id = ?")
+            .build();
+
     JdbcInboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -124,5 +126,11 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     public void deleteLike(UUID articleID, UUID userID) {
         jdbc.write(DELETE_LIKE, articleID.toString(), userID.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting like: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void statusChange(Article article) {
+        jdbc.write(ARTICLE_STATUS, article.id().toString(), article.status().toString())
+                .ifFailure(throwable -> Log.errorf("Error changing status: %s", throwable.getMessage()));
     }
 }

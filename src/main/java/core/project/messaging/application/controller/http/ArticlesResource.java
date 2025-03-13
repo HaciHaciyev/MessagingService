@@ -2,6 +2,7 @@ package core.project.messaging.application.controller.http;
 
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.service.ArticlesApplicationService;
+import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -23,8 +24,14 @@ public class ArticlesResource {
     @POST
     @Path("/post")
     public Response create(ArticleForm articleForm) {
-        articlesService.save(articleForm, jwt.getName());
-        return Response.ok().build();
+        return Response.ok(articlesService.save(articleForm, jwt.getName())).build();
+    }
+
+    @PUT
+    @Path("/change-article-status")
+    public Response changeArticleStatus(@QueryParam("articleID") String articleID,
+                                        @QueryParam("status") ArticleStatus status) {
+        return Response.accepted(articlesService.changeStatus(articleID, status, jwt.getName())).build();
     }
 
     @GET

@@ -36,7 +36,7 @@ public class ArticlesService {
         this.outboundArticleRepository = outboundArticleRepository;
     }
 
-    public void save(ArticleForm articleForm, String username) {
+    public Article save(ArticleForm articleForm, String username) {
         Objects.requireNonNull(articleForm);
 
         UserAccount userAccount = outboundUserRepository
@@ -49,14 +49,17 @@ public class ArticlesService {
                 .map(ArticleTag::new)
                 .collect(Collectors.toSet());
 
-        inboundArticleRepository.save(Article.of(
+        Article article = Article.of(
                 userAccount.getId(),
                 articleTags,
                 new Header(articleForm.header()),
                 new Summary(articleForm.summary()),
                 new Body(articleForm.body()),
                 articleForm.status()
-        ));
+        );
+
+        inboundArticleRepository.save(article);
+        return article;
     }
 
     public Result<Article, IllegalArgumentException> viewArticle(String articleID, String username) {
@@ -124,5 +127,33 @@ public class ArticlesService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         inboundArticleRepository.deleteLike(UUID.fromString(articleID), user.getId());
+    }
+
+    public Article changeStatus(String articleID, ArticleStatus status, String username) {
+        if (status.equals(ArticleStatus.DRAFT)) {
+            throw new IllegalArgumentException("You can`t draft article after it was published or archived.");
+        }
+
+        Article article = outboundArticleRepository
+                .article(UUID.fromString(articleID))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+
+        final boolean isAuthor = user.getId().equals(article.authorId());
+        if (!isAuthor) {
+            throw new IllegalArgumentException("Article status can be changed only by article author.");
+        }
+
+        if (article.status().equals(ArticleStatus.ARCHIVED)) {
+            article.archive();
+        } else {
+            article.publish();
+        }
+
+        inboundArticleRepository.statusChange(article);
+        return article;
     }
 }

@@ -4,6 +4,7 @@ import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.dto.CommentForm;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.Comment;
+import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
 import core.project.messaging.domain.articles.services.ArticlesService;
 import core.project.messaging.domain.articles.services.CommentsService;
@@ -36,9 +37,9 @@ public class ArticlesApplicationService {
         this.outboundCommentRepository = outboundCommentRepository;
     }
 
-    public void save(ArticleForm articleForm, String username) {
+    public Article save(ArticleForm articleForm, String username) {
         try {
-            articlesService.save(articleForm, username);
+            return articlesService.save(articleForm, username);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
         }
@@ -120,6 +121,14 @@ public class ArticlesApplicationService {
                             .build()));
         } catch (IllegalArgumentException e) {
             throw getWebApplicationException(Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    public Article changeStatus(String articleID, ArticleStatus status, String username) {
+        try {
+            return articlesService.changeStatus(articleID, status, username);
+        } catch (NullPointerException | IllegalArgumentException e) {
+            throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
 
