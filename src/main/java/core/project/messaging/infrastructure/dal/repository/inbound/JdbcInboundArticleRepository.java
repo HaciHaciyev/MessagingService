@@ -77,6 +77,21 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .where("id = ?")
             .build();
 
+    static final String UPDATE_HEADER = update("Articles")
+            .set("header = ?")
+            .where("id = ?")
+            .build();
+
+    static final String UPDATE_SUMMARY = update("Articles")
+            .set("summary = ?")
+            .where("id = ?")
+            .build();
+
+    static final String UPDATE_BODY = update("Articles")
+            .set("body = ?")
+            .where("id = ?")
+            .build();
+
     JdbcInboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -132,5 +147,23 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     public void statusChange(Article article) {
         jdbc.write(ARTICLE_STATUS, article.status().toString(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing status: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void updateHeader(Article article) {
+        jdbc.write(UPDATE_HEADER, article.header().value(), article.id().toString())
+                .ifFailure(throwable -> Log.errorf("Error changing header: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void updateSummary(Article article) {
+        jdbc.write(UPDATE_HEADER, article.summary().value(), article.id().toString())
+                .ifFailure(throwable -> Log.errorf("Error changing summary: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void updateBody(Article article) {
+        jdbc.write(UPDATE_HEADER, article.body().value(), article.id().toString())
+                .ifFailure(throwable -> Log.errorf("Error changing body: %s", throwable.getMessage()));
     }
 }

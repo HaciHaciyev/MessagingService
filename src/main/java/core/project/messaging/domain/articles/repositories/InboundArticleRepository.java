@@ -19,4 +19,10 @@ public interface InboundArticleRepository {
     void deleteLike(UUID articleID, UUID userID);
 
     void statusChange(Article article);
+
+    void updateHeader(Article article);
+
+    void updateSummary(Article article);
+
+    void updateBody(Article body);
 }

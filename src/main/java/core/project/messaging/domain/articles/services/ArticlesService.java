@@ -1,9 +1,11 @@
 package core.project.messaging.domain.articles.services;
 
 import core.project.messaging.application.dto.ArticleForm;
+import core.project.messaging.application.dto.ArticleText;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
+import core.project.messaging.domain.articles.events.ArticleUpdatedEvent;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
@@ -148,12 +150,42 @@ public class ArticlesService {
         }
 
         if (article.status().equals(ArticleStatus.ARCHIVED)) {
-            article.archive();
+            ArticleUpdatedEvent archive = article.archive();
         } else {
-            article.publish();
+            ArticleUpdatedEvent publish = article.publish();
         }
 
         inboundArticleRepository.statusChange(article);
+        return article;
+    }
+
+    public Article updateArticle(String articleID, ArticleText articleText, String username) {
+        Article article = outboundArticleRepository
+                .article(UUID.fromString(articleID))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+
+        final boolean isAuthor = user.getId().equals(article.authorId());
+        if (!isAuthor) {
+            throw new IllegalArgumentException("Article status can be changed only by article author.");
+        }
+
+        if (Objects.nonNull(articleText.header())) {
+            ArticleUpdatedEvent articleUpdatedEvent = article.changeHeader(new Header(articleText.header()));
+            inboundArticleRepository.updateHeader(article);
+        }
+        if (Objects.nonNull(articleText.summary())) {
+            ArticleUpdatedEvent articleUpdatedEvent = article.changeSummary(new Summary(articleText.summary()));
+            inboundArticleRepository.updateSummary(article);
+        }
+        if (Objects.nonNull(articleText.body())) {
+            ArticleUpdatedEvent articleUpdatedEvent = article.changeBody(new Body(articleText.body()));
+            inboundArticleRepository.updateBody(article);
+        }
+
         return article;
     }
 }

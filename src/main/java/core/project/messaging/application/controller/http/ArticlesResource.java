@@ -1,6 +1,7 @@
 package core.project.messaging.application.controller.http;
 
 import core.project.messaging.application.dto.ArticleForm;
+import core.project.messaging.application.dto.ArticleText;
 import core.project.messaging.application.service.ArticlesApplicationService;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import io.quarkus.security.Authenticated;
@@ -32,6 +33,12 @@ public class ArticlesResource {
     public Response changeArticleStatus(@QueryParam("articleID") String articleID,
                                         @QueryParam("status") ArticleStatus status) {
         return Response.accepted(articlesService.changeStatus(articleID, status, jwt.getName())).build();
+    }
+
+    @PUT
+    @Path("/update-article")
+    public Response updateArticle(@QueryParam("articleID") String articleID, ArticleText articleText) {
+        return Response.accepted(articlesService.updateArticle(articleID, articleText, jwt.getName())).build();
     }
 
     @GET
