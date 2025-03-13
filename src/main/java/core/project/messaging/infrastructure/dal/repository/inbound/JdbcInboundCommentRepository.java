@@ -26,9 +26,11 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
                     "text",
                     "comment_type",
                     "parent_comment_id",
-                    "respond_to_comment"
+                    "respond_to_comment",
+                    "creation_date",
+                    "last_updated"
             )
-            .values(7)
+            .values(9)
             .build();
 
     static final String DELETE_COMMENT = delete()
@@ -50,7 +52,9 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
                 comment.text().value(),
                 comment.reference().commentType().toString(),
                 comment.reference().parentCommentID().toString(),
-                comment.reference().respondTo().toString()
+                comment.reference().respondTo().toString(),
+                comment.events().creationDate(),
+                comment.events().lastUpdatedDate()
         )
                 .ifFailure(throwable -> Log.errorf("Error saving comment: %s", throwable.getMessage()));
     }

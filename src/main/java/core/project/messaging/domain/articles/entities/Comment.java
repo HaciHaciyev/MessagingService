@@ -1,9 +1,11 @@
 package core.project.messaging.domain.articles.entities;
 
+import core.project.messaging.domain.articles.events.CommentEvents;
 import core.project.messaging.domain.articles.values_objects.CommentIdentifiers;
 import core.project.messaging.domain.articles.values_objects.CommentText;
 import core.project.messaging.domain.articles.values_objects.Reference;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -11,6 +13,7 @@ public class Comment {
     private final CommentIdentifiers commentIdentifiers;
     private CommentText text;
     private final Reference reference;
+    private CommentEvents events;
 
     public Comment(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference) {
         Objects.requireNonNull(commentIdentifiers, "Comment identifiers can`t be null.");
@@ -20,6 +23,7 @@ public class Comment {
         this.commentIdentifiers = commentIdentifiers;
         this.text = value;
         this.reference = reference;
+        this.events = new CommentEvents(LocalDateTime.now(), LocalDateTime.now());
     }
 
     public UUID id() {
@@ -41,6 +45,7 @@ public class Comment {
     public void changeText(CommentText commentValue) {
         Objects.requireNonNull(commentValue, "Comment text cannot be null.");
         this.text = commentValue;
+        updateEvent();
     }
 
     public void delete() {
@@ -49,6 +54,14 @@ public class Comment {
 
     public Reference reference() {
         return reference;
+    }
+
+    public CommentEvents events() {
+        return events;
+    }
+
+    private void updateEvent() {
+        this.events = new CommentEvents(events.creationDate(), LocalDateTime.now());
     }
 
     @Override
