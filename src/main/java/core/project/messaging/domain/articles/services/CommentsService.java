@@ -3,6 +3,7 @@ package core.project.messaging.domain.articles.services;
 import core.project.messaging.application.dto.CommentForm;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.enumerations.CommentType;
+import core.project.messaging.domain.articles.events.CommentEditedEvent;
 import core.project.messaging.domain.articles.repositories.InboundCommentRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
@@ -64,10 +65,38 @@ public class CommentsService {
         ));
     }
 
+    public Comment edit(String commentID, String text, String username) {
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
+
+        Comment comment = outboundCommentRepository
+                .comment(UUID.fromString(commentID))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find a comment."));
+
+        final boolean isAuthor = user.getId().equals(comment.userId());
+        if (!isAuthor) {
+            throw new IllegalArgumentException("Only author can edit a comment.");
+        }
+
+        CommentEditedEvent commentEditedEvent = comment.changeText(new CommentText(text));
+        inboundCommentRepository.updateCommentText(comment);
+        return comment;
+    }
+
     public void deleteComment(String commentID, String username) {
         UserAccount user = outboundUserRepository
                 .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
+
+        Comment comment = outboundCommentRepository
+                .comment(UUID.fromString(commentID))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find a comment."));
+
+        final boolean isAuthor = user.getId().equals(comment.userId());
+        if (!isAuthor) {
+            throw new IllegalArgumentException("Only author can edit a comment.");
+        }
 
         inboundCommentRepository.deleteComment(UUID.fromString(commentID), user.getId());
     }

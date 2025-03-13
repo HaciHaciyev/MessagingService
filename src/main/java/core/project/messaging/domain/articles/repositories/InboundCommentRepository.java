@@ -9,4 +9,6 @@ public interface InboundCommentRepository {
     void save(Comment comment);
 
     void deleteComment(UUID commentID, UUID authorID);
+
+    void updateCommentText(Comment comment);
 }

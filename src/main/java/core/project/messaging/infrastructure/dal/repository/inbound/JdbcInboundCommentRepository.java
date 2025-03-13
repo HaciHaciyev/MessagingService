@@ -9,8 +9,7 @@ import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.delete;
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.*;
 
 @Transactional
 @ApplicationScoped
@@ -39,6 +38,11 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
             .and("user_id = ?")
             .build();
 
+    static final String UPDATE_COMMENT = update("Comments")
+            .set("text = ?")
+            .where("id = ?")
+            .build();
+
     JdbcInboundCommentRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -63,5 +67,11 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
     public void deleteComment(UUID commentID, UUID authorID) {
         jdbc.write(DELETE_COMMENT, commentID.toString(), authorID.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting comment: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void updateCommentText(Comment comment) {
+        jdbc.write(UPDATE_COMMENT, comment.text().value(), comment.id().toString())
+                .ifFailure(throwable -> Log.errorf("Error updating comment: %s", throwable.getMessage()));
     }
 }

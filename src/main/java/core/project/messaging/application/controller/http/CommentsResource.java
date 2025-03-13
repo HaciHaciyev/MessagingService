@@ -27,6 +27,12 @@ public class CommentsResource {
         return Response.accepted().build();
     }
 
+    @PATCH
+    @Path("/edit")
+    public Response edit(@QueryParam("commentID") String commentID, String text) {
+        return Response.accepted(articlesApplicationService.editComment(commentID, text, jwt.getName())).build();
+    }
+
     @DELETE
     @Path("/delete")
     public Response delete(@QueryParam("commentID") String commentID) {

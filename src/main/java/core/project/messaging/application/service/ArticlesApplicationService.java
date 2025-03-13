@@ -124,6 +124,14 @@ public class ArticlesApplicationService {
         }
     }
 
+    public Comment editComment(String commentID, String text, String username) {
+        try {
+            return commentsService.edit(commentID, text, username);
+        } catch (NullPointerException | IllegalArgumentException e) {
+            throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
+        }
+    }
+
     public Article changeStatus(String articleID, ArticleStatus status, String username) {
         try {
             return articlesService.changeStatus(articleID, status, username);
