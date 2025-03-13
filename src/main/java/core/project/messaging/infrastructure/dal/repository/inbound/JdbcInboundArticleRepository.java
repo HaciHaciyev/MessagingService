@@ -73,7 +73,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .build();
 
     static final String ARTICLE_STATUS = update("Articles")
-            .set("status = ?")
+            .set("status = ?, last_updated = ?")
             .where("id = ?")
             .build();
 
@@ -130,7 +130,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
 
     @Override
     public void statusChange(Article article) {
-        jdbc.write(ARTICLE_STATUS, article.id().toString(), article.status().toString())
+        jdbc.write(ARTICLE_STATUS, article.events().lastUpdateDate(), article.status().toString(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing status: %s", throwable.getMessage()));
     }
 }

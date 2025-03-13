@@ -27,7 +27,7 @@ public class ArticlesResource {
         return Response.ok(articlesService.save(articleForm, jwt.getName())).build();
     }
 
-    @PUT
+    @PATCH
     @Path("/change-article-status")
     public Response changeArticleStatus(@QueryParam("articleID") String articleID,
                                         @QueryParam("status") ArticleStatus status) {
