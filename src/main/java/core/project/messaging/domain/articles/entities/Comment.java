@@ -1,5 +1,6 @@
 package core.project.messaging.domain.articles.entities;
 
+import core.project.messaging.domain.articles.events.CommentEditedEvent;
 import core.project.messaging.domain.articles.events.CommentEvents;
 import core.project.messaging.domain.articles.values_objects.CommentIdentifiers;
 import core.project.messaging.domain.articles.values_objects.CommentText;
@@ -42,10 +43,10 @@ public class Comment {
         return text;
     }
 
-    public void changeText(CommentText commentValue) {
+    public CommentEditedEvent changeText(CommentText commentValue) {
         Objects.requireNonNull(commentValue, "Comment text cannot be null.");
         this.text = commentValue;
-        updateEvent();
+        return updateEvent();
     }
 
     public void delete() {
@@ -60,8 +61,9 @@ public class Comment {
         return events;
     }
 
-    private void updateEvent() {
+    private CommentEditedEvent updateEvent() {
         this.events = new CommentEvents(events.creationDate(), LocalDateTime.now());
+        return new CommentEditedEvent();
     }
 
     @Override
