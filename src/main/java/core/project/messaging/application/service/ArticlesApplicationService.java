@@ -2,6 +2,7 @@ package core.project.messaging.application.service;
 
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.dto.ArticleText;
+import core.project.messaging.application.dto.ArticlesQueryForm;
 import core.project.messaging.application.dto.CommentForm;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.Comment;
@@ -142,15 +143,15 @@ public class ArticlesApplicationService {
     }
 
     public Article updateArticle(String articleID, ArticleText articleText, String username) {
-        if (articleText.header() == null && articleText.summary() == null && articleText.body() == null) {
-            throw getWebApplicationException(Status.BAD_REQUEST, "Seriously?...");
-        }
-
         try {
             return articlesService.updateArticle(articleID, articleText, username);
         } catch (IllegalArgumentException e) {
             throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
         }
+    }
+
+    public List<Article> pageOf(String username, int pageNumber, int pageSize, ArticlesQueryForm query) {
+        return null;
     }
 
     private static WebApplicationException getWebApplicationException(Response.Status status, String message) {

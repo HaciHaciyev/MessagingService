@@ -14,6 +14,7 @@ import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.ws.rs.core.Response;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -151,8 +152,10 @@ public class ArticlesService {
 
         if (article.status().equals(ArticleStatus.ARCHIVED)) {
             ArticleUpdatedEvent archive = article.archive();
+            inboundArticleRepository.updateEvent(archive);
         } else {
             ArticleUpdatedEvent publish = article.publish();
+            inboundArticleRepository.updateEvent(publish);
         }
 
         inboundArticleRepository.statusChange(article);
@@ -160,6 +163,10 @@ public class ArticlesService {
     }
 
     public Article updateArticle(String articleID, ArticleText articleText, String username) {
+        if (Objects.isNull(articleText.header()) && Objects.isNull(articleText.summary()) && Objects.isNull(articleText.body())) {
+            throw new IllegalArgumentException("Seriously?...");
+        }
+
         Article article = outboundArticleRepository
                 .article(UUID.fromString(articleID))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
@@ -175,14 +182,17 @@ public class ArticlesService {
 
         if (Objects.nonNull(articleText.header())) {
             ArticleUpdatedEvent articleUpdatedEvent = article.changeHeader(new Header(articleText.header()));
+            inboundArticleRepository.updateEvent(articleUpdatedEvent);
             inboundArticleRepository.updateHeader(article);
         }
         if (Objects.nonNull(articleText.summary())) {
             ArticleUpdatedEvent articleUpdatedEvent = article.changeSummary(new Summary(articleText.summary()));
+            inboundArticleRepository.updateEvent(articleUpdatedEvent);
             inboundArticleRepository.updateSummary(article);
         }
         if (Objects.nonNull(articleText.body())) {
             ArticleUpdatedEvent articleUpdatedEvent = article.changeBody(new Body(articleText.body()));
+            inboundArticleRepository.updateEvent(articleUpdatedEvent);
             inboundArticleRepository.updateBody(article);
         }
 
