@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.dal.repository.inbound;
+package core.project.messaging.infrastructure.dal.repository;
 
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.events.CommentEditedEvent;

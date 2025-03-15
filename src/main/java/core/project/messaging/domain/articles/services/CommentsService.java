@@ -42,7 +42,7 @@ public class CommentsService {
         this.outboundArticleRepository = outboundArticleRepository;
     }
 
-    public void createComment(CommentForm commentForm, String username) {
+    public void create(CommentForm commentForm, String username) {
         UserAccount user = outboundUserRepository
                 .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
@@ -84,7 +84,7 @@ public class CommentsService {
         return comment;
     }
 
-    public void deleteComment(String commentID, String username) {
+    public void delete(String commentID, String username) {
         UserAccount user = outboundUserRepository
                 .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));

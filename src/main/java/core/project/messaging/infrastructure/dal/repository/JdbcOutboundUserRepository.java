@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.dal.repository.outbound;
+package core.project.messaging.infrastructure.dal.repository;
 
 import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.domain.user.enumerations.UserRole;

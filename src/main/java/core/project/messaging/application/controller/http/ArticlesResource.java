@@ -2,9 +2,8 @@ package core.project.messaging.application.controller.http;
 
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.dto.ArticleText;
-import core.project.messaging.application.dto.ArticlesQueryForm;
-import core.project.messaging.application.service.ArticlesApplicationService;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
+import core.project.messaging.domain.articles.services.ArticlesService;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -16,9 +15,9 @@ public class ArticlesResource {
 
     private final JsonWebToken jwt;
 
-    private final ArticlesApplicationService articlesService;
+    private final ArticlesService articlesService;
 
-    ArticlesResource(JsonWebToken jwt, ArticlesApplicationService articlesService) {
+    ArticlesResource(JsonWebToken jwt, ArticlesService articlesService) {
         this.jwt = jwt;
         this.articlesService = articlesService;
     }
@@ -46,13 +45,5 @@ public class ArticlesResource {
     @Path("/viewArticle")
     public Response viewArticle(@QueryParam("id") String id) {
         return Response.ok(articlesService.viewArticle(id, jwt.getName())).build();
-    }
-
-    @GET
-    @Path("/page")
-    public Response articlesPage(@QueryParam("pageNumber") int pageNumber,
-                                 @QueryParam("pageSize") int pageSize,
-                                 ArticlesQueryForm query) {
-        return Response.ok(articlesService.pageOf(jwt.getName(), pageNumber, pageSize, query)).build();
     }
 }

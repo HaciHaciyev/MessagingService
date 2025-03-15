@@ -1,6 +1,6 @@
 package core.project.messaging.application.controller.http;
 
-import core.project.messaging.application.service.ArticlesApplicationService;
+import core.project.messaging.domain.articles.services.ArticlesService;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.Path;
@@ -14,11 +14,11 @@ public class ViewsResource {
 
     private final JsonWebToken jwt;
 
-    private final ArticlesApplicationService articlesApplicationService;
+    private final ArticlesService articlesApplicationService;
 
-    ViewsResource(JsonWebToken jwt, ArticlesApplicationService articlesApplicationService) {
+    ViewsResource(JsonWebToken jwt, ArticlesService articlesService) {
         this.jwt = jwt;
-        this.articlesApplicationService = articlesApplicationService;
+        this.articlesApplicationService = articlesService;
     }
 
     @DELETE
