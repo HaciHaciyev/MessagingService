@@ -8,6 +8,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import static core.project.messaging.application.controller.http.ArticlesResource.nonNull;
+
 @Authenticated
 @Path("/articles/comments")
 public class CommentsResource {
@@ -27,6 +29,7 @@ public class CommentsResource {
     @POST
     @Path("/create")
     public Response create(CommentForm commentForm) {
+        nonNull(commentForm);
         commentsService.create(commentForm, jwt.getName());
         return Response.accepted().build();
     }
@@ -34,12 +37,14 @@ public class CommentsResource {
     @PATCH
     @Path("/edit")
     public Response edit(@QueryParam("commentID") String commentID, String text) {
+        nonNull(commentID, text);
         return Response.accepted(commentsService.edit(commentID, text, jwt.getName())).build();
     }
 
     @DELETE
     @Path("/delete")
     public Response delete(@QueryParam("commentID") String commentID) {
+        nonNull(commentID);
         commentsService.delete(commentID, jwt.getName());
         return Response.accepted().build();
     }
@@ -49,7 +54,7 @@ public class CommentsResource {
     public Response commentsPageOf(@QueryParam("articleID") String articleID,
                                    @QueryParam("pageNumber") int pageNumber,
                                    @QueryParam("pageSize") int pageSize) {
-
+        nonNull(articleID);
         return Response.ok(queryService.pageOf(articleID, pageNumber, pageSize)).build();
     }
 
@@ -59,7 +64,7 @@ public class CommentsResource {
                                   @QueryParam("parentCommentID") String parentCommentID,
                                   @QueryParam("pageNumber") int pageNumber,
                                   @QueryParam("pageSize") int pageSize) {
-
+        nonNull(articleID, parentCommentID);
         return Response.ok(queryService.pageOf(articleID, parentCommentID, pageNumber, pageSize)).build();
     }
 }

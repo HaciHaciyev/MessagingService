@@ -8,6 +8,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import static core.project.messaging.application.controller.http.ArticlesResource.nonNull;
+
 @Authenticated
 @Path("/articles/views")
 public class ViewsResource {
@@ -24,6 +26,7 @@ public class ViewsResource {
     @DELETE
     @Path("/delete")
     public Response delete(@QueryParam("articleID") String articleID) {
+        nonNull(articleID);
         articlesApplicationService.deleteView(articleID, jwt.getName());
         return Response.noContent().build();
     }

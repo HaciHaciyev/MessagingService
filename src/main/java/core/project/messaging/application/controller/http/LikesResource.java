@@ -9,6 +9,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import static core.project.messaging.application.controller.http.ArticlesResource.nonNull;
+
 @Authenticated
 @Path("/articles/likes")
 public class LikesResource {
@@ -25,6 +27,7 @@ public class LikesResource {
     @POST
     @Path("/like-article")
     public Response likeArticle(@QueryParam("articleID") String articleID) {
+        nonNull(articleID);
         articlesService.likeArticle(articleID, jwt.getName());
         return Response.noContent().build();
     }
@@ -32,6 +35,7 @@ public class LikesResource {
     @DELETE
     @Path("/remove-like")
     public Response removeLike(@QueryParam("articleID") String articleID) {
+        nonNull(articleID);
         articlesService.deleteLike(articleID, jwt.getName());
         return Response.accepted().build();
     }

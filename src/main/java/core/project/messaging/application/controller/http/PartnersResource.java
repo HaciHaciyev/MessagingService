@@ -6,6 +6,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import static core.project.messaging.application.controller.http.ArticlesResource.nonNull;
+
 @Authenticated
 @Path("/account")
 public class PartnersResource {
@@ -28,6 +30,7 @@ public class PartnersResource {
     @DELETE
     @Path("/remove-partner")
     public Response removePartner(@QueryParam("partner") String partner) {
+        nonNull(partner);
         partnersService.removePartner(jwt.getName(), partner);
         return Response.noContent().build();
     }

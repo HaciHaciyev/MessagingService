@@ -14,7 +14,6 @@ import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.core.Response;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -40,8 +39,6 @@ public class ArticlesService {
     }
 
     public Article save(ArticleForm articleForm, String username) {
-        Objects.requireNonNull(articleForm);
-
         UserAccount userAccount = outboundUserRepository
                 .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Account is not exists."));

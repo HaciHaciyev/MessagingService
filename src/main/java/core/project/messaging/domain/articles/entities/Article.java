@@ -153,7 +153,7 @@ public class Article {
     public ArticleUpdatedEvent addTag(ArticleTag tag) {
         Objects.requireNonNull(tag, "Tag must not be null.");
         if (tags.size() == MAX_SIZE_OF_TAGS) {
-            throw new IllegalArgumentException("Max size of tags: %d");
+            throw new IllegalArgumentException("Max size of tags: %d".formatted(MAX_SIZE_OF_TAGS));
         }
 
         tags.add(tag);
