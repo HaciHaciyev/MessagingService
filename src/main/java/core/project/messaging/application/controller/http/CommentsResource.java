@@ -59,7 +59,7 @@ public class CommentsResource {
     }
 
     @GET
-    @Path("/page")
+    @Path("/page/child-comments")
     public Response commentPageOf(@QueryParam("articleID") String articleID,
                                   @QueryParam("parentCommentID") String parentCommentID,
                                   @QueryParam("pageNumber") int pageNumber,
