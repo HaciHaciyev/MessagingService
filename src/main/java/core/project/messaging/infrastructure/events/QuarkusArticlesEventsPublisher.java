@@ -3,13 +3,15 @@ package core.project.messaging.infrastructure.events;
 import core.project.messaging.domain.articles.events.*;
 import io.vertx.core.eventbus.EventBus;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class QuarkusArticlesEventsPublisher implements ArticlesEventsPublisher {
 
-    @Inject
-    EventBus eventBus;
+    private final EventBus eventBus;
+
+    QuarkusArticlesEventsPublisher(EventBus eventBus) {
+        this.eventBus = eventBus;
+    }
 
     @Override
     public void publish(ArticleUpdatedEvent articleEvent) {

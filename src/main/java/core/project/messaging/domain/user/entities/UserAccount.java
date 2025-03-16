@@ -3,17 +3,12 @@ package core.project.messaging.domain.user.entities;
 import core.project.messaging.domain.user.enumerations.UserRole;
 import core.project.messaging.domain.user.events.AccountEvents;
 import core.project.messaging.domain.user.value_objects.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-@Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserAccount {
     private final UUID id;
     private final Firstname firstname;
@@ -26,6 +21,21 @@ public class UserAccount {
     private Rating rating;
     private final AccountEvents accountEvents;
     private final Set<UserAccount> partners;
+
+    public UserAccount(UUID id, Firstname firstname, Surname surname, Username username, Email email, Password password,
+                       UserRole userRole, boolean isEnable, Rating rating, AccountEvents accountEvents, Set<UserAccount> partners) {
+        this.id = id;
+        this.firstname = firstname;
+        this.surname = surname;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.userRole = userRole;
+        this.isEnable = isEnable;
+        this.rating = rating;
+        this.accountEvents = accountEvents;
+        this.partners = partners;
+    }
 
     public static UserAccount of(Firstname firstname, Surname surname, Username username, Email email, Password password) {
         Objects.requireNonNull(firstname);
@@ -43,8 +53,8 @@ public class UserAccount {
     /**
      * this method is used to call only from repository
      */
-    public static UserAccount fromRepository(UUID id, Firstname firstname, Surname surname, Username username, Email email, Password password,
-                                             UserRole userRole, boolean enabled, Rating rating, AccountEvents events) {
+    public static UserAccount fromRepository(UUID id, Firstname firstname, Surname surname, Username username, Email email,
+                                             Password password, UserRole userRole, boolean enabled, Rating rating, AccountEvents events) {
         Objects.requireNonNull(id);
         Objects.requireNonNull(firstname);
         Objects.requireNonNull(surname);
@@ -58,12 +68,48 @@ public class UserAccount {
         return new UserAccount(id, firstname, surname, username, email, password, userRole, enabled, rating, events, new HashSet<>());
     }
 
+    public UUID getId() {
+        return id;
+    }
+
+    public Firstname getFirstname() {
+        return firstname;
+    }
+
+    public Surname getSurname() {
+        return surname;
+    }
+
+    public Username getUsername() {
+        return username;
+    }
+
+    public Email getEmail() {
+        return email;
+    }
+
+    public Password getPassword() {
+        return password;
+    }
+
+    public UserRole getUserRole() {
+        return userRole;
+    }
+
+    public boolean isEnable() {
+        return isEnable;
+    }
+
+    public AccountEvents getAccountEvents() {
+        return accountEvents;
+    }
+
     public boolean isEnabled() {
         return isEnable;
     }
 
     public Rating getRating() {
-        return Rating.fromRepository(this.rating.rating(), this.rating.ratingDeviation(), this.rating.volatility());
+        return this.rating;
     }
 
     public Set<UserAccount> getPartners() {

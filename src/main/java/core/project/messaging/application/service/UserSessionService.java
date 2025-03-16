@@ -14,18 +14,16 @@ import io.quarkus.logging.Log;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static core.project.messaging.application.util.WSUtilities.*;
+import static core.project.messaging.application.util.WSUtilities.closeSession;
+import static core.project.messaging.application.util.WSUtilities.sendMessage;
 
 @ApplicationScoped
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class UserSessionService {
 
     private final JwtUtility jwtUtility;
@@ -35,6 +33,15 @@ public class UserSessionService {
     private final PartnershipsService partnershipsService;
 
     private final OutboundUserRepository outboundUserRepository;
+
+    UserSessionService(JwtUtility jwtUtility, SessionStorage sessionStorage,
+                       PartnershipsService partnershipsService,
+                       OutboundUserRepository outboundUserRepository) {
+        this.jwtUtility = jwtUtility;
+        this.sessionStorage = sessionStorage;
+        this.partnershipsService = partnershipsService;
+        this.outboundUserRepository = outboundUserRepository;
+    }
 
     public void onOpen(Session session, Username username) {
         CompletableFuture.runAsync(() -> {

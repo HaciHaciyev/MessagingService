@@ -13,13 +13,10 @@ import core.project.messaging.infrastructure.utilities.containers.StatusPair;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 
 @ApplicationScoped
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 public class PartnershipsService {
 
     private final InboundUserRepository inboundUserRepository;
@@ -27,6 +24,12 @@ public class PartnershipsService {
     private final OutboundUserRepository outboundUserRepository;
 
     private final PartnershipRequestsRepository requestsRepository;
+
+    PartnershipsService(InboundUserRepository inboundUserRepository, OutboundUserRepository outboundUserRepository, PartnershipRequestsRepository requestsRepository) {
+        this.inboundUserRepository = inboundUserRepository;
+        this.outboundUserRepository = outboundUserRepository;
+        this.requestsRepository = requestsRepository;
+    }
 
     public Map<String, String> getAll(String username) {
         return requestsRepository.getAll(username);

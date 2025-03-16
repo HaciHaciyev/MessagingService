@@ -10,14 +10,15 @@ import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @ServerEndpoint(value = "/chessland/user-session", decoders = MessageDecoder.class, encoders = MessageEncoder.class)
 public class UserSessionHandler {
 
     private final UserSessionService userSessionService;
+
+    UserSessionHandler(UserSessionService userSessionService) {
+        this.userSessionService = userSessionService;
+    }
 
     @OnOpen
     public final void onOpen(Session session) {
