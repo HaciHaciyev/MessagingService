@@ -1,7 +1,9 @@
 package core.project.messaging.domain.articles.services;
 
 import core.project.messaging.application.dto.ArticleForm;
+import core.project.messaging.application.dto.ArticlePreview;
 import core.project.messaging.application.dto.ArticleText;
+import core.project.messaging.application.dto.ArticlesQueryForm;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
@@ -16,6 +18,7 @@ import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -194,5 +197,13 @@ public class ArticlesService {
         }
 
         return article;
+    }
+
+    public List<ArticlePreview> pageOf(ArticlesQueryForm query, String username) {
+        return null;
+    }
+
+    public List<ArticlePreview> pageOf(String username) {
+        return null;
     }
 }

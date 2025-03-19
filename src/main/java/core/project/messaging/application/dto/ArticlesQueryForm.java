@@ -2,7 +2,9 @@ package core.project.messaging.application.dto;
 
 import jakarta.annotation.Nullable;
 
-public record ArticlesQueryForm(@Nullable String authorName,
+public record ArticlesQueryForm(int pageNumber,
+                                int pageSize,
+                                @Nullable String authorName,
                                 @Nullable String tag,
                                 @Nullable String searchQuery,
                                 @Nullable SortBy sortBy) {

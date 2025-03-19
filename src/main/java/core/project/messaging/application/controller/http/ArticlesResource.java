@@ -2,6 +2,7 @@ package core.project.messaging.application.controller.http;
 
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.dto.ArticleText;
+import core.project.messaging.application.dto.ArticlesQueryForm;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.services.ArticlesService;
 import io.quarkus.security.Authenticated;
@@ -49,6 +50,19 @@ public class ArticlesResource {
     public Response viewArticle(@QueryParam("id") String id) {
         nonNull(id);
         return Response.ok(articlesService.viewArticle(id, jwt.getName())).build();
+    }
+
+    @GET
+    @Path("/page")
+    public Response pageOf(ArticlesQueryForm query) {
+        nonNull(query);
+        return Response.ok(articlesService.pageOf(query, jwt.getName())).build();
+    }
+
+    @GET
+    @Path("home-page")
+    public Response pageOf() {
+        return Response.ok(articlesService.pageOf(jwt.getName())).build();
     }
 
     static void nonNull(Object... values) {
