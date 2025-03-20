@@ -11,8 +11,6 @@ import core.project.messaging.infrastructure.utilities.containers.Pair;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import core.project.messaging.infrastructure.utilities.containers.StatusPair;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 
 import java.util.Map;
 
@@ -124,10 +122,7 @@ public class PartnershipsService {
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
 
         if (!outboundUserRepository.havePartnership(userAccount, partnerAccount)) {
-            throw new WebApplicationException(Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .entity("This partnership not exists.")
-                    .build());
+            throw new IllegalArgumentException("This partnership not exists.");
         }
 
         inboundUserRepository.removePartnership(userAccount, partnerAccount);
