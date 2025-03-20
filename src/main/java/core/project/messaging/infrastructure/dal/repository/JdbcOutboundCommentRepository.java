@@ -18,6 +18,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildLimit;
+import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildOffSet;
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
 
 @Transactional
@@ -85,12 +87,16 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
     }
 
     @Override
-    public Result<List<Comment>, Throwable> page(UUID articleID, int limit, int offSet) {
+    public Result<List<Comment>, Throwable> page(UUID articleID, int pageNumber, int pageSize) {
+        int limit = buildLimit(pageSize);
+        int offSet = buildOffSet(limit, pageNumber);
         return jdbc.readListOf(COMMENTS, this::commentMapper, articleID.toString(), limit, offSet);
     }
 
     @Override
-    public Result<List<Comment>, Throwable> page(UUID articleID, UUID parentCommentID, int limit, int offSet) {
+    public Result<List<Comment>, Throwable> page(UUID articleID, UUID parentCommentID, int pageNumber, int pageSize) {
+        int limit = buildLimit(pageSize);
+        int offSet = buildOffSet(limit, pageNumber);
         return jdbc.readListOf(CHILD_COMMENTS, this::commentMapper, articleID.toString(), parentCommentID.toString(), limit, offSet);
     }
 

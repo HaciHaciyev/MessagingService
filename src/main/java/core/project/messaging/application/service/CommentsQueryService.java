@@ -23,10 +23,8 @@ public class CommentsQueryService {
 
     public List<Comment> pageOf(String articleID, int pageNumber, int pageSize) {
         try {
-            int limit = buildLimit(pageSize);
-            int offSet = buildOffSet(limit, pageNumber);
             return outboundCommentRepository
-                    .page(UUID.fromString(articleID), limit, offSet)
+                    .page(UUID.fromString(articleID), pageNumber, pageSize)
                     .orElseThrow(() -> getWebApplicationException(Response.Status.NOT_FOUND, "Can`t found a comments."));
         } catch (IllegalArgumentException e) {
             throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());
@@ -35,10 +33,8 @@ public class CommentsQueryService {
 
     public List<Comment> pageOf(String articleID, String parentCommentID, int pageNumber, int pageSize) {
         try {
-            int limit = buildLimit(pageSize);
-            int offSet = buildOffSet(limit, pageNumber);
             return outboundCommentRepository
-                    .page(UUID.fromString(articleID), UUID.fromString(parentCommentID), limit, offSet)
+                    .page(UUID.fromString(articleID), UUID.fromString(parentCommentID), pageNumber, pageSize)
                     .orElseThrow(() -> getWebApplicationException(Response.Status.NOT_FOUND, "Can`t found a comments."));
         } catch (IllegalArgumentException e) {
             throw getWebApplicationException(Response.Status.BAD_REQUEST, e.getMessage());

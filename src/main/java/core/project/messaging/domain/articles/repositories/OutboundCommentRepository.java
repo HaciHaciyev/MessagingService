@@ -15,7 +15,7 @@ public interface OutboundCommentRepository {
 
     Result<Comment, Throwable> comment(UUID comment);
 
-    Result<List<Comment>, Throwable> page(UUID articleID, int limit, int offSet);
+    Result<List<Comment>, Throwable> page(UUID articleID, int pageNumber, int pageSize);
 
-    Result<List<Comment>, Throwable> page(UUID articleID, UUID parentCommentID, int limit, int offSet);
+    Result<List<Comment>, Throwable> page(UUID articleID, UUID parentCommentID, int pageNumber, int pageSize);
 }
