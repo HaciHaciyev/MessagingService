@@ -1,5 +1,7 @@
 package core.project.messaging.infrastructure.dal.repository;
 
+import core.project.messaging.application.dto.ArticlePreview;
+import core.project.messaging.application.dto.ArticlesQueryForm;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.events.ArticleEvents;
@@ -87,6 +89,16 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                     Log.error("Error checking article existence.");
                     return false;
                 });
+    }
+
+    @Override
+    public Result<List<ArticlePreview>, Throwable> page(ArticlesQueryForm query, String username) {
+        return null;
+    }
+
+    @Override
+    public Result<List<ArticlePreview>, Throwable> page(int pageNumber, int pageSize, String username) {
+        return null;
     }
 
     @Override

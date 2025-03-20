@@ -4,8 +4,9 @@ import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.services.PartnershipsService;
 import core.project.messaging.domain.user.value_objects.Username;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+
+import static core.project.messaging.application.util.JsonUtilities.responseException;
 
 @ApplicationScoped
 public class PartnersService {
@@ -21,32 +22,20 @@ public class PartnersService {
 
     public Object listOfPartners(String username, int pageNumber, int pageSize) {
         if (!Username.validate(username)) {
-            throw new WebApplicationException(Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid username")
-                    .build());
+            throw responseException(Response.Status.BAD_REQUEST, "Invalid username");
         }
 
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
-        return outboundUserRepository
-                .listOfPartners(username, limit, offSet)
-                .orElseThrow(
-                        () -> new WebApplicationException(Response
-                                .status(Response.Status.BAD_REQUEST)
-                                .entity("User does not exist.\uD83D\uDC7B")
-                                .build())
-                );
+        return outboundUserRepository.listOfPartners(username, limit, offSet)
+                .orElseThrow(() -> responseException(Response.Status.BAD_REQUEST, "User does not exist.\uD83D\uDC7B"));
     }
 
     public void removePartner(String username, String partner) {
         try {
             partnershipsService.removePartner(username, partner);
         } catch (IllegalArgumentException e) {
-            throw new WebApplicationException(Response
-                    .status(Response.Status.BAD_REQUEST)
-                    .entity(e.getMessage())
-                    .build());
+            throw responseException(Response.Status.BAD_REQUEST, e.getMessage());
         }
     }
 

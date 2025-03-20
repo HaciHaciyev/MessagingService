@@ -3,6 +3,7 @@ package core.project.messaging.application.controller.http;
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.dto.ArticleText;
 import core.project.messaging.application.dto.ArticlesQueryForm;
+import core.project.messaging.application.service.ArticlesQueryService;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.services.ArticlesService;
 import io.quarkus.security.Authenticated;
@@ -18,9 +19,12 @@ public class ArticlesResource {
 
     private final ArticlesService articlesService;
 
-    ArticlesResource(JsonWebToken jwt, ArticlesService articlesService) {
+    private final ArticlesQueryService queryService;
+
+    ArticlesResource(JsonWebToken jwt, ArticlesService articlesService, ArticlesQueryService queryService) {
         this.jwt = jwt;
         this.articlesService = articlesService;
+        this.queryService = queryService;
     }
 
     @POST
@@ -56,13 +60,13 @@ public class ArticlesResource {
     @Path("/page")
     public Response pageOf(ArticlesQueryForm query) {
         nonNull(query);
-        return Response.ok(articlesService.pageOf(query, jwt.getName())).build();
+        return Response.ok(queryService.pageOf(query, jwt.getName())).build();
     }
 
     @GET
     @Path("home-page")
-    public Response pageOf() {
-        return Response.ok(articlesService.pageOf(jwt.getName())).build();
+    public Response pageOf(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
+        return Response.ok(queryService.pageOf(pageNumber, pageSize, jwt.getName())).build();
     }
 
     static void nonNull(Object... values) {

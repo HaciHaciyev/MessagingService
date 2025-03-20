@@ -33,6 +33,10 @@ public class ArticlesService {
 
     private final OutboundArticleRepository outboundArticleRepository;
 
+    public static final int SEARCH_QUERY_MIN_SIZE = 3;
+
+    public static final int SEARCH_QUERY_MAX_SIZE = 64;
+
     ArticlesService(OutboundUserRepository outboundUserRepository,
                     InboundArticleRepository inboundArticleRepository,
                     OutboundArticleRepository outboundArticleRepository) {
@@ -197,13 +201,5 @@ public class ArticlesService {
         }
 
         return article;
-    }
-
-    public List<ArticlePreview> pageOf(ArticlesQueryForm query, String username) {
-        return null;
-    }
-
-    public List<ArticlePreview> pageOf(String username) {
-        return null;
     }
 }

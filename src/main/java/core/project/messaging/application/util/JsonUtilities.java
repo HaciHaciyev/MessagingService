@@ -5,6 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import core.project.messaging.application.dto.Message;
 import io.quarkus.logging.Log;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 
 public class JsonUtilities {
@@ -35,5 +38,9 @@ public class JsonUtilities {
         }
 
         return "";
+    }
+
+    public static WebApplicationException responseException(Response.Status status, String message) {
+        return new WebApplicationException(Response.status(status).entity(message).type(MediaType.APPLICATION_JSON_TYPE).build());
     }
 }
