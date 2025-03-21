@@ -275,18 +275,12 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
     @Override
     public Result<List<Article>, Throwable> archive(int pageNumber, int pageSize, String username) {
-        int limit = buildLimit(pageSize);
-        int offSet = buildOffSet(limit, pageNumber);
-
-        return jdbc.readListOf(ARCHIVE, this::articleMapper, username, limit, offSet);
+        return listOfArticles(pageNumber, pageSize, username, ARCHIVE);
     }
 
     @Override
     public Result<List<Article>, Throwable> draft(int pageNumber, int pageSize, String username) {
-        int limit = buildLimit(pageSize);
-        int offSet = buildOffSet(limit, pageNumber);
-
-        return jdbc.readListOf(DRAFT, this::articleMapper, username, limit, offSet);
+        return listOfArticles(pageNumber, pageSize, username, DRAFT);
     }
 
     @Override
@@ -307,6 +301,27 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
     private ArticleTag articleTagsMapper(ResultSet rs) throws SQLException {
         return new ArticleTag(rs.getString("tag"));
+    }
+
+    private Result<List<Article>, Throwable> listOfArticles(int pageNumber, int pageSize, String username, String sql) {
+        int limit = buildLimit(pageSize);
+        int offSet = buildOffSet(limit, pageNumber);
+
+        Result<List<Article>, Throwable> articles = jdbc.readListOf(sql, this::articleMapper, username, limit, offSet);
+        if (!articles.success()) {
+            return articles;
+        }
+
+        for (Article article : articles.value()) {
+            Result<List<ArticleTag>, Throwable> articleTags = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, article.id().toString());
+            if (!articleTags.success()) {
+                return articles;
+            }
+
+            articleTags.value().forEach(article::addTag);
+        }
+
+        return articles;
     }
 
     private Article articleMapper(ResultSet rs) throws SQLException {
