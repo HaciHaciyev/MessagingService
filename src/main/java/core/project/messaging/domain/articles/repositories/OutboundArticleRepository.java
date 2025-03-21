@@ -1,8 +1,8 @@
 package core.project.messaging.domain.articles.repositories;
 
 import core.project.messaging.application.dto.ArticlePreview;
-import core.project.messaging.application.dto.ArticlesQueryForm;
 import core.project.messaging.domain.articles.entities.Article;
+import core.project.messaging.domain.articles.values_objects.ArticlesQueryForm;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public interface OutboundArticleRepository {
 
     boolean isArticleExists(UUID articleID);
 
-    Result<List<ArticlePreview>, Throwable> page(ArticlesQueryForm query, String username);
+    Result<List<ArticlePreview>, Throwable> page(ArticlesQueryForm query);
 
     Result<List<ArticlePreview>, Throwable> page(int pageNumber, int pageSize, String username);
 }

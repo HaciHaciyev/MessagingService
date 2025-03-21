@@ -1,16 +1,13 @@
 package core.project.messaging.infrastructure.dal.repository;
 
 import core.project.messaging.application.dto.ArticlePreview;
-import core.project.messaging.application.dto.ArticlesQueryForm;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.events.ArticleEvents;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
-import core.project.messaging.domain.articles.values_objects.ArticleTag;
-import core.project.messaging.domain.articles.values_objects.Body;
-import core.project.messaging.domain.articles.values_objects.Header;
-import core.project.messaging.domain.articles.values_objects.Summary;
+import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
+import core.project.messaging.infrastructure.dal.util.sql.ChainedWhereBuilder;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,6 +18,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
@@ -67,6 +65,25 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .where("id = ?")
             .build();
 
+    public static final ChainedWhereBuilder PAGE_OF_ARTICLES = select()
+            .column("a.id").as("id")
+            .column("a.author_id").as("author_id")
+            .column("a.header").as("header")
+            .column("a.summary").as("summary")
+            .column("a.status").as("status")
+            .column("a.last_updated").as("last_updated")
+            .column("ath.firstname").as("firstname")
+            .column("ath.lastname").as("lastname")
+            .column("ath.username").as("username")
+            .count("v.id").as("views")
+            .count("l.article_id").as("likes")
+            .from("Article a")
+            .join("Views v", "v.article_id = a.id")
+            .join("Likes l", "l.article_id = a.id")
+            .join("UserAccount ath", "ath.id = a.author_id")
+            .where("a.search_document @@ to_tsquery('english', ?)")
+            .and("a.status = 'PUBLISHED'");
+
     JdbcOutboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -92,12 +109,56 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
     }
 
     @Override
-    public Result<List<ArticlePreview>, Throwable> page(ArticlesQueryForm query, String username) {
-        return null;
+    public Result<List<ArticlePreview>, Throwable> page(ArticlesQueryForm query) {
+        int limit = buildLimit(query.pageSize());
+        int offSet = buildOffSet(limit, query.pageSize());
+
+        String sql = buildQuery(query);
+        if (Objects.nonNull(query.authorName()) && Objects.nonNull(query.tag())) {
+            return jdbc.readListOf(sql,
+                    this::articlePreviewMapper,
+                    query.searchQuery(),
+                    query.authorName(),
+                    query.tag(),
+                    query.sortBy().toString(),
+                    limit,
+                    offSet
+            );
+        }
+        if (Objects.isNull(query.authorName()) && Objects.nonNull(query.tag())) {
+            return jdbc.readListOf(sql,
+                    this::articlePreviewMapper,
+                    query.searchQuery(),
+                    query.tag(),
+                    query.sortBy().toString(),
+                    limit,
+                    offSet
+            );
+        }
+        if (Objects.nonNull(query.authorName())) {
+            return jdbc.readListOf(sql,
+                    this::articlePreviewMapper,
+                    query.searchQuery(),
+                    query.authorName(),
+                    query.sortBy().toString(),
+                    limit,
+                    offSet
+            );
+        }
+        return jdbc.readListOf(sql,
+                this::articlePreviewMapper,
+                query.searchQuery(),
+                query.sortBy().toString(),
+                limit,
+                offSet
+        );
     }
 
     @Override
     public Result<List<ArticlePreview>, Throwable> page(int pageNumber, int pageSize, String username) {
+        int limit = buildLimit(pageSize);
+        int offSet = buildOffSet(pageNumber, pageSize);
+
         return null;
     }
 
@@ -141,6 +202,21 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
         );
     }
 
+    private ArticlePreview articlePreviewMapper(ResultSet rs) throws SQLException {
+        return new ArticlePreview(
+                rs.getString("id"),
+                rs.getString("firstname"),
+                rs.getString("lastname"),
+                rs.getString("username"),
+                rs.getString("header"),
+                rs.getString("summary"),
+                rs.getString("status"),
+                rs.getLong("views"),
+                rs.getLong("likes"),
+                rs.getObject("last_updated", Timestamp.class).toLocalDateTime()
+        );
+    }
+
     static int buildLimit(Integer pageSize) {
         int limit;
         if (pageSize > 0 && pageSize <= 25) {
@@ -159,5 +235,26 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             offSet = 0;
         }
         return offSet;
+    }
+
+    static String buildQuery(ArticlesQueryForm query) {
+        ChainedWhereBuilder sql = PAGE_OF_ARTICLES;
+        if (query.authorName() != null) {
+            sql.and("a.author_id = (SELECT id FROM UserAccount WHERE username = ?)");
+        }
+        if (query.tag() != null) {
+            sql.and("EXISTS (SELECT 1 FROM ArticleTags at WHERE at.article_id = a.id AND at.tag = ?)");
+        }
+
+        switch (query.sortBy()) {
+            case VIEWS_ASC -> sql.orderBy("views ASC");
+            case VIEWS_DESC -> sql.orderBy("views DESC");
+            case LIKES_ASC -> sql.orderBy("likes ASC");
+            case LIKES_DESC -> sql.orderBy("likes DESC");
+            case LAST_MODIFICATION_ASC -> sql.orderBy("a.last_updated ASC");
+            case LAST_MODIFICATION_DESC -> sql.orderBy("a.last_updated DESC");
+        }
+
+        return sql.limitAndOffset();
     }
 }

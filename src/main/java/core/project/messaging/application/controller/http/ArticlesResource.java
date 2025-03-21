@@ -2,10 +2,10 @@ package core.project.messaging.application.controller.http;
 
 import core.project.messaging.application.dto.ArticleForm;
 import core.project.messaging.application.dto.ArticleText;
-import core.project.messaging.application.dto.ArticlesQueryForm;
 import core.project.messaging.application.service.ArticlesQueryService;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.services.ArticlesService;
+import core.project.messaging.domain.articles.values_objects.ArticlesQueryForm;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -60,7 +60,7 @@ public class ArticlesResource {
     @Path("/page")
     public Response pageOf(ArticlesQueryForm query) {
         nonNull(query);
-        return Response.ok(queryService.pageOf(query, jwt.getName())).build();
+        return Response.ok(queryService.pageOf(query)).build();
     }
 
     @GET
