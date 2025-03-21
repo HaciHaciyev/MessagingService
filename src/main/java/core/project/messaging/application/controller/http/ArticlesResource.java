@@ -69,6 +69,18 @@ public class ArticlesResource {
         return Response.ok(queryService.pageOf(pageNumber, pageSize, jwt.getName())).build();
     }
 
+    @GET
+    @Path("/archive")
+    public Response archive(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
+        return Response.ok(queryService.archive(pageNumber, pageSize, jwt.getName())).build();
+    }
+
+    @GET
+    @Path("/draft")
+    public Response draft(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
+        return Response.ok(queryService.draft(pageNumber, pageSize, jwt.getName())).build();
+    }
+
     static void nonNull(Object... values) {
         for (Object value : values) {
             if (value == null) throw new IllegalArgumentException("The accepted value turned out to be null.");

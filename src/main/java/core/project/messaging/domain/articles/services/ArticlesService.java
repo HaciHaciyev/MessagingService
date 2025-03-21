@@ -85,11 +85,12 @@ public class ArticlesService {
         }
 
         Article article = articleResult.value();
-        article.incrementViews();
+        if (!isNotPublished) {
+            article.incrementViews();
+            View view = new View(UUID.randomUUID(), article.id(), user.value().getId(), LocalDateTime.now());
+            inboundArticleRepository.updateViews(view);
+        }
 
-        View view = new View(UUID.randomUUID(), article.id(), user.value().getId(), LocalDateTime.now());
-
-        inboundArticleRepository.updateViews(view);
         return Result.success(article);
     }
 

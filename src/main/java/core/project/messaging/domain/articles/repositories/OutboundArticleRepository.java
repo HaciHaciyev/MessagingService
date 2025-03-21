@@ -19,4 +19,8 @@ public interface OutboundArticleRepository {
     Result<List<ArticlePreview>, Throwable> page(ArticlesQueryForm query);
 
     Result<List<ArticlePreview>, Throwable> page(int pageNumber, int pageSize, String username);
+
+    Result<List<Article>, Throwable> archive(int pageNumber, int pageSize, String username);
+
+    Result<List<Article>, Throwable> draft(int pageNumber, int pageSize, String username);
 }

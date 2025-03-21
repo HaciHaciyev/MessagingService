@@ -150,6 +150,44 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .and("a.status = 'PUBLISHED")
             .limitAndOffset();
 
+    static final String ARCHIVE = select()
+            .column("a.id").as("id")
+            .column("a.author_id").as("author_id")
+            .column("a.header").as("header")
+            .column("a.summary").as("summary")
+            .column("a.body").as("body")
+            .column("a.status").as("status")
+            .column("a.creation_date").as("creation_date")
+            .column("a.last_updated").as("last_updated")
+            .count("v.id").as("views")
+            .count("l.article_id").as("likes")
+            .from("Articles a")
+            .join("Views v", "v.article_id = a.id")
+            .join("Likes l", "l.article_id = a.id")
+            .join("UserAccount u", "u.id = a.author_id")
+            .where("u.username = ?")
+            .and("a.status = 'ARCHIVED'")
+            .limitAndOffset();
+
+    static final String DRAFT = select()
+            .column("a.id").as("id")
+            .column("a.author_id").as("author_id")
+            .column("a.header").as("header")
+            .column("a.summary").as("summary")
+            .column("a.body").as("body")
+            .column("a.status").as("status")
+            .column("a.creation_date").as("creation_date")
+            .column("a.last_updated").as("last_updated")
+            .count("v.id").as("views")
+            .count("l.article_id").as("likes")
+            .from("Articles a")
+            .join("Views v", "v.article_id = a.id")
+            .join("Likes l", "l.article_id = a.id")
+            .join("UserAccount u", "u.id = a.author_id")
+            .where("u.username = ?")
+            .and("a.status = 'DRAFT'")
+            .limitAndOffset();
+
     JdbcOutboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -233,6 +271,22 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
         }
 
         return jdbc.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY, this::articlePreviewMapper, username, limit, offSet);
+    }
+
+    @Override
+    public Result<List<Article>, Throwable> archive(int pageNumber, int pageSize, String username) {
+        int limit = buildLimit(pageSize);
+        int offSet = buildOffSet(limit, pageNumber);
+
+        return jdbc.readListOf(ARCHIVE, this::articleMapper, username, limit, offSet);
+    }
+
+    @Override
+    public Result<List<Article>, Throwable> draft(int pageNumber, int pageSize, String username) {
+        int limit = buildLimit(pageSize);
+        int offSet = buildOffSet(limit, pageNumber);
+
+        return jdbc.readListOf(DRAFT, this::articleMapper, username, limit, offSet);
     }
 
     @Override
