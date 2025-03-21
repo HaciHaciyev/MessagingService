@@ -4,7 +4,7 @@ CREATE TABLE Article (
     header TEXT NOT NULL,
     summary TEXT NOT NULL,
     body TEXT NOT NULL,
-    status VARCHAR(9) NOT NULL,
+    status VARCHAR(9) NOT NULL CHECK (status IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')),
     creation_date TIMESTAMP NOT NULL,
     last_updated TIMESTAMP NOT NULL,
     search_document ts_vector,
