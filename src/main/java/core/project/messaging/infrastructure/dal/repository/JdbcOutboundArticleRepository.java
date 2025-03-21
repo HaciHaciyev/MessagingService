@@ -8,6 +8,7 @@ import core.project.messaging.domain.articles.repositories.OutboundArticleReposi
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import core.project.messaging.infrastructure.dal.util.sql.ChainedWhereBuilder;
+import core.project.messaging.infrastructure.dal.util.sql.Order;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,6 +23,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
+import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.withAndSelect;
 
 @Transactional
 @ApplicationScoped
@@ -65,7 +67,34 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .where("id = ?")
             .build();
 
-    public static final ChainedWhereBuilder PAGE_OF_ARTICLES = select()
+    static final String USER_VIEWS_COUNT = select()
+            .count("v.id")
+            .from("Views v")
+            .join("UserAccount u", "u.username = ?")
+            .where("v.reader_id = u.id")
+            .build();
+
+    static final String ARTICLES = select()
+            .column("a.id").as("id")
+            .column("a.author_id").as("author_id")
+            .column("a.header").as("header")
+            .column("a.summary").as("summary")
+            .column("a.status").as("status")
+            .column("a.last_updated").as("last_updated")
+            .column("ath.firstname").as("firstname")
+            .column("ath.lastname").as("lastname")
+            .column("ath.username").as("username")
+            .count("v.id").as("views")
+            .count("l.article_id").as("likes")
+            .from("Article a")
+            .join("Views v", "v.article_id = a.id")
+            .join("Likes l", "l.article_id = a.id")
+            .join("UserAccount ath", "ath.id = a.author_id")
+            .where("a.status = 'PUBLISHED'")
+            .orderBy("COUNT(v.id)", Order.DESC)
+            .build();
+
+    static final ChainedWhereBuilder PAGE_OF_ARTICLES = select()
             .column("a.id").as("id")
             .column("a.author_id").as("author_id")
             .column("a.header").as("header")
@@ -83,6 +112,43 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .join("UserAccount ath", "ath.id = a.author_id")
             .where("a.search_document @@ to_tsquery('english', ?)")
             .and("a.status = 'PUBLISHED'");
+
+    static final String PAGE_OF_ARTICLES_BASED_ON_HISTORY = withAndSelect(
+            "recent_articles", select()
+                    .column("a.header").as("header")
+                    .column("a.summary").as("summary")
+                    .column("a.body").as("body")
+                    .from("Article a")
+                    .join("Views v", "v.article_id = a.id")
+                    .join("UserAccount u", "u.username = ?")
+                    .where("v.reader_id = u.id")
+                    .orderBy("v.creation_date", Order.DESC)
+                    .limitAndOffset(12, 0))
+            .column("a.id").as("id")
+            .column("a.author_id").as("author_id")
+            .column("a.header").as("header")
+            .column("a.summary").as("summary")
+            .column("a.status").as("status")
+            .column("a.last_updated").as("last_updated")
+            .column("ath.firstname").as("firstname")
+            .column("ath.lastname").as("lastname")
+            .column("ath.username").as("username")
+            .count("v.id").as("views")
+            .count("l.article_id").as("likes")
+            .from("Article a")
+            .join("Views v", "v.article_id = a.id")
+            .join("Likes l", "l.article_id = a.id")
+            .join("UserAccount ath", "ath.id = a.author_id")
+            .where("""
+                    a.search_document @@ to_tsquery('english',
+                          (SELECT string_agg(header, ' & ') FROM recent_articles) ||
+                          ' & ' ||
+                          (SELECT string_agg(summary, ' & ') FROM recent_articles) ||
+                          ' & ' ||
+                          (SELECT string_agg(body, ' & ') FROM recent_articles))
+                    """)
+            .and("a.status = 'PUBLISHED")
+            .limitAndOffset();
 
     JdbcOutboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
@@ -157,9 +223,16 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
     @Override
     public Result<List<ArticlePreview>, Throwable> page(int pageNumber, int pageSize, String username) {
         int limit = buildLimit(pageSize);
-        int offSet = buildOffSet(pageNumber, pageSize);
+        int offSet = buildOffSet(limit, pageNumber);
 
-        return null;
+        Integer countOfViews = jdbc.readObjectOf(USER_VIEWS_COUNT, Integer.class, username)
+                .orElseThrow(() -> new IllegalStateException("Can`t find user views."));
+
+        if (countOfViews == 0) {
+            return jdbc.readListOf(ARTICLES, this::articlePreviewMapper, username, limit, offSet);
+        }
+
+        return jdbc.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY, this::articlePreviewMapper, username, limit, offSet);
     }
 
     @Override
