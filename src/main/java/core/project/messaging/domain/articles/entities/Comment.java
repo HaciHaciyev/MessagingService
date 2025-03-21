@@ -13,15 +13,15 @@ import java.util.UUID;
 public class Comment {
     private final CommentIdentifiers commentIdentifiers;
     private CommentText text;
-    private int likesCount;
+    private int likes;
     private final Reference reference;
     private CommentEvents events;
 
-    private Comment(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference, int likesCount, CommentEvents events) {
+    private Comment(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference, int likes, CommentEvents events) {
         Objects.requireNonNull(commentIdentifiers, "Comment identifiers can`t be null.");
         Objects.requireNonNull(value, "Comment text cannot be null.");
         Objects.requireNonNull(reference, "Reference cannot be null.");
-        if (likesCount < 0) {
+        if (likes < 0) {
             throw new IllegalArgumentException("LikesCount can`t be negative.");
         }
 
@@ -58,6 +58,18 @@ public class Comment {
 
     public CommentText text() {
         return text;
+    }
+
+    public int likes() {
+        return likes;
+    }
+
+    public void incrementLikes() {
+        this.likes++;
+    }
+
+    public void decrementLikes() {
+        this.likes--;
     }
 
     public CommentEditedEvent changeText(CommentText commentValue) {

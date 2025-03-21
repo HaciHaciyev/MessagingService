@@ -3,6 +3,7 @@ package core.project.messaging.infrastructure.dal.repository;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.events.CommentEditedEvent;
 import core.project.messaging.domain.articles.repositories.InboundCommentRepository;
+import core.project.messaging.domain.articles.values_objects.CommentLike;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -49,6 +50,18 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
             .where("id = ?")
             .build();
 
+    static final String COMMENT_LIKE = insert()
+            .into("CommentLikes")
+            .columns("comment_id", "user_id", "creation_date")
+            .values(3)
+            .build();
+
+    static final String DELETE_COMMENT_LIKE = delete()
+            .from("Likes")
+            .where("comment_id = ?")
+            .and("user_id = ?")
+            .build();
+
     JdbcInboundCommentRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -85,5 +98,17 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
     public void updateEvent(CommentEditedEvent commentEvent) {
         jdbc.write(UPDATE_DATE, commentEvent.data(), commentEvent.commentID().toString())
                 .ifFailure(throwable -> Log.errorf("Error updating comment date: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void like(CommentLike commentLike) {
+        jdbc.write(COMMENT_LIKE, commentLike.commentId().toString(), commentLike.userId().toString(), commentLike.likedAt())
+                .ifFailure(throwable -> Log.errorf("Error updating comment likes: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void deleteLike(UUID commentID, UUID userID) {
+        jdbc.write(DELETE_COMMENT_LIKE, commentID.toString(), userID.toString())
+                .ifFailure(throwable -> Log.errorf("Error deleting comment like: %s", throwable.getMessage()));
     }
 }

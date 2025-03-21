@@ -7,16 +7,14 @@ import core.project.messaging.domain.articles.events.CommentEditedEvent;
 import core.project.messaging.domain.articles.repositories.InboundCommentRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
-import core.project.messaging.domain.articles.values_objects.CommentIdentifiers;
-import core.project.messaging.domain.articles.values_objects.CommentInfo;
-import core.project.messaging.domain.articles.values_objects.CommentText;
-import core.project.messaging.domain.articles.values_objects.Reference;
+import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -99,6 +97,28 @@ public class CommentsService {
         }
 
         inboundCommentRepository.deleteComment(UUID.fromString(commentID), user.getId());
+    }
+
+    public void like(String commentID, String username) {
+        UUID commentUUID = UUID.fromString(commentID);
+        Comment comment = outboundCommentRepository.comment(commentUUID)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not exists."));
+
+        comment.incrementLikes();
+
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        inboundCommentRepository.like(new CommentLike(commentUUID, user.getId(), LocalDateTime.now()));
+    }
+
+    public void deleteLike(String commentID, String username) {
+        UserAccount user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        inboundCommentRepository.deleteLike(UUID.fromString(commentID), user.getId());
     }
 
     private void validateRespondID(UUID respondTo, UUID parentCommentID, UUID articleID) {

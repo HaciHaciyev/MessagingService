@@ -61,13 +61,13 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .and("v.reader_id = ?")
             .build();
 
-    private static final String ARTICLE_LIKE = insert()
+    static final String ARTICLE_LIKE = insert()
             .into("Likes")
             .columns("article_id", "user_id", "creation_date")
             .values(3)
             .build();
 
-    private static final String DELETE_LIKE = delete()
+    static final String DELETE_LIKE = delete()
             .from("Likes")
             .where("article_id = ?")
             .and("user_id = ?")
