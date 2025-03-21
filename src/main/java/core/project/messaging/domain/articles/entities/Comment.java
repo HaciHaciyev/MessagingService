@@ -13,18 +13,35 @@ import java.util.UUID;
 public class Comment {
     private final CommentIdentifiers commentIdentifiers;
     private CommentText text;
+    private int likesCount;
     private final Reference reference;
     private CommentEvents events;
 
-    public Comment(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference) {
+    private Comment(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference, int likesCount, CommentEvents events) {
         Objects.requireNonNull(commentIdentifiers, "Comment identifiers can`t be null.");
         Objects.requireNonNull(value, "Comment text cannot be null.");
         Objects.requireNonNull(reference, "Reference cannot be null.");
+        if (likesCount < 0) {
+            throw new IllegalArgumentException("LikesCount can`t be negative.");
+        }
 
         this.commentIdentifiers = commentIdentifiers;
         this.text = value;
         this.reference = reference;
-        this.events = new CommentEvents(LocalDateTime.now(), LocalDateTime.now());
+        this.events = events;
+    }
+
+    public static Comment of(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference) {
+        return new Comment(commentIdentifiers, value, reference, 0, new CommentEvents(LocalDateTime.now(), LocalDateTime.now()));
+    }
+
+    public static Comment fromRepository(CommentIdentifiers commentIdentifiers,
+                                         CommentText value,
+                                         Reference reference,
+                                         int likesCount,
+                                         CommentEvents events) {
+
+        return new Comment(commentIdentifiers, value, reference, likesCount, events);
     }
 
     public UUID id() {

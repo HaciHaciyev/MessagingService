@@ -58,7 +58,7 @@ public class CommentsService {
         UUID respondTo = commentForm.respondTo() == null ? null : UUID.fromString(commentForm.respondTo());
         validateRespondID(respondTo, parentCommentID, articleID);
 
-        inboundCommentRepository.save(new Comment(
+        inboundCommentRepository.save(Comment.of(
                 new CommentIdentifiers(UUID.randomUUID(), user.getId(), articleID),
                 new CommentText(commentForm.text()),
                 new Reference(getCommentType(commentForm), parentCommentID, respondTo)

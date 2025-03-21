@@ -2,12 +2,14 @@ package core.project.messaging.infrastructure.dal.repository;
 
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.enumerations.CommentType;
+import core.project.messaging.domain.articles.events.CommentEvents;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
 import core.project.messaging.domain.articles.values_objects.CommentIdentifiers;
 import core.project.messaging.domain.articles.values_objects.CommentInfo;
 import core.project.messaging.domain.articles.values_objects.CommentText;
 import core.project.messaging.domain.articles.values_objects.Reference;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
+import core.project.messaging.infrastructure.dal.util.sql.Order;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -15,6 +17,7 @@ import jakarta.transaction.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,22 +47,51 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .build();
 
     static final String COMMENT = select()
-            .all()
-            .from("Comments")
-            .where("id = ?")
+            .column("c.id").as("id")
+            .column("c.article_id").as("article_id")
+            .column("c.user_id").as("user_id")
+            .column("c.comment_type").as("comment_type")
+            .column("c.parent_comment_id").as("parent_comment_id")
+            .column("c.respond_to_comment").as("respond_to_comment")
+            .column("c.creation_date").as("creation_date")
+            .column("c.last_updated").as("last_updated")
+            .count("cl.comment_id").as("likes_count")
+            .from("Comments c")
+            .join("CommentLikes cl", "cl.comment_id = c.id")
+            .where("c.id = ?")
             .build();
 
     static final String COMMENTS = select()
-            .all()
-            .from("Comments")
-            .where("article_id = ?")
+            .column("c.id").as("id")
+            .column("c.article_id").as("article_id")
+            .column("c.user_id").as("user_id")
+            .column("c.comment_type").as("comment_type")
+            .column("c.parent_comment_id").as("parent_comment_id")
+            .column("c.respond_to_comment").as("respond_to_comment")
+            .column("c.creation_date").as("creation_date")
+            .column("c.last_updated").as("last_updated")
+            .count("cl.comment_id").as("likes_count")
+            .from("Comments c")
+            .join("CommentLikes cl", "cl.comment_id = c.id")
+            .where("c.article_id = ?")
+            .orderBy("likes_count", Order.DESC)
             .limitAndOffset();
 
     static final String CHILD_COMMENTS = select()
-            .all()
-            .from("Comments")
-            .where("article_id = ?")
-            .and("parent_comment_id = ?")
+            .column("c.id").as("id")
+            .column("c.article_id").as("article_id")
+            .column("c.user_id").as("user_id")
+            .column("c.comment_type").as("comment_type")
+            .column("c.parent_comment_id").as("parent_comment_id")
+            .column("c.respond_to_comment").as("respond_to_comment")
+            .column("c.creation_date").as("creation_date")
+            .column("c.last_updated").as("last_updated")
+            .count("cl.comment_id").as("likes_count")
+            .from("Comments c")
+            .join("CommentLikes cl", "cl.comment_id = c.id")
+            .where("c.article_id = ?")
+            .and("c.parent_comment_id = ?")
+            .orderBy("likes_count", Order.DESC)
             .limitAndOffset();
 
     JdbcOutboundCommentRepository(JDBC jdbc) {
@@ -120,9 +152,20 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
         Reference reference = new Reference(
                 CommentType.valueOf(rs.getString("comment_type")),
                 UUID.fromString(rs.getString("parent_comment_id")),
-                UUID.fromString(rs.getString("user_id"))
+                UUID.fromString(rs.getString("respond_to_comment"))
         );
 
-        return new Comment(commentIdentifiers, new CommentText(rs.getString("text")), reference);
+        CommentEvents commentEvents = new CommentEvents(
+                rs.getObject("creation_date", Timestamp.class).toLocalDateTime(),
+                rs.getObject("last_updated", Timestamp.class).toLocalDateTime()
+        );
+
+        return Comment.fromRepository(
+                commentIdentifiers,
+                new CommentText(rs.getString("text")),
+                reference,
+                rs.getInt("likes_count"),
+                commentEvents
+        );
     }
 }
