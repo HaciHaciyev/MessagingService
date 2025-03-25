@@ -5,7 +5,6 @@ import core.project.messaging.application.dto.ArticleText;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
-import core.project.messaging.domain.articles.events.ArticleUpdatedEvent;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
@@ -153,11 +152,9 @@ public class ArticlesService {
         }
 
         if (article.status().equals(ArticleStatus.ARCHIVED)) {
-            ArticleUpdatedEvent archive = article.archive();
-            inboundArticleRepository.updateEvent(archive);
+            article.archive();
         } else {
-            ArticleUpdatedEvent publish = article.publish();
-            inboundArticleRepository.updateEvent(publish);
+            article.publish();
         }
 
         inboundArticleRepository.statusChange(article);
@@ -183,18 +180,15 @@ public class ArticlesService {
         }
 
         if (Objects.nonNull(articleText.header())) {
-            ArticleUpdatedEvent articleUpdatedEvent = article.changeHeader(new Header(articleText.header()));
-            inboundArticleRepository.updateEvent(articleUpdatedEvent);
+            article.changeHeader(new Header(articleText.header()));
             inboundArticleRepository.updateHeader(article);
         }
         if (Objects.nonNull(articleText.summary())) {
-            ArticleUpdatedEvent articleUpdatedEvent = article.changeSummary(new Summary(articleText.summary()));
-            inboundArticleRepository.updateEvent(articleUpdatedEvent);
+            article.changeSummary(new Summary(articleText.summary()));
             inboundArticleRepository.updateSummary(article);
         }
         if (Objects.nonNull(articleText.body())) {
-            ArticleUpdatedEvent articleUpdatedEvent = article.changeBody(new Body(articleText.body()));
-            inboundArticleRepository.updateEvent(articleUpdatedEvent);
+            article.changeBody(new Body(articleText.body()));
             inboundArticleRepository.updateBody(article);
         }
 

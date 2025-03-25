@@ -2,7 +2,6 @@ package core.project.messaging.infrastructure.dal.repository;
 
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
-import core.project.messaging.domain.articles.events.ArticleUpdatedEvent;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.Like;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
@@ -93,11 +92,6 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .where("id = ?")
             .build();
 
-    static final String UPDATE_DATE = update("Articles")
-            .set("last_updated = ?")
-            .where("id = ?")
-            .build();
-
     JdbcInboundArticleRepository(JDBC jdbc) {
         this.jdbc = jdbc;
     }
@@ -171,11 +165,5 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     public void updateBody(Article article) {
         jdbc.write(UPDATE_BODY, article.body().value(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing body: %s", throwable.getMessage()));
-    }
-
-    @Override
-    public void updateEvent(ArticleUpdatedEvent articleEvent) {
-        jdbc.write(UPDATE_DATE, articleEvent.data(), articleEvent.articleID().toString())
-                .ifFailure(throwable -> Log.errorf("Error updating article date: %s", throwable.getMessage()));
     }
 }

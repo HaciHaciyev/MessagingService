@@ -1,13 +1,16 @@
 package core.project.messaging.domain.articles.entities;
 
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
-import core.project.messaging.domain.articles.events.ArticleUpdatedEvent;
-import core.project.messaging.domain.articles.values_objects.ArticleTag;
 import core.project.messaging.domain.articles.events.ArticleEvents;
-import core.project.messaging.domain.articles.values_objects.*;
+import core.project.messaging.domain.articles.values_objects.ArticleTag;
+import core.project.messaging.domain.articles.values_objects.Body;
+import core.project.messaging.domain.articles.values_objects.Header;
+import core.project.messaging.domain.articles.values_objects.Summary;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 public class Article {
     private final UUID id;
@@ -81,11 +84,6 @@ public class Article {
         return events;
     }
 
-    private ArticleUpdatedEvent updateEvent() {
-        this.events = new ArticleEvents(events.creationDate(), LocalDateTime.now());
-        return new ArticleUpdatedEvent(id);
-    }
-
     public long views() {
         return views;
     }
@@ -106,64 +104,57 @@ public class Article {
         return header;
     }
 
-    public ArticleUpdatedEvent changeHeader(Header header) {
+    public void changeHeader(Header header) {
         Objects.requireNonNull(header, "Header cannot be null.");
         this.header = header;
-        return updateEvent();
     }
 
     public Summary summary() {
         return summary;
     }
 
-    public ArticleUpdatedEvent changeSummary(Summary summary) {
+    public void changeSummary(Summary summary) {
         Objects.requireNonNull(summary, "Summary must not be null.");
         this.summary = summary;
-        return updateEvent();
     }
 
     public Body body() {
         return body;
     }
 
-    public ArticleUpdatedEvent changeBody(Body body) {
+    public void changeBody(Body body) {
         Objects.requireNonNull(body, "Body must not be null.");
         this.body = body;
-        return updateEvent();
     }
 
     public ArticleStatus status() {
         return status;
     }
 
-    public ArticleUpdatedEvent publish() {
+    public void publish() {
         this.status = ArticleStatus.PUBLISHED;
-        return updateEvent();
     }
 
-    public ArticleUpdatedEvent archive() {
+    public void archive() {
         this.status = ArticleStatus.ARCHIVED;
-        return updateEvent();
     }
 
     public Set<ArticleTag> tags() {
         return new HashSet<>(tags);
     }
 
-    public ArticleUpdatedEvent addTag(ArticleTag tag) {
+    public void addTag(ArticleTag tag) {
         Objects.requireNonNull(tag, "Tag must not be null.");
         if (tags.size() == MAX_SIZE_OF_TAGS) {
             throw new IllegalArgumentException("Max size of tags: %d".formatted(MAX_SIZE_OF_TAGS));
         }
 
         tags.add(tag);
-        return updateEvent();
     }
 
-    public ArticleUpdatedEvent removeTag(ArticleTag tag) {
+    public void removeTag(ArticleTag tag) {
         Objects.requireNonNull(tag, "Tag must not be null.");
         tags.remove(tag);
-        return updateEvent();
     }
 
     @Override

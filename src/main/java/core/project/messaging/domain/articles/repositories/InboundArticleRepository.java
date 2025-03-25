@@ -2,7 +2,6 @@ package core.project.messaging.domain.articles.repositories;
 
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
-import core.project.messaging.domain.articles.events.ArticleUpdatedEvent;
 import core.project.messaging.domain.articles.values_objects.Like;
 
 import java.util.UUID;
@@ -26,6 +25,4 @@ public interface InboundArticleRepository {
     void updateSummary(Article article);
 
     void updateBody(Article body);
-
-    void updateEvent(ArticleUpdatedEvent articleEvent);
 }

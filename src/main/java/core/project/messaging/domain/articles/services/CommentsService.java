@@ -3,7 +3,6 @@ package core.project.messaging.domain.articles.services;
 import core.project.messaging.application.dto.CommentForm;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.enumerations.CommentType;
-import core.project.messaging.domain.articles.events.CommentEditedEvent;
 import core.project.messaging.domain.articles.repositories.InboundCommentRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
@@ -77,7 +76,7 @@ public class CommentsService {
             throw new IllegalArgumentException("Only author can edit a comment.");
         }
 
-        CommentEditedEvent commentEditedEvent = comment.changeText(new CommentText(text));
+        comment.changeText(new CommentText(text));
         inboundCommentRepository.updateCommentText(comment);
         return comment;
     }
