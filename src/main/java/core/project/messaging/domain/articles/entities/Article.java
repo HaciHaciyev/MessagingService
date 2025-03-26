@@ -46,6 +46,8 @@ public class Article {
         this.header = header;
         this.summary = summary;
         this.body = body;
+        this.views = views;
+        this.likes = likes;
         this.status = status;
         this.events = events;
     }
