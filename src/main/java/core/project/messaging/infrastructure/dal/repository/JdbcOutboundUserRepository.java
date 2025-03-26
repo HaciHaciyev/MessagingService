@@ -82,8 +82,8 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
         this.jdbc = jdbc;
     }
 
-    public boolean isEmailExists(Email verifiableEmail) {
-        return jdbc.readObjectOf(FIND_EMAIL, Integer.class, verifiableEmail.email())
+    public boolean isEmailExists(String verifiableEmail) {
+        return jdbc.readObjectOf(FIND_EMAIL, Integer.class, verifiableEmail)
                 .mapSuccess(count -> count != null && count > 0)
                 .orElseGet(() -> {
                     Log.error("Error checking email existence.");
@@ -91,8 +91,8 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
                 });
     }
 
-    public boolean isUsernameExists(Username verifiableUsername) {
-        return jdbc.readObjectOf(FIND_USERNAME, Integer.class, verifiableUsername.username())
+    public boolean isUsernameExists(String verifiableUsername) {
+        return jdbc.readObjectOf(FIND_USERNAME, Integer.class, verifiableUsername)
                 .mapSuccess(count -> count != null && count > 0)
                 .orElseGet(() -> {
                     Log.error("Error checking username existence.");
@@ -125,8 +125,8 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
         return jdbc.read(FIND_BY_ID, this::userAccountMapper, userId.toString());
     }
 
-    public Result<UserAccount, Throwable> findByUsername(Username username) {
-        return jdbc.read(FIND_BY_USERNAME, this::userAccountMapper, username.username());
+    public Result<UserAccount, Throwable> findByUsername(String username) {
+        return jdbc.read(FIND_BY_USERNAME, this::userAccountMapper, username);
     }
 
     public Result<UserAccount, Throwable> findByEmail(Email email) {

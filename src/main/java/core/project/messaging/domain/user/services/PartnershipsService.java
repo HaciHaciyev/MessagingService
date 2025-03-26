@@ -69,7 +69,7 @@ public class PartnershipsService {
     public Pair<MessageAddressee, Message> partnershipRequest(final UserAccount addresserAccount, final Username addressee, final Message message) {
         final String addresser = addresserAccount.getUsername().username();
 
-        final Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(addressee);
+        final Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(addressee.username());
         if (!result.success()) {
             Message errorMessage = Message.error("This account is not exists.");
             return Pair.of(MessageAddressee.ONLY_ADDRESSER, errorMessage);
@@ -114,11 +114,11 @@ public class PartnershipsService {
 
     public void removePartner(String username, String partner) {
         UserAccount userAccount = outboundUserRepository
-                .findByUsername(new Username(username))
+                .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User does`t exists."));
 
         UserAccount partnerAccount = outboundUserRepository
-                .findByUsername(new Username(partner))
+                .findByUsername(partner)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
 
         if (!outboundUserRepository.havePartnership(userAccount, partnerAccount)) {

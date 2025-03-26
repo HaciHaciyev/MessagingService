@@ -45,7 +45,7 @@ public class UserSessionService {
 
     public void onOpen(Session session, Username username) {
         CompletableFuture.runAsync(() -> {
-            Result<UserAccount, Throwable> account = outboundUserRepository.findByUsername(username);
+            Result<UserAccount, Throwable> account = outboundUserRepository.findByUsername(username.username());
             if (!account.success()) {
                 closeSession(session, "This account does`t exist.");
                 return;

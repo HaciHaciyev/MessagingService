@@ -9,13 +9,14 @@ import core.project.messaging.domain.articles.repositories.OutboundCommentReposi
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.user.entities.UserAccount;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
-import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
+
+import static core.project.messaging.domain.articles.services.ArticlesService.validateUsername;
 
 @ApplicationScoped
 public class CommentsService {
@@ -40,8 +41,9 @@ public class CommentsService {
     }
 
     public void create(CommentForm commentForm, String username) {
+        validateUsername(username);
         UserAccount user = outboundUserRepository
-                .findByUsername(new Username(username))
+                .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
 
         UUID articleID = UUID.fromString(commentForm.articleID());
@@ -63,8 +65,9 @@ public class CommentsService {
     }
 
     public Comment edit(String commentID, String text, String username) {
+        validateUsername(username);
         UserAccount user = outboundUserRepository
-                .findByUsername(new Username(username))
+                .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
 
         Comment comment = outboundCommentRepository
@@ -82,8 +85,9 @@ public class CommentsService {
     }
 
     public void delete(String commentID, String username) {
+        validateUsername(username);
         UserAccount user = outboundUserRepository
-                .findByUsername(new Username(username))
+                .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
 
         Comment comment = outboundCommentRepository
@@ -99,6 +103,7 @@ public class CommentsService {
     }
 
     public void like(String commentID, String username) {
+        validateUsername(username);
         UUID commentUUID = UUID.fromString(commentID);
         Comment comment = outboundCommentRepository.comment(commentUUID)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not exists."));
@@ -106,15 +111,16 @@ public class CommentsService {
         comment.incrementLikes();
 
         UserAccount user = outboundUserRepository
-                .findByUsername(new Username(username))
+                .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         inboundCommentRepository.like(new CommentLike(commentUUID, user.getId(), LocalDateTime.now()));
     }
 
     public void deleteLike(String commentID, String username) {
+        validateUsername(username);
         UserAccount user = outboundUserRepository
-                .findByUsername(new Username(username))
+                .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         inboundCommentRepository.deleteLike(UUID.fromString(commentID), user.getId());

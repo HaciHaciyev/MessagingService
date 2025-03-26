@@ -37,19 +37,6 @@ public class UserAccount {
         this.partners = partners;
     }
 
-    public static UserAccount of(Firstname firstname, Surname surname, Username username, Email email, Password password) {
-        Objects.requireNonNull(firstname);
-        Objects.requireNonNull(surname);
-        Objects.requireNonNull(username);
-        Objects.requireNonNull(email);
-        Objects.requireNonNull(password);
-
-        return new UserAccount(
-                UUID.randomUUID(), firstname, surname, username, email, password,
-                UserRole.NONE, false, Rating.defaultRating(), AccountEvents.defaultEvents(), new HashSet<>()
-        );
-    }
-
     /**
      * this method is used to call only from repository
      */
