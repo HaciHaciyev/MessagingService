@@ -7,7 +7,7 @@ import core.project.messaging.domain.articles.repositories.InboundCommentReposit
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
 import core.project.messaging.domain.articles.values_objects.*;
-import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -42,7 +42,7 @@ public class CommentsService {
 
     public void create(CommentForm commentForm, String username) {
         validateUsername(username);
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
 
@@ -66,7 +66,7 @@ public class CommentsService {
 
     public Comment edit(String commentID, String text, String username) {
         validateUsername(username);
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
 
@@ -86,7 +86,7 @@ public class CommentsService {
 
     public void delete(String commentID, String username) {
         validateUsername(username);
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
 
@@ -110,7 +110,7 @@ public class CommentsService {
 
         comment.incrementLikes();
 
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -119,7 +119,7 @@ public class CommentsService {
 
     public void deleteLike(String commentID, String username) {
         validateUsername(username);
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 

@@ -1,7 +1,7 @@
 package core.project.messaging.application.service;
 
 import core.project.messaging.application.dto.Message;
-import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.enumerations.MessageAddressee;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.services.PartnershipsService;
@@ -45,7 +45,7 @@ public class UserSessionService {
 
     public void onOpen(Session session, Username username) {
         CompletableFuture.runAsync(() -> {
-            Result<UserAccount, Throwable> account = outboundUserRepository.findByUsername(username.username());
+            Result<User, Throwable> account = outboundUserRepository.findByUsername(username.username());
             if (!account.success()) {
                 closeSession(session, "This account does`t exist.");
                 return;
@@ -61,7 +61,7 @@ public class UserSessionService {
     public void onMessage(Session session, Username username, Message message) {
         Log.infof("Handling %s of user -> %s.", message.type(), username.username());
 
-        Optional<UserAccount> userAccount = extractAccount(session);
+        Optional<User> userAccount = extractAccount(session);
         if (userAccount.isEmpty()) {
             closeAndRemoveSession("Unexpected error. Session does not have a user account.", session);
             return;
@@ -80,7 +80,7 @@ public class UserSessionService {
                 });
     }
 
-    private void handleMessage(Message message, Session session, UserAccount user) {
+    private void handleMessage(Message message, Session session, User user) {
         switch (message.type()) {
             case PARTNERSHIP_REQUEST -> {
                 String addressee = message.partner();
@@ -104,7 +104,7 @@ public class UserSessionService {
         }
     }
 
-    private void partnershipRequest(Session session, UserAccount addresser, Message message, Username addressee) {
+    private void partnershipRequest(Session session, User addresser, Message message, Username addressee) {
         if (sessionStorage.contains(addressee)) {
             Optional<Session> addresseeSession = sessionStorage.get(addressee);
             if (addresseeSession.isEmpty()) {
@@ -112,7 +112,7 @@ public class UserSessionService {
                 return;
             }
 
-            Optional<UserAccount> addresseeAccount = extractAccount(addresseeSession.orElseThrow());
+            Optional<User> addresseeAccount = extractAccount(addresseeSession.orElseThrow());
             if (addresseeAccount.isEmpty()) {
                 closeAndRemoveSession("Unexpected error. The connected web socket connection is not in the storage.", addresseeSession.orElseThrow());
                 return;
@@ -149,9 +149,9 @@ public class UserSessionService {
         sessionStorage.remove(session);
     }
 
-    public Optional<UserAccount> extractAccount(Session session) {
+    public Optional<User> extractAccount(Session session) {
         return Optional.ofNullable(session.getUserProperties().get(SessionStorage.SessionProperties.USER_ACCOUNT.key()))
-                .filter(UserAccount.class::isInstance)
-                .map(UserAccount.class::cast);
+                .filter(User.class::isInstance)
+                .map(User.class::cast);
     }
 }

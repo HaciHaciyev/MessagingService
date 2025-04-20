@@ -1,10 +1,10 @@
 package core.project.messaging.domain.user.repositories;
 
-import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.entities.User;
 
 public interface InboundUserRepository {
 
-    void addPartnership(UserAccount firstUser, UserAccount secondUser);
+    void addPartnership(User firstUser, User secondUser);
 
-    void removePartnership(UserAccount firstUser, UserAccount secondUser);
+    void removePartnership(User firstUser, User secondUser);
 }

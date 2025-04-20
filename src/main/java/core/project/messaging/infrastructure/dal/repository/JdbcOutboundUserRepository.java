@@ -1,7 +1,6 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import core.project.messaging.domain.user.entities.UserAccount;
-import core.project.messaging.domain.user.enumerations.UserRole;
+import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.events.AccountEvents;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.*;
@@ -107,7 +106,7 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
         );
     }
 
-    public boolean havePartnership(UserAccount user, UserAccount partner) {
+    public boolean havePartnership(User user, User partner) {
         return jdbc.readObjectOf(IS_PARTNERSHIP_EXISTS,
                         Integer.class,
                         user.getId().toString(),
@@ -121,19 +120,19 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
                 });
     }
 
-    public Result<UserAccount, Throwable> findById(UUID userId) {
+    public Result<User, Throwable> findById(UUID userId) {
         return jdbc.read(FIND_BY_ID, this::userAccountMapper, userId.toString());
     }
 
-    public Result<UserAccount, Throwable> findByUsername(String username) {
+    public Result<User, Throwable> findByUsername(String username) {
         return jdbc.read(FIND_BY_USERNAME, this::userAccountMapper, username);
     }
 
-    public Result<UserAccount, Throwable> findByEmail(Email email) {
+    public Result<User, Throwable> findByEmail(Email email) {
         return jdbc.read(FIND_BY_EMAIL, this::userAccountMapper, email.email());
     }
 
-    private UserAccount userAccountMapper(final ResultSet rs) throws SQLException {
+    private User userAccountMapper(final ResultSet rs) throws SQLException {
         var events = new AccountEvents(
                 rs.getObject("creation_date", Timestamp.class).toLocalDateTime(),
                 rs.getObject("last_updated_date", Timestamp.class).toLocalDateTime()
@@ -145,14 +144,13 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
                 rs.getDouble("rating_volatility")
         );
 
-        return UserAccount.fromRepository(
+        return new User(
                 UUID.fromString(rs.getString("id")),
                 new Firstname(rs.getString("firstname")),
                 new Surname(rs.getString("surname")),
                 new Username(rs.getString("username")),
                 new Email(rs.getString("email")),
                 new Password(rs.getString("password")),
-                UserRole.valueOf(rs.getString("user_role")),
                 rs.getBoolean("is_enable"),
                 rating,
                 events

@@ -1,6 +1,6 @@
 package core.project.messaging.infrastructure.dal.cache;
 
-import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.value_objects.Username;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
@@ -13,9 +13,9 @@ public class SessionStorage {
 
     private static final ConcurrentHashMap<Username, Session> sessions = new ConcurrentHashMap<>();
 
-    public void put(final Session session, final UserAccount userAccount) {
-        session.getUserProperties().put(SessionProperties.USER_ACCOUNT.key(), userAccount);
-        sessions.put(userAccount.getUsername(), session);
+    public void put(final Session session, final User user) {
+        session.getUserProperties().put(SessionProperties.USER_ACCOUNT.key(), user);
+        sessions.put(user.getUsername(), session);
     }
 
     public Optional<Session> get(final Username username) {

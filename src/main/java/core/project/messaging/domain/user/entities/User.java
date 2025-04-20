@@ -1,6 +1,5 @@
 package core.project.messaging.domain.user.entities;
 
-import core.project.messaging.domain.user.enumerations.UserRole;
 import core.project.messaging.domain.user.events.AccountEvents;
 import core.project.messaging.domain.user.value_objects.*;
 
@@ -9,50 +8,39 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public class UserAccount {
+public class User {
     private final UUID id;
     private final Firstname firstname;
     private final Surname surname;
     private final Username username;
     private final Email email;
     private final Password password;
-    private UserRole userRole;
     private boolean isEnable;
     private Rating rating;
     private final AccountEvents accountEvents;
-    private final Set<UserAccount> partners;
+    private final Set<User> partners;
 
-    public UserAccount(UUID id, Firstname firstname, Surname surname, Username username, Email email, Password password,
-                       UserRole userRole, boolean isEnable, Rating rating, AccountEvents accountEvents, Set<UserAccount> partners) {
-        this.id = id;
-        this.firstname = firstname;
-        this.surname = surname;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.userRole = userRole;
-        this.isEnable = isEnable;
-        this.rating = rating;
-        this.accountEvents = accountEvents;
-        this.partners = partners;
-    }
-
-    /**
-     * this method is used to call only from repository
-     */
-    public static UserAccount fromRepository(UUID id, Firstname firstname, Surname surname, Username username, Email email,
-                                             Password password, UserRole userRole, boolean enabled, Rating rating, AccountEvents events) {
+    public User(UUID id, Firstname firstname, Surname surname, Username username, Email email,
+                Password password, boolean isEnable, Rating rating, AccountEvents accountEvents) {
         Objects.requireNonNull(id);
         Objects.requireNonNull(firstname);
         Objects.requireNonNull(surname);
         Objects.requireNonNull(username);
         Objects.requireNonNull(email);
         Objects.requireNonNull(password);
-        Objects.requireNonNull(userRole);
         Objects.requireNonNull(rating);
-        Objects.requireNonNull(events);
+        Objects.requireNonNull(accountEvents);
 
-        return new UserAccount(id, firstname, surname, username, email, password, userRole, enabled, rating, events, new HashSet<>());
+        this.id = id;
+        this.firstname = firstname;
+        this.surname = surname;
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.isEnable = isEnable;
+        this.rating = rating;
+        this.accountEvents = accountEvents;
+        this.partners = new HashSet<>();
     }
 
     public UUID getId() {
@@ -79,10 +67,6 @@ public class UserAccount {
         return password;
     }
 
-    public UserRole getUserRole() {
-        return userRole;
-    }
-
     public boolean isEnable() {
         return isEnable;
     }
@@ -99,15 +83,15 @@ public class UserAccount {
         return this.rating;
     }
 
-    public Set<UserAccount> getPartners() {
+    public Set<User> getPartners() {
         return new HashSet<>(partners);
     }
 
-    public boolean containsPartner(final UserAccount userAccount) {
-        return partners.contains(userAccount);
+    public boolean containsPartner(final User user) {
+        return partners.contains(user);
     }
 
-    public void addPartner(final UserAccount partner) {
+    public void addPartner(final User partner) {
         Objects.requireNonNull(partner);
         if (partner.username.equals(this.username)) {
             return;
@@ -119,7 +103,7 @@ public class UserAccount {
         }
     }
 
-    public void removePartner(final UserAccount partner) {
+    public void removePartner(final User partner) {
         Objects.requireNonNull(partner);
         partners.remove(partner);
         partner.removePartner(this);
@@ -129,17 +113,17 @@ public class UserAccount {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserAccount that = (UserAccount) o;
+        User that = (User) o;
 
         return isEnable == that.isEnable && Objects.equals(id, that.id) && Objects.equals(username, that.username) &&
-                Objects.equals(email, that.email) && Objects.equals(password, that.password) && userRole == that.userRole &&
+                Objects.equals(email, that.email) && Objects.equals(password, that.password) &&
                 Objects.equals(rating, that.rating) && Objects.equals(accountEvents, that.accountEvents);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                id, username, email, password, userRole, isEnable, rating, accountEvents
+                id, username, email, password, isEnable, rating, accountEvents
         );
     }
 
@@ -156,7 +140,6 @@ public class UserAccount {
                UserAccount: %s {
                     Username : %s,
                     Email : %s,
-                    User role : %s,
                     Is enable : %s,
                     Rating : %f,
                     Creation date : %s,
@@ -166,7 +149,6 @@ public class UserAccount {
                 id,
                 username.username(),
                 email.email(),
-                userRole,
                 enables,
                 rating.rating(),
                 accountEvents.creationDate().toString(),

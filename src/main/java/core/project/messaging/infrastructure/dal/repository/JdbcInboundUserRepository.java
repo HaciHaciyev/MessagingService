@@ -1,6 +1,6 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.InboundUserRepository;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -35,7 +35,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
         this.jdbc = jdbc;
     }
 
-    public void addPartnership(UserAccount firstUser, UserAccount secondUser) {
+    public void addPartnership(User firstUser, User secondUser) {
         final boolean doNotMatch = !firstUser.getPartners().contains(secondUser) || !secondUser.getPartners().contains(firstUser);
         if (doNotMatch) {
             throw new IllegalArgumentException("Illegal function usage.");
@@ -48,7 +48,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
                 .ifFailure(Throwable::printStackTrace);
     }
 
-    public void removePartnership(UserAccount firstUser, UserAccount secondUser) {
+    public void removePartnership(User firstUser, User secondUser) {
         jdbc.write(DELETE_PARTNERSHIP,
                         firstUser.getId().toString(),
                         secondUser.getId().toString(),

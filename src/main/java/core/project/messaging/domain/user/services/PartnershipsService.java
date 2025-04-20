@@ -1,7 +1,7 @@
 package core.project.messaging.domain.user.services;
 
 import core.project.messaging.application.dto.Message;
-import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.enumerations.MessageAddressee;
 import core.project.messaging.domain.user.repositories.InboundUserRepository;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
@@ -33,7 +33,7 @@ public class PartnershipsService {
         return requestsRepository.getAll(username);
     }
 
-    public Pair<MessageAddressee, Message> partnershipRequest(final UserAccount addresserAccount, final UserAccount addresseeAccount, final Message message) {
+    public Pair<MessageAddressee, Message> partnershipRequest(final User addresserAccount, final User addresseeAccount, final Message message) {
         final String addresser = addresserAccount.getUsername().username();
         final String addressee = addresseeAccount.getUsername().username();
 
@@ -66,16 +66,16 @@ public class PartnershipsService {
         return Pair.of(MessageAddressee.ONLY_ADDRESSEE, invitationMessage(message.message(), addresserAccount));
     }
 
-    public Pair<MessageAddressee, Message> partnershipRequest(final UserAccount addresserAccount, final Username addressee, final Message message) {
+    public Pair<MessageAddressee, Message> partnershipRequest(final User addresserAccount, final Username addressee, final Message message) {
         final String addresser = addresserAccount.getUsername().username();
 
-        final Result<UserAccount, Throwable> result = outboundUserRepository.findByUsername(addressee.username());
+        final Result<User, Throwable> result = outboundUserRepository.findByUsername(addressee.username());
         if (!result.success()) {
             Message errorMessage = Message.error("This account is not exists.");
             return Pair.of(MessageAddressee.ONLY_ADDRESSER, errorMessage);
         }
 
-        final UserAccount addresseeAccount = result.value();
+        final User addresseeAccount = result.value();
 
         final boolean isRequestRetried = requestsRepository.get(addressee.username(), addresser).status();
         if (isRequestRetried) {
@@ -108,24 +108,24 @@ public class PartnershipsService {
         return Pair.of(MessageAddressee.ONLY_ADDRESSER, messageOfResult);
     }
 
-    public void partnershipDecline(final UserAccount user, final Username partner) {
+    public void partnershipDecline(final User user, final Username partner) {
         requestsRepository.delete(user.getUsername().username(), partner.username());
     }
 
     public void removePartner(String username, String partner) {
-        UserAccount userAccount = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User does`t exists."));
 
-        UserAccount partnerAccount = outboundUserRepository
+        User partnerAccount = outboundUserRepository
                 .findByUsername(partner)
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
 
-        if (!outboundUserRepository.havePartnership(userAccount, partnerAccount)) {
+        if (!outboundUserRepository.havePartnership(user, partnerAccount)) {
             throw new IllegalArgumentException("This partnership not exists.");
         }
 
-        inboundUserRepository.removePartnership(userAccount, partnerAccount);
+        inboundUserRepository.removePartnership(user, partnerAccount);
     }
 
     private StatusPair<String> isPartnershipCreated(String addresser, String addressee) {
@@ -133,11 +133,11 @@ public class PartnershipsService {
         return requests.containsKey(addressee) ? StatusPair.ofTrue(requests.get(addressee)) : StatusPair.ofFalse();
     }
 
-    private static Message successfullyAddedPartnershipMessage(UserAccount firstUser, UserAccount secondUser) {
+    private static Message successfullyAddedPartnershipMessage(User firstUser, User secondUser) {
         return Message.userInfo("Partnership {%s - %s} successfully added.".formatted(firstUser.getUsername().username(), secondUser.getUsername().username()));
     }
 
-    private static Message invitationMessage(String message, UserAccount addresser) {
+    private static Message invitationMessage(String message, User addresser) {
         String partner = addresser.getUsername().username();
         return Message.partnershipRequest("User {%s} invite you for partnership {%s}.".formatted(partner, message), partner);
     }

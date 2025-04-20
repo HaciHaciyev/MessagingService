@@ -8,7 +8,7 @@ import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
-import core.project.messaging.domain.user.entities.UserAccount;
+import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.utilities.containers.Result;
@@ -44,7 +44,7 @@ public class ArticlesService {
     public Article save(ArticleForm articleForm, String username) {
         validateUsername(username);
 
-        UserAccount userAccount = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Account is not exists."));
 
@@ -55,7 +55,7 @@ public class ArticlesService {
                 .collect(Collectors.toSet());
 
         Article article = Article.of(
-                userAccount.getId(),
+                user.getId(),
                 articleTags,
                 new Header(articleForm.header()),
                 new Summary(articleForm.summary()),
@@ -70,7 +70,7 @@ public class ArticlesService {
     public Result<Article, IllegalArgumentException> viewArticle(String articleID, String username) {
         validateUsername(username);
 
-        Result<UserAccount, Throwable> user = outboundUserRepository.findByUsername(username);
+        Result<User, Throwable> user = outboundUserRepository.findByUsername(username);
         if (!user.success()) {
             return Result.failure(new IllegalArgumentException("User not found."));
         }
@@ -100,7 +100,7 @@ public class ArticlesService {
     public void deleteView(String articleID, String username) {
         validateUsername(username);
 
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -121,7 +121,7 @@ public class ArticlesService {
             throw new IllegalArgumentException("Article not found");
         }
 
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -136,7 +136,7 @@ public class ArticlesService {
     public void deleteLike(String articleID, String username) {
         validateUsername(username);
 
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -153,7 +153,7 @@ public class ArticlesService {
                 .article(UUID.fromString(articleID))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
 
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
@@ -182,7 +182,7 @@ public class ArticlesService {
                 .article(UUID.fromString(articleID))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
 
-        UserAccount user = outboundUserRepository
+        User user = outboundUserRepository
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
