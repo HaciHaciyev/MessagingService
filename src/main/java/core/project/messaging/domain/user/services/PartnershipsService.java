@@ -23,7 +23,9 @@ public class PartnershipsService {
 
     private final PartnershipRequestsRepository requestsRepository;
 
-    PartnershipsService(InboundUserRepository inboundUserRepository, OutboundUserRepository outboundUserRepository, PartnershipRequestsRepository requestsRepository) {
+    PartnershipsService(InboundUserRepository inboundUserRepository,
+                        OutboundUserRepository outboundUserRepository,
+                        PartnershipRequestsRepository requestsRepository) {
         this.inboundUserRepository = inboundUserRepository;
         this.outboundUserRepository = outboundUserRepository;
         this.requestsRepository = requestsRepository;
@@ -33,7 +35,11 @@ public class PartnershipsService {
         return requestsRepository.getAll(username);
     }
 
-    public Pair<MessageAddressee, Message> partnershipRequest(final User addresserAccount, final User addresseeAccount, final Message message) {
+    public Pair<MessageAddressee, Message> partnershipRequest(
+            final User addresserAccount,
+            final User addresseeAccount,
+            final Message message) {
+
         final String addresser = addresserAccount.username().username();
         final String addressee = addresseeAccount.username().username();
 
@@ -45,7 +51,8 @@ public class PartnershipsService {
 
         final boolean isAlreadyHavePartnership = outboundUserRepository.havePartnership(addresserAccount, addresseeAccount);
         if (isAlreadyHavePartnership) {
-            return Pair.of(MessageAddressee.ONLY_ADDRESSER, Message.error("You can`t invite someone who has partnership with you already."));
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER,
+                    Message.error("You can`t invite someone who has partnership with you already."));
         }
 
         requestsRepository.put(addressee, addresser, message.message());
@@ -66,7 +73,11 @@ public class PartnershipsService {
         return Pair.of(MessageAddressee.ONLY_ADDRESSEE, invitationMessage(message.message(), addresserAccount));
     }
 
-    public Pair<MessageAddressee, Message> partnershipRequest(final User addresserAccount, final Username addressee, final Message message) {
+    public Pair<MessageAddressee, Message> partnershipRequest(
+            final User addresserAccount,
+            final Username addressee,
+            final Message message) {
+
         final String addresser = addresserAccount.username().username();
 
         final Result<User, Throwable> result = outboundUserRepository.findByUsername(addressee.username());
@@ -85,7 +96,8 @@ public class PartnershipsService {
 
         final boolean isAlreadyHavePartnership = outboundUserRepository.havePartnership(addresserAccount, addresseeAccount);
         if (isAlreadyHavePartnership) {
-            return Pair.of(MessageAddressee.ONLY_ADDRESSER, Message.error("You can`t invite someone who has partnership with you already."));
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER,
+                    Message.error("You can`t invite someone who has partnership with you already."));
         }
 
         requestsRepository.put(addressee.username(), addresser, message.message());
@@ -134,7 +146,8 @@ public class PartnershipsService {
     }
 
     private static Message successfullyAddedPartnershipMessage(User firstUser, User secondUser) {
-        return Message.userInfo("Partnership {%s - %s} successfully added.".formatted(firstUser.username().username(), secondUser.username().username()));
+        return Message.userInfo("Partnership {%s - %s} successfully added."
+                .formatted(firstUser.username().username(), secondUser.username().username()));
     }
 
     private static Message invitationMessage(String message, User addresser) {

@@ -54,7 +54,8 @@ public class UserSessionService {
             sessionStorage.put(session, Objects.requireNonNull(account.orElseThrow()));
             partnershipsService
                     .getAll(username.username())
-                    .forEach((user, message) -> sendMessage(session, Message.partnershipRequest(String.format("%s: {%s}", user, message), user)));
+                    .forEach((user, message) ->
+                            sendMessage(session, Message.partnershipRequest(String.format("%s: {%s}", user, message), user)));
         });
     }
 
@@ -114,11 +115,13 @@ public class UserSessionService {
 
             Optional<User> addresseeAccount = extractAccount(addresseeSession.orElseThrow());
             if (addresseeAccount.isEmpty()) {
-                closeAndRemoveSession("Unexpected error. The connected web socket connection is not in the storage.", addresseeSession.orElseThrow());
+                closeAndRemoveSession("Unexpected error. The connected web socket connection is not in the storage.",
+                        addresseeSession.orElseThrow());
                 return;
             }
 
-            Pair<MessageAddressee, Message> messages = partnershipsService.partnershipRequest(addresser, addresseeAccount.orElseThrow(), message);
+            Pair<MessageAddressee, Message> messages = partnershipsService
+                    .partnershipRequest(addresser, addresseeAccount.orElseThrow(), message);
             send(messages, session, addresseeSession.orElseThrow());
             return;
         }
