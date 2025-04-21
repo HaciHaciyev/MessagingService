@@ -1,15 +1,15 @@
 package core.project.messaging.domain.user.services;
 
 import core.project.messaging.application.dto.Message;
+import core.project.messaging.domain.commons.containers.Result;
+import core.project.messaging.domain.commons.containers.StatusPair;
+import core.project.messaging.domain.commons.tuples.Pair;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.enumerations.MessageAddressee;
 import core.project.messaging.domain.user.repositories.InboundUserRepository;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.cache.PartnershipRequestsRepository;
-import core.project.messaging.infrastructure.utilities.containers.Pair;
-import core.project.messaging.infrastructure.utilities.containers.Result;
-import core.project.messaging.infrastructure.utilities.containers.StatusPair;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Map;
@@ -34,8 +34,8 @@ public class PartnershipsService {
     }
 
     public Pair<MessageAddressee, Message> partnershipRequest(final User addresserAccount, final User addresseeAccount, final Message message) {
-        final String addresser = addresserAccount.getUsername().username();
-        final String addressee = addresseeAccount.getUsername().username();
+        final String addresser = addresserAccount.username().username();
+        final String addressee = addresseeAccount.username().username();
 
         final boolean isRequestRetried = requestsRepository.get(addressee, addresser).status();
         if (isRequestRetried) {
@@ -67,7 +67,7 @@ public class PartnershipsService {
     }
 
     public Pair<MessageAddressee, Message> partnershipRequest(final User addresserAccount, final Username addressee, final Message message) {
-        final String addresser = addresserAccount.getUsername().username();
+        final String addresser = addresserAccount.username().username();
 
         final Result<User, Throwable> result = outboundUserRepository.findByUsername(addressee.username());
         if (!result.success()) {
@@ -109,7 +109,7 @@ public class PartnershipsService {
     }
 
     public void partnershipDecline(final User user, final Username partner) {
-        requestsRepository.delete(user.getUsername().username(), partner.username());
+        requestsRepository.delete(user.username().username(), partner.username());
     }
 
     public void removePartner(String username, String partner) {
@@ -134,11 +134,11 @@ public class PartnershipsService {
     }
 
     private static Message successfullyAddedPartnershipMessage(User firstUser, User secondUser) {
-        return Message.userInfo("Partnership {%s - %s} successfully added.".formatted(firstUser.getUsername().username(), secondUser.getUsername().username()));
+        return Message.userInfo("Partnership {%s - %s} successfully added.".formatted(firstUser.username().username(), secondUser.username().username()));
     }
 
     private static Message invitationMessage(String message, User addresser) {
-        String partner = addresser.getUsername().username();
+        String partner = addresser.username().username();
         return Message.partnershipRequest("User {%s} invite you for partnership {%s}.".formatted(partner, message), partner);
     }
 }

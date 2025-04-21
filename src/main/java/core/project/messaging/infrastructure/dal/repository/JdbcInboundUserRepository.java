@@ -36,24 +36,24 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
     }
 
     public void addPartnership(User firstUser, User secondUser) {
-        final boolean doNotMatch = !firstUser.getPartners().contains(secondUser) || !secondUser.getPartners().contains(firstUser);
+        final boolean doNotMatch = !firstUser.partners().contains(secondUser) || !secondUser.partners().contains(firstUser);
         if (doNotMatch) {
             throw new IllegalArgumentException("Illegal function usage.");
         }
 
         jdbc.write(INSERT_NEW_PARTNERSHIP,
-                        firstUser.getId().toString(),
-                        secondUser.getId().toString(),
+                        firstUser.id().toString(),
+                        secondUser.id().toString(),
                         LocalDateTime.now())
                 .ifFailure(Throwable::printStackTrace);
     }
 
     public void removePartnership(User firstUser, User secondUser) {
         jdbc.write(DELETE_PARTNERSHIP,
-                        firstUser.getId().toString(),
-                        secondUser.getId().toString(),
-                        secondUser.getId().toString(),
-                        firstUser.getId().toString())
+                        firstUser.id().toString(),
+                        secondUser.id().toString(),
+                        secondUser.id().toString(),
+                        firstUser.id().toString())
                 .ifFailure(Throwable::printStackTrace);
     }
 }

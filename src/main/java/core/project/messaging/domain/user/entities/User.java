@@ -43,27 +43,27 @@ public class User {
         this.partners = new HashSet<>();
     }
 
-    public UUID getId() {
+    public UUID id() {
         return id;
     }
 
-    public Firstname getFirstname() {
+    public Firstname firstname() {
         return firstname;
     }
 
-    public Surname getSurname() {
+    public Surname surname() {
         return surname;
     }
 
-    public Username getUsername() {
+    public Username username() {
         return username;
     }
 
-    public Email getEmail() {
+    public Email email() {
         return email;
     }
 
-    public Password getPassword() {
+    public Password password() {
         return password;
     }
 
@@ -71,7 +71,7 @@ public class User {
         return isEnable;
     }
 
-    public AccountEvents getAccountEvents() {
+    public AccountEvents accountEvents() {
         return accountEvents;
     }
 
@@ -79,11 +79,11 @@ public class User {
         return isEnable;
     }
 
-    public Rating getRating() {
+    public Rating rating() {
         return this.rating;
     }
 
-    public Set<User> getPartners() {
+    public Set<User> partners() {
         return new HashSet<>(partners);
     }
 
@@ -93,14 +93,10 @@ public class User {
 
     public void addPartner(final User partner) {
         Objects.requireNonNull(partner);
-        if (partner.username.equals(this.username)) {
-            return;
-        }
+        if (partner.username.equals(this.username)) return;
 
         this.partners.add(partner);
-        if (!partner.containsPartner(this)) {
-            partner.addPartner(this);
-        }
+        if (!partner.containsPartner(this)) partner.addPartner(this);
     }
 
     public void removePartner(final User partner) {

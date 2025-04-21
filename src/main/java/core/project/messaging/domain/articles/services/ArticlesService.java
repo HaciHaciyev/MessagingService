@@ -8,10 +8,10 @@ import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
+import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
-import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;
@@ -55,7 +55,7 @@ public class ArticlesService {
                 .collect(Collectors.toSet());
 
         Article article = Article.of(
-                user.getId(),
+                user.id(),
                 articleTags,
                 new Header(articleForm.header()),
                 new Summary(articleForm.summary()),
@@ -81,7 +81,7 @@ public class ArticlesService {
         }
 
         final boolean isNotPublished = !articleResult.value().status().equals(ArticleStatus.PUBLISHED);
-        final boolean isNotAuthor = !articleResult.value().authorId().equals(user.value().getId());
+        final boolean isNotAuthor = !articleResult.value().authorId().equals(user.value().id());
 
         if (isNotPublished && isNotAuthor) {
             return Result.failure(new IllegalArgumentException("Article not found"));
@@ -90,7 +90,7 @@ public class ArticlesService {
         Article article = articleResult.value();
         if (!isNotPublished) {
             article.incrementViews();
-            View view = new View(UUID.randomUUID(), article.id(), user.value().getId(), LocalDateTime.now());
+            View view = new View(UUID.randomUUID(), article.id(), user.value().id(), LocalDateTime.now());
             inboundArticleRepository.updateViews(view);
         }
 
@@ -104,7 +104,7 @@ public class ArticlesService {
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        inboundArticleRepository.deleteView(UUID.fromString(articleID), user.getId());
+        inboundArticleRepository.deleteView(UUID.fromString(articleID), user.id());
     }
 
     public void likeArticle(String articleID, String username) {
@@ -125,11 +125,11 @@ public class ArticlesService {
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (!outboundArticleRepository.isViewExists(article.id(), user.getId())) {
+        if (!outboundArticleRepository.isViewExists(article.id(), user.id())) {
             throw new IllegalArgumentException("If a user has never read this article, he is not able to like it.");
         }
 
-        Like like = new Like(article.id(), user.getId(), LocalDateTime.now());
+        Like like = new Like(article.id(), user.id(), LocalDateTime.now());
         inboundArticleRepository.updateLikes(like);
     }
 
@@ -140,7 +140,7 @@ public class ArticlesService {
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        inboundArticleRepository.deleteLike(UUID.fromString(articleID), user.getId());
+        inboundArticleRepository.deleteLike(UUID.fromString(articleID), user.id());
     }
 
     public Article changeStatus(String articleID, ArticleStatus status, String username) {
@@ -157,7 +157,7 @@ public class ArticlesService {
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
-        final boolean isAuthor = user.getId().equals(article.authorId());
+        final boolean isAuthor = user.id().equals(article.authorId());
         if (!isAuthor) {
             throw new IllegalArgumentException("Article status can be changed only by article author.");
         }
@@ -186,7 +186,7 @@ public class ArticlesService {
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
-        final boolean isAuthor = user.getId().equals(article.authorId());
+        final boolean isAuthor = user.id().equals(article.authorId());
         if (!isAuthor) {
             throw new IllegalArgumentException("Article status can be changed only by article author.");
         }

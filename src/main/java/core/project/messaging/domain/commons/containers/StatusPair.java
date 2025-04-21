@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.utilities.containers;
+package core.project.messaging.domain.commons.containers;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;

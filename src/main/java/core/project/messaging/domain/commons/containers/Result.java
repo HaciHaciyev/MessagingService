@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.utilities.containers;
+package core.project.messaging.domain.commons.containers;
 
 import java.util.Optional;
 import java.util.function.Consumer;

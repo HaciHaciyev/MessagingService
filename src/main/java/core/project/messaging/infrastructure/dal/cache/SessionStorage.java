@@ -15,7 +15,7 @@ public class SessionStorage {
 
     public void put(final Session session, final User user) {
         session.getUserProperties().put(SessionProperties.USER_ACCOUNT.key(), user);
-        sessions.put(user.getUsername(), session);
+        sessions.put(user.username(), session);
     }
 
     public Optional<Session> get(final Username username) {

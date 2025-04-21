@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.utilities.containers;
+package core.project.messaging.domain.commons.tuples;
 
 import java.util.Map;
 import java.util.Objects;

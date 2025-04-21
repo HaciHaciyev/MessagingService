@@ -1,11 +1,11 @@
 package core.project.messaging.infrastructure.dal.repository;
 
+import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.events.AccountEvents;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.*;
 import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
-import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -109,10 +109,10 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
     public boolean havePartnership(User user, User partner) {
         return jdbc.readObjectOf(IS_PARTNERSHIP_EXISTS,
                         Integer.class,
-                        user.getId().toString(),
-                        partner.getId().toString(),
-                        partner.getId().toString(),
-                        user.getId().toString())
+                        user.id().toString(),
+                        partner.id().toString(),
+                        partner.id().toString(),
+                        user.id().toString())
                 .mapSuccess(count -> count != null && count > 0)
                 .orElseGet(() -> {
                     Log.error("Error checking partnership existence.");

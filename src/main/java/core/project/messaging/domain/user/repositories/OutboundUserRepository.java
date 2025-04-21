@@ -1,8 +1,8 @@
 package core.project.messaging.domain.user.repositories;
 
+import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.value_objects.Email;
-import core.project.messaging.infrastructure.utilities.containers.Result;
 
 import java.util.List;
 import java.util.UUID;

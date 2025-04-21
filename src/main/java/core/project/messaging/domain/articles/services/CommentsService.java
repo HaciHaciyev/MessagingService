@@ -7,9 +7,9 @@ import core.project.messaging.domain.articles.repositories.InboundCommentReposit
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
 import core.project.messaging.domain.articles.values_objects.*;
+import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
-import core.project.messaging.infrastructure.utilities.containers.Result;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;
@@ -58,7 +58,7 @@ public class CommentsService {
         validateRespondID(respondTo, parentCommentID, articleID);
 
         inboundCommentRepository.save(Comment.of(
-                new CommentIdentifiers(UUID.randomUUID(), user.getId(), articleID),
+                new CommentIdentifiers(UUID.randomUUID(), user.id(), articleID),
                 new CommentText(commentForm.text()),
                 new Reference(getCommentType(commentForm), parentCommentID, respondTo)
         ));
@@ -74,7 +74,7 @@ public class CommentsService {
                 .comment(UUID.fromString(commentID))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a comment."));
 
-        final boolean isAuthor = user.getId().equals(comment.userId());
+        final boolean isAuthor = user.id().equals(comment.userId());
         if (!isAuthor) {
             throw new IllegalArgumentException("Only author can edit a comment.");
         }
@@ -94,12 +94,12 @@ public class CommentsService {
                 .comment(UUID.fromString(commentID))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find a comment."));
 
-        final boolean isAuthor = user.getId().equals(comment.userId());
+        final boolean isAuthor = user.id().equals(comment.userId());
         if (!isAuthor) {
             throw new IllegalArgumentException("Only author can edit a comment.");
         }
 
-        inboundCommentRepository.deleteComment(UUID.fromString(commentID), user.getId());
+        inboundCommentRepository.deleteComment(UUID.fromString(commentID), user.id());
     }
 
     public void like(String commentID, String username) {
@@ -114,7 +114,7 @@ public class CommentsService {
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        inboundCommentRepository.like(new CommentLike(commentUUID, user.getId(), LocalDateTime.now()));
+        inboundCommentRepository.like(new CommentLike(commentUUID, user.id(), LocalDateTime.now()));
     }
 
     public void deleteLike(String commentID, String username) {
@@ -123,7 +123,7 @@ public class CommentsService {
                 .findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        inboundCommentRepository.deleteLike(UUID.fromString(commentID), user.getId());
+        inboundCommentRepository.deleteLike(UUID.fromString(commentID), user.id());
     }
 
     private void validateRespondID(UUID respondTo, UUID parentCommentID, UUID articleID) {

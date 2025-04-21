@@ -1,7 +1,7 @@
 package core.project.messaging.infrastructure.dal.cache;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import core.project.messaging.infrastructure.utilities.containers.StatusPair;
+import core.project.messaging.domain.commons.containers.StatusPair;
 import io.quarkus.redis.datasource.RedisDataSource;
 import io.quarkus.redis.datasource.hash.HashCommands;
 import jakarta.enterprise.context.ApplicationScoped;

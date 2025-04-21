@@ -1,6 +1,8 @@
 package core.project.messaging.application.service;
 
 import core.project.messaging.application.dto.Message;
+import core.project.messaging.domain.commons.containers.Result;
+import core.project.messaging.domain.commons.tuples.Pair;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.enumerations.MessageAddressee;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
@@ -8,8 +10,6 @@ import core.project.messaging.domain.user.services.PartnershipsService;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.cache.SessionStorage;
 import core.project.messaging.infrastructure.security.JwtUtility;
-import core.project.messaging.infrastructure.utilities.containers.Pair;
-import core.project.messaging.infrastructure.utilities.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
