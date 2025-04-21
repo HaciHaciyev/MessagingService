@@ -54,20 +54,12 @@ public class FunctionBuilder {
     }
 
     public FunctionBuilder concat(String... columns) {
-        if (columns.length == 0) {
-            throw new IllegalArgumentException("Columns, at least one, required.");
-        }
-
+        if (columns.length == 0) throw new IllegalArgumentException("At least one column must be provided.");
         query.append("CONCAT(");
 
-        if (columns.length == 1) {
-            query.append(columns[0]);
-        } else {
-            query.append(String.join(", ", columns));
-        }
-
+        if (columns.length == 1) query.append(columns[0]);
+        else query.append(String.join(", ", columns));
         deleteSurplusComa(query);
-
         query.append(") ");
         return this;
     }

@@ -25,7 +25,7 @@ import java.util.function.Function;
  *     <li><strong>Read Operations:</strong> Methods to execute SQL queries that return single values, objects, or lists of objects.</li>
  *     <li><strong>Write Operations:</strong> Methods to execute SQL updates, including single updates, updates with array parameters, and batch updates.</li>
  *     <li><strong>Error Handling:</strong> Built-in mechanisms to handle SQL exceptions and translate them into application-specific exceptions.</li>
- *     <li><strong>Transaction Management:</strong> Automatic management of transactions for write operations, ensuring data integrity.</li>
+ *     <li><strong>Transaction Management:</strong> Automatic management of transactions for write status, ensuring data integrity.</li>
  * </ul>
  *
  * <h2>Usage Guidelines</h2>
@@ -33,9 +33,9 @@ import java.util.function.Function;
  * <ol>
  *     <li><strong>Initialization:</strong> Ensure that the {@code JDBC} instance is properly initialized with a valid {@code DataSource} before use.</li>
  *     <li><strong>Read Operations:</strong> Use the {@code read()} method to fetch single values or objects. For complex mappings, consider using the {@code read()} method with a {@code ResultSetExtractor} or {@code RowMapper}.</li>
- *     <li><strong>Write Operations:</strong> Use the {@code write()} method for standard updates. For updates involving arrays, use {@code writeArrayOf()}. For bulk operations, utilize {@code writeBatch()}.</li>
+ *     <li><strong>Write Operations:</strong> Use the {@code write()} method for standard updates. For updates involving arrays, use {@code writeArrayOf()}. For bulk status, utilize {@code writeBatch()}.</li>
  *     <li><strong>Parameter Handling:</strong> Always ensure that parameters passed to SQL statements are properly sanitized and validated to prevent SQL injection attacks.</li>
- *     <li><strong>Error Handling:</strong> Check the result of each operation. Use the {@code Result} object to determine success or failure and handle errors appropriately.</li>
+ *     <li><strong>Error Handling:</strong> Check the result of each status. Use the {@code Result} object to determine success or failure and handle errors appropriately.</li>
  *     <li><strong>Connection Management:</strong> The class manages connections internally, so there is no need to manually open or close connections. However, ensure that the {@code DataSource} is properly configured.</li>
  * </ol>
  *
@@ -139,7 +139,7 @@ public class JDBC {
      * @param <T>  the type of the result
      * @return a {@code Result<T, Throwable>} containing the result or an error
      * @throws NullPointerException if {@code sql} or {@code type} is {@code null}
-     * @throws InvalidDataArgumentException if the specified type is not a valid wrapper type
+     * @throws core.project.messaging.infrastructure.dal.util.exceptions.InvalidDataArgumentException if the specified type is not a valid wrapper type
      *
      * @example
      * <pre>
@@ -390,63 +390,63 @@ public class JDBC {
                     try {
                         return rs.getString(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to String.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to String: " + e.getMessage());
                     }
                 },
                 Boolean.class, rs -> {
                     try {
                         return rs.getBoolean(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Boolean.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Boolean: " + e.getMessage());
                     }
                 },
                 Character.class, rs -> {
                     try {
                         return rs.getString(1).charAt(0);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Character.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Character: " + e.getMessage());
                     }
                 },
                 Byte.class, rs -> {
                     try {
                         return rs.getByte(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Byte.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Byte: " + e.getMessage());
                     }
                 },
                 Short.class, rs -> {
                     try {
                         return rs.getShort(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Short.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Short: " + e.getMessage());
                     }
                 },
                 Integer.class, rs -> {
                     try {
                         return rs.getInt(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Integer.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Integer: " + e.getMessage());
                     }
                 },
                 Long.class, rs -> {
                     try {
                         return rs.getLong(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Long.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Long: " + e.getMessage());
                     }
                 },
                 Float.class, rs -> {
                     try {
                         return rs.getFloat(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Float.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Float: " + e.getMessage());
                     }
                 },
                 Double.class, rs -> {
                     try {
                         return rs.getDouble(1);
                     } catch (SQLException e) {
-                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Double.");
+                        throw new IllegalArgumentException("Invalid object type. Can`t cast to Double: " + e.getMessage());
                     }
                 }
         );

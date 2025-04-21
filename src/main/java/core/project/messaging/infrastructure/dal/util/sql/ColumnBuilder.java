@@ -18,9 +18,7 @@ public class ColumnBuilder {
     }
 
     public ColumnBuilder column(String column) {
-        if (isPreviousWasColumn) {
-            query.append(", ");
-        }
+        if (isPreviousWasColumn) query.append(", ");
 
         query.append(column).append(" ");
         isPreviousWasColumn = true;
@@ -84,7 +82,7 @@ public class ColumnBuilder {
 
     public FunctionBuilder concat(String... columns) {
         if (columns.length == 0) {
-            throw new IllegalArgumentException("Columns, at least one, required.");
+            throw new IllegalArgumentException("At least one column must be provided.");
         }
 
         query.append(", CONCAT(");
@@ -114,9 +112,7 @@ public class ColumnBuilder {
 
     private void appendColumn(String column) {
         Objects.requireNonNull(column, "Column can`t be null.");
-        if (column.isBlank()) {
-            throw new IllegalArgumentException("Column can`t be blank.");
-        }
+        if (column.isBlank()) throw new IllegalArgumentException("Column can`t be blank.");
 
         query.append("(").append(column).append(") ");
     }

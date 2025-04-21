@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import static core.project.messaging.infrastructure.dal.util.sql.Util.deleteSurplusComa;
 
-
 public class SelectBuilder {
     final StringBuilder query;
 
@@ -83,17 +82,12 @@ public class SelectBuilder {
     }
 
     public FunctionBuilder concat(String... columns) {
-        if (columns.length == 0) {
-            throw new IllegalArgumentException("Columns, at least one, required.");
-        }
+        if (columns.length == 0) throw new IllegalArgumentException("At least one column must be provided.");
 
         query.append("CONCAT(");
 
-        if (columns.length == 1) {
-            query.append(columns[0]);
-        } else {
-            query.append(String.join(", ", columns));
-        }
+        if (columns.length == 1) query.append(columns[0]);
+        else query.append(String.join(", ", columns));
         deleteSurplusComa(query);
 
         query.append(") ");
@@ -114,9 +108,7 @@ public class SelectBuilder {
 
     private void appendColumn(String column) {
         Objects.requireNonNull(column, "Column can`t be null.");
-        if (column.isBlank()) {
-            throw new IllegalArgumentException("Column can`t be blank.");
-        }
+        if (column.isBlank()) throw new IllegalArgumentException("Column can`t be blank.");
 
         query.append("(").append(column).append(") ");
     }
@@ -127,9 +119,7 @@ public class SelectBuilder {
     }
 
     public FromBuilder columns(String... columns) {
-        if (columns.length == 0) {
-            return all();
-        }
+        if (columns.length == 0) return all();
 
         if (columns.length == 1) {
             String column = columns[0];
