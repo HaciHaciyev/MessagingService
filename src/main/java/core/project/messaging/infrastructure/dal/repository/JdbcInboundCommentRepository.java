@@ -20,16 +20,15 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
 
     static final String SAVE_COMMENT = insert()
             .into("Comments")
-            .columns("id",
-                    "article_id",
-                    "user_id",
-                    "text",
-                    "comment_type",
-                    "parent_comment_id",
-                    "respond_to_comment",
-                    "creation_date",
-                    "last_updated"
-            )
+            .column("id")
+            .column("article_id")
+            .column("user_id")
+            .column("text")
+            .column("comment_type")
+            .column("parent_comment_id")
+            .column("respond_to_comment")
+            .column("creation_date")
+            .column("last_updated")
             .values(9)
             .build();
 

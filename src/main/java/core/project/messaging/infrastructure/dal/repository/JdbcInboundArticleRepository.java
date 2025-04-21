@@ -21,19 +21,18 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
 
     static final String SAVE_ARTICLE = insert()
             .into("Article")
-            .columns("id",
-                    "author_id",
-                    "header",
-                    "summary",
-                    "body",
-                    "status",
-                    "creation_date",
-                    "last_updated"
-            )
+            .column("id")
+            .column("author_id")
+            .column("header")
+            .column("summary")
+            .column("body")
+            .column("status")
+            .column("creation_date")
+            .column("last_updated")
             .values(8)
             .build();
 
-    static final String SAVE_ARTICLE_TAGS = String.format("%s; %s;",
+    static final String SAVE_ARTICLE_TAGS = batchOf(
             insert()
             .into("Tags")
             .columns("tag")
@@ -45,8 +44,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .into("ArticleTags")
             .columns("article_id", "tag")
             .values(2)
-            .build()
-    );
+            .build());
 
     static final String ARTICLE_VIEW = insert()
             .into("Views")

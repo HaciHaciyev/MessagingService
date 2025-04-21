@@ -17,9 +17,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
 
     static final String INSERT_NEW_PARTNERSHIP = insert()
             .into("UserPartnership")
-            .columns("user_id",
-                    "partner_id",
-                    "created_at")
+            .columns("user_id", "partner_id", "created_at")
             .values(3)
             .build();
 
@@ -37,9 +35,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
 
     public void addPartnership(User firstUser, User secondUser) {
         final boolean doNotMatch = !firstUser.partners().contains(secondUser) || !secondUser.partners().contains(firstUser);
-        if (doNotMatch) {
-            throw new IllegalArgumentException("Illegal function usage.");
-        }
+        if (doNotMatch) throw new IllegalArgumentException("Illegal function usage.");
 
         jdbc.write(INSERT_NEW_PARTNERSHIP,
                         firstUser.id().toString(),
