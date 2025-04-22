@@ -11,11 +11,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Singleton
-public class JwtUtility {
+public class JWTUtility {
 
     private final JWTParser jwtParser;
 
-    public JwtUtility(JWTParser jwtParser) {
+    public JWTUtility(JWTParser jwtParser) {
         this.jwtParser = jwtParser;
     }
 

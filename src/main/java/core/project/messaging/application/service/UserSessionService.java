@@ -9,7 +9,7 @@ import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.services.PartnershipsService;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.cache.SessionStorage;
-import core.project.messaging.infrastructure.security.JwtUtility;
+import core.project.messaging.infrastructure.security.JWTUtility;
 import io.quarkus.logging.Log;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -26,7 +26,7 @@ import static core.project.messaging.application.util.WSUtilities.sendMessage;
 @ApplicationScoped
 public class UserSessionService {
 
-    private final JwtUtility jwtUtility;
+    private final JWTUtility jwtUtility;
 
     private final SessionStorage sessionStorage;
 
@@ -34,7 +34,7 @@ public class UserSessionService {
 
     private final OutboundUserRepository outboundUserRepository;
 
-    UserSessionService(JwtUtility jwtUtility, SessionStorage sessionStorage,
+    UserSessionService(JWTUtility jwtUtility, SessionStorage sessionStorage,
                        PartnershipsService partnershipsService,
                        OutboundUserRepository outboundUserRepository) {
         this.jwtUtility = jwtUtility;
