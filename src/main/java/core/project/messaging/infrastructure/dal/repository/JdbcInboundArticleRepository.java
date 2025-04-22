@@ -1,17 +1,17 @@
 package core.project.messaging.infrastructure.dal.repository;
 
+import com.hadzhy.jdbclight.jdbc.JDBC;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.Like;
-import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.*;
+import static com.hadzhy.jdbclight.sql.SQLBuilder.*;
 
 @Transactional
 @ApplicationScoped
@@ -29,97 +29,105 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .column("status")
             .column("creation_date")
             .column("last_updated")
-            .values(8)
-            .build();
+            .values()
+            .build()
+            .sql();
 
     static final String SAVE_ARTICLE_TAGS = batchOf(
             insert()
             .into("Tags")
             .columns("tag")
-            .values(1)
+            .values()
             .onConflict("tag")
             .doNothing()
-            .build(),
+            .build().toSQlQuery(),
             insert()
             .into("ArticleTags")
             .columns("article_id", "tag")
-            .values(2)
-            .build());
+            .values()
+            .build().toSQlQuery());
 
     static final String ARTICLE_VIEW = insert()
             .into("Views")
             .columns("id", "article_id", "reader_id", "creation_date")
-            .values(4)
-            .build();
+            .values()
+            .build()
+            .sql();
 
     static final String DELETE_VIEW = delete()
             .from("Views")
             .where("v.article_id = ?")
             .and("v.reader_id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String ARTICLE_LIKE = insert()
             .into("Likes")
             .columns("article_id", "user_id", "creation_date")
-            .values(3)
-            .build();
+            .values()
+            .build()
+            .sql();
 
     static final String DELETE_LIKE = delete()
             .from("Likes")
             .where("article_id = ?")
             .and("user_id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String ARTICLE_STATUS = update("Articles")
             .set("status = ?")
             .where("id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String UPDATE_HEADER = update("Articles")
             .set("header = ?")
             .where("id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String UPDATE_SUMMARY = update("Articles")
             .set("summary = ?")
             .where("id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String UPDATE_BODY = update("Articles")
             .set("body = ?")
             .where("id = ?")
-            .build();
+            .build()
+            .sql();
 
-    JdbcInboundArticleRepository(JDBC jdbc) {
-        this.jdbc = jdbc;
+    JdbcInboundArticleRepository() {
+        this.jdbc = JDBC.instance();
     }
 
     @Override
     public void save(Article article) {
         String articleID = article.id().toString();
         jdbc.write(SAVE_ARTICLE,
-                articleID,
-                article.authorId().toString(),
-                article.header().value(),
-                article.summary().value(),
-                article.body().value(),
-                article.status().toString(),
-                article.events().creationDate(),
-                article.events().lastUpdateDate()
-        )
+                        articleID,
+                        article.authorId().toString(),
+                        article.header().value(),
+                        article.summary().value(),
+                        article.body().value(),
+                        article.status().toString(),
+                        article.events().creationDate(),
+                        article.events().lastUpdateDate())
                 .ifFailure(throwable -> Log.errorf("Error saving article: %s", throwable.getMessage()));
 
-        article.tags().forEach(articleTag -> jdbc.write(SAVE_ARTICLE_TAGS, articleTag.value(), articleID, articleTag.value()));
+        article.tags().forEach(articleTag ->
+                jdbc.write(SAVE_ARTICLE_TAGS, articleTag.value(), articleID, articleTag.value()));
     }
 
     @Override
     public void updateViews(View view) {
         jdbc.write(ARTICLE_VIEW,
-                view.id().toString(),
-                view.articleID().toString(),
-                view.readerID().toString(),
-                view.viewedData()
-        )
+                        view.id().toString(),
+                        view.articleID().toString(),
+                        view.readerID().toString(),
+                        view.viewedData())
                 .ifFailure(throwable -> Log.errorf("Error saving view: %s", throwable.getMessage()));
     }
 

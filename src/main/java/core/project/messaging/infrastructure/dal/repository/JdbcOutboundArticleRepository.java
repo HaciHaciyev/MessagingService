@@ -1,5 +1,8 @@
 package core.project.messaging.infrastructure.dal.repository;
 
+import com.hadzhy.jdbclight.jdbc.JDBC;
+import com.hadzhy.jdbclight.sql.ChainedWhereBuilder;
+import com.hadzhy.jdbclight.sql.Order;
 import core.project.messaging.application.dto.ArticlePreview;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
@@ -7,9 +10,6 @@ import core.project.messaging.domain.articles.events.ArticleEvents;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.commons.containers.Result;
-import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
-import core.project.messaging.infrastructure.dal.util.sql.ChainedWhereBuilder;
-import core.project.messaging.infrastructure.dal.util.sql.Order;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.withAndSelect;
+import static com.hadzhy.jdbclight.sql.SQLBuilder.select;
+import static com.hadzhy.jdbclight.sql.SQLBuilder.withAndSelect;
 
 @Transactional
 @ApplicationScoped
@@ -46,33 +46,38 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .join("Views v", "v.article_id = a.id")
             .join("Likes l", "l.article_id = a.id")
             .where("a.id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String ARTICLE_TAGS = select()
             .column("tag")
             .from("ArticlesTags")
             .where("article_id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String VIEW = select()
             .count("user_id")
             .from("Views")
             .where("article_id = ?")
             .and("user_id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String IS_ARTICLE_EXISTS = select()
             .count("id")
             .from("Articles")
             .where("id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String USER_VIEWS_COUNT = select()
             .count("v.id")
             .from("Views v")
             .join("UserAccount u", "u.username = ?")
             .where("v.reader_id = u.id")
-            .build();
+            .build()
+            .sql();
 
     static final String ARTICLES = select()
             .column("a.id").as("id")
@@ -92,7 +97,8 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .join("UserAccount ath", "ath.id = a.author_id")
             .where("a.status = 'PUBLISHED'")
             .orderBy("COUNT(v.id)", Order.DESC)
-            .build();
+            .build()
+            .sql();
 
     static final ChainedWhereBuilder PAGE_OF_ARTICLES = select()
             .column("a.id").as("id")
@@ -123,7 +129,8 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                     .join("UserAccount u", "u.username = ?")
                     .where("v.reader_id = u.id")
                     .orderBy("v.creation_date", Order.DESC)
-                    .limitAndOffset(12, 0))
+                    .limitAndOffset(12, 0)
+                    .toSQlQuery())
             .column("a.id").as("id")
             .column("a.author_id").as("author_id")
             .column("a.header").as("header")
@@ -148,7 +155,8 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                           (SELECT string_agg(body, ' & ') FROM recent_articles))
                     """)
             .and("a.status = 'PUBLISHED")
-            .limitAndOffset();
+            .limitAndOffset()
+            .sql();
 
     static final String ARCHIVE = select()
             .column("a.id").as("id")
@@ -167,7 +175,8 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .join("UserAccount u", "u.id = a.author_id")
             .where("u.username = ?")
             .and("a.status = 'ARCHIVED'")
-            .limitAndOffset();
+            .limitAndOffset()
+            .sql();
 
     static final String DRAFT = select()
             .column("a.id").as("id")
@@ -186,10 +195,11 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .join("UserAccount u", "u.id = a.author_id")
             .where("u.username = ?")
             .and("a.status = 'DRAFT'")
-            .limitAndOffset();
+            .limitAndOffset()
+            .sql();
 
-    JdbcOutboundArticleRepository(JDBC jdbc) {
-        this.jdbc = jdbc;
+    JdbcOutboundArticleRepository() {
+        this.jdbc = JDBC.instance();
     }
 
     @Override
@@ -219,7 +229,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
         String sql = buildQuery(query);
         if (Objects.nonNull(query.authorName()) && Objects.nonNull(query.tag())) {
-            return jdbc.readListOf(sql,
+            var articlesList = jdbc.readListOf(sql,
                     this::articlePreviewMapper,
                     query.searchQuery(),
                     query.authorName(),
@@ -228,9 +238,10 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                     limit,
                     offSet
             );
+            return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
         if (Objects.isNull(query.authorName()) && Objects.nonNull(query.tag())) {
-            return jdbc.readListOf(sql,
+            var articlesList = jdbc.readListOf(sql,
                     this::articlePreviewMapper,
                     query.searchQuery(),
                     query.tag(),
@@ -238,9 +249,10 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                     limit,
                     offSet
             );
+            return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
         if (Objects.nonNull(query.authorName())) {
-            return jdbc.readListOf(sql,
+            var articlesList = jdbc.readListOf(sql,
                     this::articlePreviewMapper,
                     query.searchQuery(),
                     query.authorName(),
@@ -248,14 +260,16 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                     limit,
                     offSet
             );
+            return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
-        return jdbc.readListOf(sql,
+        var articlesList = jdbc.readListOf(sql,
                 this::articlePreviewMapper,
                 query.searchQuery(),
                 query.sortBy().toString(),
                 limit,
                 offSet
         );
+        return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
     }
 
     @Override
@@ -267,10 +281,12 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
                 .orElseThrow(() -> new IllegalStateException("Can`t find user views."));
 
         if (countOfViews == 0) {
-            return jdbc.readListOf(ARTICLES, this::articlePreviewMapper, username, limit, offSet);
+            var articlesList = jdbc.readListOf(ARTICLES, this::articlePreviewMapper, username, limit, offSet);
+            return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
 
-        return jdbc.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY, this::articlePreviewMapper, username, limit, offSet);
+        var articlesList = jdbc.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY, this::articlePreviewMapper, username, limit, offSet);
+        return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
     }
 
     @Override
@@ -285,15 +301,13 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
     @Override
     public Result<Article, Throwable> article(UUID articleID) {
-        Result<List<ArticleTag>, Throwable> articleTags = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, articleID.toString());
-        if (!articleTags.success()) {
-            return Result.failure(articleTags.throwable());
-        }
+        var tagsResult = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, articleID.toString());
+        if (!tagsResult.success()) return Result.failure(tagsResult.throwable());
+        var articleTags = new Result<>(tagsResult.value(), tagsResult.throwable(), true);
 
-        Result<Article, Throwable> article = jdbc.read(ARTICLE, this::articleMapper, articleID.toString());
-        if (!article.success()) {
-            return Result.failure(article.throwable());
-        }
+        var articleResult = jdbc.read(ARTICLE, this::articleMapper, articleID.toString());
+        if (!articleResult.success()) return Result.failure(articleResult.throwable());
+        var article = new Result<>(articleResult.value(), articleResult.throwable(), true);
 
         articleTags.value().forEach(articleTag -> article.value().addTag(articleTag));
         return article;
@@ -307,16 +321,14 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
 
-        Result<List<Article>, Throwable> articles = jdbc.readListOf(sql, this::articleMapper, username, limit, offSet);
-        if (!articles.success()) {
-            return articles;
-        }
+        var articlesResult = jdbc.readListOf(sql, this::articleMapper, username, limit, offSet);
+        if (!articlesResult.success()) return Result.failure(articlesResult.throwable());
+        var articles = new Result<>(articlesResult.value(), articlesResult.throwable(), true);
 
         for (Article article : articles.value()) {
-            Result<List<ArticleTag>, Throwable> articleTags = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, article.id().toString());
-            if (!articleTags.success()) {
-                return articles;
-            }
+            var tagsResult = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, article.id().toString());
+            if (!tagsResult.success()) return Result.failure(tagsResult.throwable());
+            var articleTags = new Result<>(tagsResult.value(), tagsResult.throwable(), true);
 
             articleTags.value().forEach(article::addTag);
         }
@@ -381,12 +393,8 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
     static String buildQuery(ArticlesQueryForm query) {
         ChainedWhereBuilder sql = PAGE_OF_ARTICLES;
-        if (query.authorName() != null) {
-            sql.and("a.author_id = (SELECT id FROM UserAccount WHERE username = ?)");
-        }
-        if (query.tag() != null) {
-            sql.and("EXISTS (SELECT 1 FROM ArticleTags at WHERE at.article_id = a.id AND at.tag = ?)");
-        }
+        if (query.authorName() != null) sql.and("a.author_id = (SELECT id FROM UserAccount WHERE username = ?)");
+        if (query.tag() != null) sql.and("EXISTS (SELECT 1 FROM ArticleTags at WHERE at.article_id = a.id AND at.tag = ?)");
 
         switch (query.sortBy()) {
             case VIEWS_ASC -> sql.orderBy("views ASC");
@@ -396,7 +404,6 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             case LAST_MODIFICATION_ASC -> sql.orderBy("a.last_updated ASC");
             case LAST_MODIFICATION_DESC -> sql.orderBy("a.last_updated DESC");
         }
-
-        return sql.limitAndOffset();
+        return sql.limitAndOffset().sql();
     }
 }

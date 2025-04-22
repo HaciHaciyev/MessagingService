@@ -1,5 +1,7 @@
 package core.project.messaging.infrastructure.dal.repository;
 
+import com.hadzhy.jdbclight.jdbc.JDBC;
+import com.hadzhy.jdbclight.sql.Order;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.enumerations.CommentType;
 import core.project.messaging.domain.articles.events.CommentEvents;
@@ -9,8 +11,6 @@ import core.project.messaging.domain.articles.values_objects.CommentInfo;
 import core.project.messaging.domain.articles.values_objects.CommentText;
 import core.project.messaging.domain.articles.values_objects.Reference;
 import core.project.messaging.domain.commons.containers.Result;
-import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
-import core.project.messaging.infrastructure.dal.util.sql.Order;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -21,9 +21,9 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
+import static com.hadzhy.jdbclight.sql.SQLBuilder.select;
 import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildLimit;
 import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildOffSet;
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.select;
 
 @Transactional
 @ApplicationScoped
@@ -35,7 +35,8 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .column("id")
             .from("Comments")
             .where("id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String COMMENT_INFO = select()
             .column("id")
@@ -44,7 +45,8 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .column("comment_type")
             .from("Comments")
             .where("id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String COMMENT = select()
             .column("c.id").as("id")
@@ -59,7 +61,8 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .from("Comments c")
             .join("CommentLikes cl", "cl.comment_id = c.id")
             .where("c.id = ?")
-            .build();
+            .build()
+            .sql();
 
     static final String COMMENTS = select()
             .column("c.id").as("id")
@@ -75,7 +78,8 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .join("CommentLikes cl", "cl.comment_id = c.id")
             .where("c.article_id = ?")
             .orderBy("likes_count", Order.DESC)
-            .limitAndOffset();
+            .limitAndOffset()
+            .sql();
 
     static final String CHILD_COMMENTS = select()
             .column("c.id").as("id")
@@ -92,10 +96,11 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .where("c.article_id = ?")
             .and("c.parent_comment_id = ?")
             .orderBy("likes_count", Order.DESC)
-            .limitAndOffset();
+            .limitAndOffset()
+            .sql();
 
-    JdbcOutboundCommentRepository(JDBC jdbc) {
-        this.jdbc = jdbc;
+    JdbcOutboundCommentRepository() {
+        this.jdbc = JDBC.instance();
     }
 
     @Override
@@ -110,26 +115,30 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
 
     @Override
     public Result<CommentInfo, Throwable> commentInfo(UUID commentID) {
-        return jdbc.read(COMMENT_INFO, this::commentInfoMapper, commentID.toString());
+        var result = jdbc.read(COMMENT_INFO, this::commentInfoMapper, commentID.toString());
+        return new Result<>(result.value(), result.throwable(), result.success());
     }
 
     @Override
     public Result<Comment, Throwable> comment(UUID commentID) {
-        return jdbc.read(COMMENT, this::commentMapper, commentID.toString());
+        var result = jdbc.read(COMMENT, this::commentMapper, commentID.toString());
+        return new Result<>(result.value(), result.throwable(), result.success());
     }
 
     @Override
     public Result<List<Comment>, Throwable> page(UUID articleID, int pageNumber, int pageSize) {
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
-        return jdbc.readListOf(COMMENTS, this::commentMapper, articleID.toString(), limit, offSet);
+        var result = jdbc.readListOf(COMMENTS, this::commentMapper, articleID.toString(), limit, offSet);
+        return new Result<>(result.value(), result.throwable(), result.success());
     }
 
     @Override
     public Result<List<Comment>, Throwable> page(UUID articleID, UUID parentCommentID, int pageNumber, int pageSize) {
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
-        return jdbc.readListOf(CHILD_COMMENTS, this::commentMapper, articleID.toString(), parentCommentID.toString(), limit, offSet);
+        var result = jdbc.readListOf(CHILD_COMMENTS, this::commentMapper, articleID.toString(), parentCommentID.toString(), limit, offSet);
+        return new Result<>(result.value(), result.throwable(), result.success());
     }
 
     private CommentInfo commentInfoMapper(ResultSet rs) throws SQLException {

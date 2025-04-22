@@ -1,14 +1,14 @@
 package core.project.messaging.infrastructure.dal.repository;
 
+import com.hadzhy.jdbclight.jdbc.JDBC;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.InboundUserRepository;
-import core.project.messaging.infrastructure.dal.util.jdbc.JDBC;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;
 
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.delete;
-import static core.project.messaging.infrastructure.dal.util.sql.SQLBuilder.insert;
+import static com.hadzhy.jdbclight.sql.SQLBuilder.delete;
+import static com.hadzhy.jdbclight.sql.SQLBuilder.insert;
 
 @ApplicationScoped
 public class JdbcInboundUserRepository implements InboundUserRepository {
@@ -18,8 +18,9 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
     static final String INSERT_NEW_PARTNERSHIP = insert()
             .into("UserPartnership")
             .columns("user_id", "partner_id", "created_at")
-            .values(3)
-            .build();
+            .values()
+            .build()
+            .sql();
 
     static final String DELETE_PARTNERSHIP = delete()
             .from("UserPartnership")
@@ -27,12 +28,14 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
             .and("partner_id = ?)")
             .or("(user_id = ?")
             .and("partner_id = ?)")
-            .build();
+            .build()
+            .sql();
 
-    public JdbcInboundUserRepository(JDBC jdbc) {
-        this.jdbc = jdbc;
+    public JdbcInboundUserRepository() {
+        this.jdbc = JDBC.instance();
     }
 
+    @Override
     public void addPartnership(User firstUser, User secondUser) {
         final boolean doNotMatch = !firstUser.partners().contains(secondUser) || !secondUser.partners().contains(firstUser);
         if (doNotMatch) throw new IllegalArgumentException("Illegal function usage.");
@@ -44,6 +47,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
                 .ifFailure(Throwable::printStackTrace);
     }
 
+    @Override
     public void removePartnership(User firstUser, User secondUser) {
         jdbc.write(DELETE_PARTNERSHIP,
                         firstUser.id().toString(),
