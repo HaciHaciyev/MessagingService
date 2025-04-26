@@ -25,7 +25,8 @@ public class Article {
     private ArticleStatus status;
     private ArticleEvents events;
 
-    public static final int MAX_SIZE_OF_TAGS = 8;
+    public static final int MIN_TAGS_COUNT = 3;
+    public static final int MAX_TAGS_COUNT = 8;
 
     private Article(UUID id, UUID authorId, Set<ArticleTag> tags, long views, long likes,
                     Header header, Summary summary, Body body,
@@ -52,25 +53,36 @@ public class Article {
         this.events = events;
     }
 
-    public static Article of(UUID authorId, Set<ArticleTag> tags, Header header, Summary summary, Body body, ArticleStatus status) {
-        if (status != null && status.equals(ArticleStatus.ARCHIVED)) {
+    public static Article of(
+            UUID authorId,
+            Set<ArticleTag> tags,
+            Header header,
+            Summary summary,
+            Body body,
+            ArticleStatus status) {
+
+        if (status != null && status.equals(ArticleStatus.ARCHIVED))
             throw new IllegalArgumentException("Article can`t be created with archived status.");
-        }
-        if (tags.size() < 3|| tags.size() > 8) {
+        if (tags.size() < MIN_TAGS_COUNT || tags.size() > MAX_TAGS_COUNT)
             throw new IllegalArgumentException("You need at least create 3 tags for Article and no more than 8.");
-        }
 
         return new Article(UUID.randomUUID(), authorId, tags, 0L, 0L,
                 header, summary, body, status, ArticleEvents.defaultEvents());
     }
 
-    public static Article fromRepository(UUID id, UUID authorId, Set<ArticleTag> tags, long views, long likes,
-                                         Header header, Summary summary, Body body,
-                                         ArticleStatus status, ArticleEvents events) {
-        if (views < 0 || likes < 0) {
-            throw new IllegalArgumentException("Views | likes can`t be negative.");
-        }
+    public static Article fromRepository(
+            UUID id,
+            UUID authorId,
+            Set<ArticleTag> tags,
+            long views,
+            long likes,
+            Header header,
+            Summary summary,
+            Body body,
+            ArticleStatus status,
+            ArticleEvents events) {
 
+        if (views < 0 || likes < 0) throw new IllegalArgumentException("Views | likes can`t be negative.");
         return new Article(id, authorId, tags, views, likes, header, summary, body, status, events);
     }
 
@@ -147,8 +159,8 @@ public class Article {
 
     public void addTag(ArticleTag tag) {
         Objects.requireNonNull(tag, "Tag must not be null.");
-        if (tags.size() == MAX_SIZE_OF_TAGS) {
-            throw new IllegalArgumentException("Max size of tags: %d".formatted(MAX_SIZE_OF_TAGS));
+        if (tags.size() == MAX_TAGS_COUNT) {
+            throw new IllegalArgumentException("Max size of tags: %d".formatted(MAX_TAGS_COUNT));
         }
 
         tags.add(tag);

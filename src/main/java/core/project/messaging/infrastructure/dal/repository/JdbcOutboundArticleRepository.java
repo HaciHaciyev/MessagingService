@@ -323,17 +323,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
         var articlesResult = jdbc.readListOf(sql, this::articleMapper, username, limit, offSet);
         if (!articlesResult.success()) return Result.failure(articlesResult.throwable());
-        var articles = new Result<>(articlesResult.value(), articlesResult.throwable(), true);
-
-        for (Article article : articles.value()) {
-            var tagsResult = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, article.id().toString());
-            if (!tagsResult.success()) return Result.failure(tagsResult.throwable());
-            var articleTags = new Result<>(tagsResult.value(), tagsResult.throwable(), true);
-
-            articleTags.value().forEach(article::addTag);
-        }
-
-        return articles;
+        return new Result<>(articlesResult.value(), articlesResult.throwable(), true);
     }
 
     private Article articleMapper(ResultSet rs) throws SQLException {
