@@ -14,7 +14,7 @@ public record Email(String email) {
 
     public Email {
         if (Objects.isNull(email)) {
-            throw new NullPointerException("Email can`t be null");
+            throw new IllegalArgumentException("Email can`t be null");
         }
 
         if (email.isBlank()) {
