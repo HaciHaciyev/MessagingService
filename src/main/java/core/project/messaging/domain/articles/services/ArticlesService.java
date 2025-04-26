@@ -67,24 +67,24 @@ public class ArticlesService {
         return article;
     }
 
-    public Result<Article, IllegalArgumentException> viewArticle(String articleID, String username) {
+    public Article viewArticle(String articleID, String username) {
         validateUsername(username);
 
         Result<User, Throwable> user = outboundUserRepository.findByUsername(username);
         if (!user.success()) {
-            return Result.failure(new IllegalArgumentException("User not found."));
+            throw new IllegalArgumentException("User not found.");
         }
 
         Result<Article, Throwable> articleResult = outboundArticleRepository.article(UUID.fromString(articleID));
         if (!articleResult.success()) {
-            return Result.failure(new IllegalArgumentException("Article is not exists."));
+            throw new IllegalArgumentException("Article is not exists.");
         }
 
         final boolean isNotPublished = !articleResult.value().status().equals(ArticleStatus.PUBLISHED);
         final boolean isNotAuthor = !articleResult.value().authorId().equals(user.value().id());
 
         if (isNotPublished && isNotAuthor) {
-            return Result.failure(new IllegalArgumentException("Article not found"));
+            throw new IllegalArgumentException("Article not found");
         }
 
         Article article = articleResult.value();
@@ -94,7 +94,7 @@ public class ArticlesService {
             inboundArticleRepository.updateViews(view);
         }
 
-        return Result.success(article);
+        return article;
     }
 
     public void deleteView(String articleID, String username) {
