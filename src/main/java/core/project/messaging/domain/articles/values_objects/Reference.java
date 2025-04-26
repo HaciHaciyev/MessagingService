@@ -11,7 +11,9 @@ public record Reference(CommentType commentType,
                         @Nullable UUID respondTo) {
 
     public Reference {
-        Objects.requireNonNull(commentType);
+        if (commentType == null) {
+            throw new IllegalArgumentException("Comment type must not be null");
+        }
         if (commentType.equals(CommentType.CHILD)) {
             Objects.requireNonNull(parentCommentID);
         }

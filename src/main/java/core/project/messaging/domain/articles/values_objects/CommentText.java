@@ -1,6 +1,5 @@
 package core.project.messaging.domain.articles.values_objects;
 
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,7 +12,9 @@ public record CommentText(String value) {
     public static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile(INVALID_CHARACTERS_REGEX);
 
     public CommentText {
-        Objects.requireNonNull(value);
+        if (value == null) {
+            throw new IllegalArgumentException("Comment value is null");
+        }
         if (value.isBlank()) {
             throw new IllegalArgumentException("Comment text cannot be blank.");
         }

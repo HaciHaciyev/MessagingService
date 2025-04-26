@@ -1,6 +1,5 @@
 package core.project.messaging.domain.articles.values_objects;
 
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,7 +12,9 @@ public record Header(String value) {
     public static final Pattern INVALID_CHARACTERS_PATTERN = Pattern.compile(INVALID_CHARACTERS_REGEX);
 
     public Header {
-        Objects.requireNonNull(value, "Header must not be null.");
+        if (value == null) {
+            throw new IllegalArgumentException("Header must not be null.");
+        }
         if (value.isBlank()) {
             throw new IllegalArgumentException("Header cannot be blank.");
         }

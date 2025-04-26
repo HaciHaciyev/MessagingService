@@ -31,14 +31,14 @@ public class Article {
                     Header header, Summary summary, Body body,
                     ArticleStatus status, ArticleEvents events) {
 
-        Objects.requireNonNull(id, "Article id cannot be null.");
-        Objects.requireNonNull(authorId, "Author ID cannot be null.");
-        Objects.requireNonNull(tags, "Article tags cannot be null.");
-        Objects.requireNonNull(header, "Article header cannot be null.");
-        Objects.requireNonNull(summary, "Article summary cannot be null.");
-        Objects.requireNonNull(body, "Article body cannot be null.");
-        Objects.requireNonNull(status, "Article status cannot be null.");
-        Objects.requireNonNull(events, "Article events cannot be null.");
+        if (id == null) throw new IllegalArgumentException("Article id cannot be null.");
+        if (authorId == null) throw new IllegalArgumentException("Author ID cannot be null.");
+        if (tags == null) throw new IllegalArgumentException("Article tags cannot be null.");
+        if (header == null) throw new IllegalArgumentException("Article header cannot be null.");
+        if (summary == null) throw new IllegalArgumentException("Article summary cannot be null.");
+        if (body == null) throw new IllegalArgumentException("Article body cannot be null.");
+        if (status == null) throw new IllegalArgumentException("Article status cannot be null.");
+        if (events == null) throw new IllegalArgumentException("Article events cannot be null.");
 
         this.id = id;
         this.authorId = authorId;

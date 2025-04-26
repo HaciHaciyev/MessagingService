@@ -16,13 +16,17 @@ public class Comment {
     private final Reference reference;
     private CommentEvents events;
 
-    private Comment(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference, int likes, CommentEvents events) {
-        Objects.requireNonNull(commentIdentifiers, "Comment identifiers can`t be null.");
-        Objects.requireNonNull(value, "Comment text cannot be null.");
-        Objects.requireNonNull(reference, "Reference cannot be null.");
-        if (likes < 0) {
-            throw new IllegalArgumentException("LikesCount can`t be negative.");
-        }
+    private Comment(
+            CommentIdentifiers commentIdentifiers,
+            CommentText value,
+            Reference reference,
+            int likes,
+            CommentEvents events) {
+
+        if (commentIdentifiers == null) throw new IllegalArgumentException("Comment identifiers can't be null.");
+        if (value == null) throw new IllegalArgumentException("Comment text cannot be null.");
+        if (reference == null) throw new IllegalArgumentException("Reference cannot be null.");
+        if (likes < 0) throw new IllegalArgumentException("LikesCount can`t be negative.");
 
         this.commentIdentifiers = commentIdentifiers;
         this.text = value;
@@ -34,11 +38,12 @@ public class Comment {
         return new Comment(commentIdentifiers, value, reference, 0, new CommentEvents(LocalDateTime.now(), LocalDateTime.now()));
     }
 
-    public static Comment fromRepository(CommentIdentifiers commentIdentifiers,
-                                         CommentText value,
-                                         Reference reference,
-                                         int likesCount,
-                                         CommentEvents events) {
+    public static Comment fromRepository(
+            CommentIdentifiers commentIdentifiers,
+            CommentText value,
+            Reference reference,
+            int likesCount,
+            CommentEvents events) {
 
         return new Comment(commentIdentifiers, value, reference, likesCount, events);
     }
