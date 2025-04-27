@@ -43,17 +43,19 @@ public class PartnershipsService {
         final String addresser = addresserAccount.username().username();
         final String addressee = addresseeAccount.username().username();
 
-        final boolean isRequestRetried = requestsRepository.get(addressee, addresser).status();
-        if (isRequestRetried) {
+        if (addresser.equals(addressee))
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
-                    Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
-        }
+                    Message.error("You cannot request yourself for partnership."));
+
+        final boolean isRequestRetried = requestsRepository.get(addressee, addresser).status();
+        if (isRequestRetried)
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER,
+                Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
 
         final boolean isAlreadyHavePartnership = outboundUserRepository.havePartnership(addresserAccount, addresseeAccount);
-        if (isAlreadyHavePartnership) {
+        if (isAlreadyHavePartnership)
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
-                    Message.error("You can`t invite someone who has partnership with you already."));
-        }
+                Message.error("You can`t invite someone who has partnership with you already."));
 
         requestsRepository.put(addressee, addresser, message.message());
 
@@ -88,17 +90,19 @@ public class PartnershipsService {
 
         final User addresseeAccount = result.value();
 
-        final boolean isRequestRetried = requestsRepository.get(addressee.username(), addresser).status();
-        if (isRequestRetried) {
+        if (addresser.equals(addressee.username()))
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
-                    Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
-        }
+                    Message.error("You cannot request yourself for partnership."));
+
+        final boolean isRequestRetried = requestsRepository.get(addressee.username(), addresser).status();
+        if (isRequestRetried)
+            return Pair.of(MessageAddressee.ONLY_ADDRESSER,
+                Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
 
         final boolean isAlreadyHavePartnership = outboundUserRepository.havePartnership(addresserAccount, addresseeAccount);
-        if (isAlreadyHavePartnership) {
+        if (isAlreadyHavePartnership)
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
-                    Message.error("You can`t invite someone who has partnership with you already."));
-        }
+                Message.error("You can`t invite someone who has partnership with you already."));
 
         requestsRepository.put(addressee.username(), addresser, message.message());
 
