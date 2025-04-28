@@ -47,11 +47,14 @@ public class UserSessionService {
         CompletableFuture.runAsync(() -> {
             Result<User, Throwable> account = outboundUserRepository.findByUsername(username.username());
             if (!account.success()) {
-                closeSession(session, "This account does`t exist.");
+                closeSession(session, Message.error("This account does`t exist."));
                 return;
             }
 
             sessionStorage.put(session, Objects.requireNonNull(account.orElseThrow()));
+
+            sendMessage(session, Message.info("Successful connection to messaging").asJSON());
+
             partnershipsService
                     .getAll(username.username())
                     .forEach((user, message) ->
@@ -60,7 +63,6 @@ public class UserSessionService {
     }
 
     public void onMessage(Session session, Username username, Message message) {
-        Log.infof("Handling %s of user -> %s.", message.type(), username.username());
 
         Optional<User> userAccount = extractAccount(session);
         if (userAccount.isEmpty()) {
@@ -122,11 +124,21 @@ public class UserSessionService {
 
             Pair<MessageAddressee, Message> messages = partnershipsService
                     .partnershipRequest(addresser, addresseeAccount.orElseThrow(), message);
+
+            if (!messages.getSecond().message().contains("wait")) {
+                Log.infof("Parthership between %s - %s successful", addresser.username().username(), addressee.username());
+            }
+
             send(messages, session, addresseeSession.orElseThrow());
             return;
         }
 
         Pair<MessageAddressee, Message> messages = partnershipsService.partnershipRequest(addresser, addressee, message);
+
+        if (!messages.getSecond().message().contains("wait")) {
+            Log.infof("Parthership between %s - %s successful", addresser.username().username(), addressee.username());
+        }
+
         send(messages, session, null);
     }
 
