@@ -68,7 +68,9 @@ public class UserSessionService {
 
         Optional<User> userAccount = extractAccount(session);
         if (userAccount.isEmpty()) {
-            closeAndRemoveSession("Unexpected error. Session does not have a user account.", session);
+            String errorMessage = "Unexpected error. Session does not have a user account.";
+            Log.error(errorMessage);
+            closeSession(session, Message.error(errorMessage));
             return;
         }
 
@@ -112,14 +114,14 @@ public class UserSessionService {
         if (sessionStorage.contains(addressee)) {
             Optional<Session> addresseeSession = sessionStorage.get(addressee);
             if (addresseeSession.isEmpty()) {
-                closeAndRemoveSession("Unexpected error. The connected web socket connection is not in the storage.", session);
+                closeSession(session, Message.error("Unexpected error. The connected web socket connection is not in the storage."));
                 return;
             }
 
             Optional<User> addresseeAccount = extractAccount(addresseeSession.orElseThrow());
             if (addresseeAccount.isEmpty()) {
-                closeAndRemoveSession("Unexpected error. The connected web socket connection is not in the storage.",
-                        addresseeSession.orElseThrow());
+                closeSession(addresseeSession.get(), Message
+                        .error("Unexpected error. The connected web socket connection is not in the storage."));
                 return;
             }
 
@@ -146,12 +148,6 @@ public class UserSessionService {
             case ONLY_ADDRESSER -> sendMessage(addresser, messages.getSecond());
             case ONLY_ADDRESSEE -> sendMessage(addressee, messages.getSecond());
         }
-    }
-
-    private void closeAndRemoveSession(String message, Session session) {
-        Log.error(message);
-        closeSession(session, Message.error(message));
-        sessionStorage.remove(session);
     }
 
     public Optional<User> extractAccount(Session session) {

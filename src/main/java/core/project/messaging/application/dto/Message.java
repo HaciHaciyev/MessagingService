@@ -1,7 +1,7 @@
 package core.project.messaging.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import core.project.messaging.application.util.JsonUtilities;
+import core.project.messaging.application.util.JSONUtilities;
 
 import java.util.Objects;
 
@@ -30,10 +30,10 @@ public record Message(MessageType type, String message, String partner) {
 
     @Override
     public String toString() {
-        return JsonUtilities.writeMessage(this);
+        return JSONUtilities.writeMessage(this);
     }
 
     public String asJSON() {
-        return JsonUtilities.writeJSON(this);
+        return JSONUtilities.writeJSON(this);
     }
 }

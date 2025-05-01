@@ -10,7 +10,7 @@ import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
-import static core.project.messaging.application.util.JsonUtilities.responseException;
+import static core.project.messaging.application.util.JSONUtilities.responseException;
 
 @ApplicationScoped
 public class ArticlesQueryService {

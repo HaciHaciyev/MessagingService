@@ -10,9 +10,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 
-public class JsonUtilities {
+public class JSONUtilities {
 
-    private JsonUtilities() {}
+    private JSONUtilities() {}
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

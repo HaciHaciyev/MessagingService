@@ -6,7 +6,7 @@ import core.project.messaging.domain.user.value_objects.Username;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.Response;
 
-import static core.project.messaging.application.util.JsonUtilities.responseException;
+import static core.project.messaging.application.util.JSONUtilities.responseException;
 
 @ApplicationScoped
 public class PartnersService {
