@@ -80,7 +80,6 @@ public class UserSessionService {
                 .extractJWT(session)
                 .or(() -> {
                     closeSession(session, Message.error("You are not authorized. Token is required."));
-                    sessionStorage.remove(session);
                     return Optional.empty();
                 });
     }
@@ -136,7 +135,6 @@ public class UserSessionService {
 
     public void handleOnClose(Session session) {
         sessionStorage.remove(session);
-        closeSession(session, "Session is closed.");
     }
 
     private static void send(Pair<MessageAddressee, Message> messages, Session addresser, @Nullable Session addressee) {
