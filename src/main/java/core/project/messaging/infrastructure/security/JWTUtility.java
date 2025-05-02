@@ -1,5 +1,6 @@
 package core.project.messaging.infrastructure.security;
 
+import core.project.messaging.domain.commons.containers.Result;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
 import jakarta.inject.Singleton;
@@ -8,26 +9,31 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Singleton
 public class JWTUtility {
 
     private final JWTParser jwtParser;
 
-    public JWTUtility(JWTParser jwtParser) {
+    JWTUtility(JWTParser jwtParser) {
         this.jwtParser = jwtParser;
     }
 
-    public Optional<JsonWebToken> extractJWT(final Session session) {
-        final List<String> token = session.getRequestParameterMap().get("token");
-        if (Objects.isNull(token)) return Optional.empty();
-        if (token.isEmpty()) return Optional.empty();
-
+    /**
+     * Extracts a JWT token from the WebSocket session request parameters.
+     * <p>
+     * WARNING: This method does NOT validate whether the token is expired.
+     * Callers must explicitly check the 'exp' claim to ensure the token is still valid.
+     */
+    public Result<JsonWebToken, IllegalStateException> extractJWT(Session session) {
+        List<String> token = session.getRequestParameterMap().get("token");
+        if (Objects.isNull(token)) return Result.failure(new IllegalStateException("Token is missing."));
+        if (token.isEmpty()) return Result.failure(new IllegalStateException("Token is missing."));
         try {
-            return Optional.of(jwtParser.parse(token.getFirst()));
+            JsonWebToken jwt = jwtParser.parse(token.getFirst());
+            return Result.success(jwt);
         } catch (ParseException e) {
-            return Optional.empty();
+            return Result.failure(new IllegalStateException("Token is missing or invalid."));
         }
     }
 }

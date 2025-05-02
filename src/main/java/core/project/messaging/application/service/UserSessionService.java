@@ -9,12 +9,10 @@ import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.services.PartnershipsService;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.cache.SessionStorage;
-import core.project.messaging.infrastructure.security.JWTUtility;
 import io.quarkus.logging.Log;
 import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -26,18 +24,15 @@ import static core.project.messaging.application.util.WSUtilities.sendMessage;
 @ApplicationScoped
 public class UserSessionService {
 
-    private final JWTUtility jwtUtility;
-
     private final SessionStorage sessionStorage;
 
     private final PartnershipsService partnershipsService;
 
     private final OutboundUserRepository outboundUserRepository;
 
-    UserSessionService(JWTUtility jwtUtility, SessionStorage sessionStorage,
+    UserSessionService(SessionStorage sessionStorage,
                        PartnershipsService partnershipsService,
                        OutboundUserRepository outboundUserRepository) {
-        this.jwtUtility = jwtUtility;
         this.sessionStorage = sessionStorage;
         this.partnershipsService = partnershipsService;
         this.outboundUserRepository = outboundUserRepository;
@@ -75,15 +70,6 @@ public class UserSessionService {
         }
 
         CompletableFuture.runAsync(() -> handleMessage(message, session, userAccount.orElseThrow()));
-    }
-
-    public Optional<JsonWebToken> validateToken(Session session) {
-        return jwtUtility
-                .extractJWT(session)
-                .or(() -> {
-                    closeSession(session, Message.error("You are not authorized. Token is required."));
-                    return Optional.empty();
-                });
     }
 
     private void handleMessage(Message message, Session session, User user) {
@@ -135,8 +121,8 @@ public class UserSessionService {
         send(messages, session, null);
     }
 
-    public void handleOnClose(Session session) {
-        sessionStorage.remove(session);
+    public void onClose(Session session, Username username) {
+        sessionStorage.remove(username);
     }
 
     private static void send(Pair<MessageAddressee, Message> messages, Session addresser, @Nullable Session addressee) {

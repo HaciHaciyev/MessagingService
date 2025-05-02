@@ -26,8 +26,8 @@ public class SessionStorage {
         return sessions.containsKey(username);
     }
 
-    public void remove(final Session session) {
-        sessions.entrySet().removeIf(entry -> entry.getValue().equals(session));
+    public void remove(final Username username) {
+        sessions.remove(username);
     }
 
     public enum SessionProperties {
