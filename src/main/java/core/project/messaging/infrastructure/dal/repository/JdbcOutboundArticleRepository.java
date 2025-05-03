@@ -10,6 +10,7 @@ import core.project.messaging.domain.articles.events.ArticleEvents;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.commons.containers.Result;
+import core.project.messaging.domain.user.value_objects.Username;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -273,30 +274,32 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
     }
 
     @Override
-    public Result<List<ArticlePreview>, Throwable> page(int pageNumber, int pageSize, String username) {
+    public Result<List<ArticlePreview>, Throwable> page(int pageNumber, int pageSize, Username username) {
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
 
-        Integer countOfViews = jdbc.readObjectOf(USER_VIEWS_COUNT, Integer.class, username)
+        Integer countOfViews = jdbc.readObjectOf(USER_VIEWS_COUNT, Integer.class, username.username())
                 .orElseThrow(() -> new IllegalStateException("Can`t find user views."));
 
         if (countOfViews == 0) {
-            var articlesList = jdbc.readListOf(ARTICLES, this::articlePreviewMapper, username, limit, offSet);
+            var articlesList = jdbc.readListOf(ARTICLES, this::articlePreviewMapper, username.username(), limit, offSet);
             return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
 
-        var articlesList = jdbc.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY, this::articlePreviewMapper, username, limit, offSet);
+        var articlesList = jdbc.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY,
+                this::articlePreviewMapper,
+                username.username(), limit, offSet);
         return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
     }
 
     @Override
-    public Result<List<Article>, Throwable> archive(int pageNumber, int pageSize, String username) {
-        return listOfArticles(pageNumber, pageSize, username, ARCHIVE);
+    public Result<List<Article>, Throwable> archive(int pageNumber, int pageSize, Username username) {
+        return listOfArticles(pageNumber, pageSize, username.username(), ARCHIVE);
     }
 
     @Override
-    public Result<List<Article>, Throwable> draft(int pageNumber, int pageSize, String username) {
-        return listOfArticles(pageNumber, pageSize, username, DRAFT);
+    public Result<List<Article>, Throwable> draft(int pageNumber, int pageSize, Username username) {
+        return listOfArticles(pageNumber, pageSize, username.username(), DRAFT);
     }
 
     @Override

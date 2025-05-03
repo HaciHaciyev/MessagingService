@@ -8,8 +8,8 @@ import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.enumerations.MessageAddressee;
 import core.project.messaging.domain.user.repositories.InboundUserRepository;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
+import core.project.messaging.domain.user.repositories.PartnershipRequestsRepository;
 import core.project.messaging.domain.user.value_objects.Username;
-import core.project.messaging.infrastructure.dal.cache.PartnershipRequestsRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Map;
@@ -32,7 +32,7 @@ public class PartnershipsService {
     }
 
     public Map<String, String> getAll(String username) {
-        return requestsRepository.getAll(username);
+        return requestsRepository.getAll(new Username(username));
     }
 
     public Pair<MessageAddressee, Message> partnershipRequest(
@@ -47,7 +47,10 @@ public class PartnershipsService {
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
                     Message.error("You cannot request yourself for partnership."));
 
-        final boolean isRequestRetried = requestsRepository.get(addressee, addresser).status();
+        Username addresseeUsername = new Username(addressee);
+        Username addresserUsername = new Username(addresser);
+
+        final boolean isRequestRetried = requestsRepository.get(addresseeUsername, addresserUsername).status();
         if (isRequestRetried)
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
                 Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
@@ -57,7 +60,7 @@ public class PartnershipsService {
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
                 Message.error("You can`t invite someone who has partnership with you already."));
 
-        requestsRepository.put(addressee, addresser, message.message());
+        requestsRepository.put(addresseeUsername, addresserUsername, message.message());
 
         final StatusPair<String> isPartnershipCreated = isPartnershipCreated(addresser, addressee);
         if (isPartnershipCreated.status()) {
@@ -65,8 +68,8 @@ public class PartnershipsService {
             addresseeAccount.addPartner(addresserAccount);
             inboundUserRepository.addPartnership(addresseeAccount, addresserAccount);
 
-            requestsRepository.delete(addressee, addresser);
-            requestsRepository.delete(addresser, addressee);
+            requestsRepository.delete(addresseeUsername, addresserUsername);
+            requestsRepository.delete(addresserUsername, addresseeUsername);
 
             final Message messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
             return Pair.of(MessageAddressee.FOR_ALL, messageOfResult);
@@ -82,7 +85,7 @@ public class PartnershipsService {
 
         final String addresser = addresserAccount.username().username();
 
-        final Result<User, Throwable> result = outboundUserRepository.findByUsername(addressee.username());
+        final Result<User, Throwable> result = outboundUserRepository.findByUsername(addressee);
         if (!result.success()) {
             Message errorMessage = Message.error("This account is not exists.");
             return Pair.of(MessageAddressee.ONLY_ADDRESSER, errorMessage);
@@ -94,7 +97,8 @@ public class PartnershipsService {
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
                     Message.error("You cannot request yourself for partnership."));
 
-        final boolean isRequestRetried = requestsRepository.get(addressee.username(), addresser).status();
+        Username addresserUsername = new Username(addresser);
+        final boolean isRequestRetried = requestsRepository.get(addressee, addresserUsername).status();
         if (isRequestRetried)
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
                 Message.error("You cannot send a repeat partnership request to a user while the previous one is active."));
@@ -104,7 +108,7 @@ public class PartnershipsService {
             return Pair.of(MessageAddressee.ONLY_ADDRESSER,
                 Message.error("You can`t invite someone who has partnership with you already."));
 
-        requestsRepository.put(addressee.username(), addresser, message.message());
+        requestsRepository.put(addressee, addresserUsername, message.message());
 
         final StatusPair<String> isPartnershipCreated = isPartnershipCreated(addresser, addressee.username());
         if (isPartnershipCreated.status()) {
@@ -112,11 +116,11 @@ public class PartnershipsService {
             addresseeAccount.addPartner(addresserAccount);
             inboundUserRepository.addPartnership(addresseeAccount, addresserAccount);
 
-            requestsRepository.delete(addressee.username(), addresser);
-            requestsRepository.delete(addresser, addressee.username());
+            requestsRepository.delete(addressee, addresserUsername);
+            requestsRepository.delete(addresserUsername, addressee);
 
             final Message messageOfResult = successfullyAddedPartnershipMessage(addresserAccount, addresseeAccount);
-            requestsRepository.put(addressee.username(), addresser, messageOfResult.message());
+            requestsRepository.put(addressee, addresserUsername, messageOfResult.message());
             return Pair.of(MessageAddressee.ONLY_ADDRESSER, messageOfResult);
         }
 
@@ -125,16 +129,16 @@ public class PartnershipsService {
     }
 
     public void partnershipDecline(final User user, final Username partner) {
-        requestsRepository.delete(user.username().username(), partner.username());
+        requestsRepository.delete(user.username(), partner);
     }
 
     public void removePartner(String username, String partner) {
         User user = outboundUserRepository
-                .findByUsername(username)
+                .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("User does`t exists."));
 
         User partnerAccount = outboundUserRepository
-                .findByUsername(partner)
+                .findByUsername(new Username(partner))
                 .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
 
         if (!outboundUserRepository.havePartnership(user, partnerAccount)) {

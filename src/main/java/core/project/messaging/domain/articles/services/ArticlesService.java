@@ -42,10 +42,8 @@ public class ArticlesService {
     }
 
     public Article save(ArticleForm articleForm, String username) {
-        validateUsername(username);
-
         User user = outboundUserRepository
-                .findByUsername(username)
+                .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Account is not exists."));
 
         Set<ArticleTag> articleTags = articleForm
@@ -68,9 +66,7 @@ public class ArticlesService {
     }
 
     public Article viewArticle(String articleID, String username) {
-        validateUsername(username);
-
-        Result<User, Throwable> user = outboundUserRepository.findByUsername(username);
+        Result<User, Throwable> user = outboundUserRepository.findByUsername(new Username(username));
         if (!user.success()) {
             throw new IllegalArgumentException("User not found.");
         }
@@ -98,18 +94,14 @@ public class ArticlesService {
     }
 
     public void deleteView(String articleID, String username) {
-        validateUsername(username);
-
         User user = outboundUserRepository
-                .findByUsername(username)
+                .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         inboundArticleRepository.deleteView(UUID.fromString(articleID), user.id());
     }
 
     public void likeArticle(String articleID, String username) {
-        validateUsername(username);
-
         Article article = outboundArticleRepository
                 .article(UUID.fromString(articleID))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find article"));
@@ -122,7 +114,7 @@ public class ArticlesService {
         }
 
         User user = outboundUserRepository
-                .findByUsername(username)
+                .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (!outboundArticleRepository.isViewExists(article.id(), user.id())) {
@@ -134,17 +126,14 @@ public class ArticlesService {
     }
 
     public void deleteLike(String articleID, String username) {
-        validateUsername(username);
-
         User user = outboundUserRepository
-                .findByUsername(username)
+                .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         inboundArticleRepository.deleteLike(UUID.fromString(articleID), user.id());
     }
 
     public Article changeStatus(String articleID, ArticleStatus status, String username) {
-        validateUsername(username);
         if (status.equals(ArticleStatus.DRAFT)) {
             throw new IllegalArgumentException("You can`t draft article after it was published or archived.");
         }
@@ -154,7 +143,7 @@ public class ArticlesService {
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
 
         User user = outboundUserRepository
-                .findByUsername(username)
+                .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
         final boolean isAuthor = user.id().equals(article.authorId());
@@ -173,7 +162,6 @@ public class ArticlesService {
     }
 
     public Article updateArticle(String articleID, ArticleText articleText, String username) {
-        validateUsername(username);
         if (Objects.isNull(articleText.header()) && Objects.isNull(articleText.summary()) && Objects.isNull(articleText.body())) {
             throw new IllegalArgumentException("Seriously?...");
         }
@@ -183,7 +171,7 @@ public class ArticlesService {
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
 
         User user = outboundUserRepository
-                .findByUsername(username)
+                .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
         final boolean isAuthor = user.id().equals(article.authorId());
@@ -205,11 +193,5 @@ public class ArticlesService {
         }
 
         return article;
-    }
-
-    static void validateUsername(String username) {
-        if (!Username.validate(username)) {
-            throw new IllegalArgumentException("Invalid username");
-        }
     }
 }

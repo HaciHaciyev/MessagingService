@@ -38,7 +38,7 @@ public class UserSessionService {
     }
 
     public void onOpen(Session session, Username username) {
-        Result<User, Throwable> account = outboundUserRepository.findByUsername(username.username());
+        Result<User, Throwable> account = outboundUserRepository.findByUsername(username);
         if (!account.success()) {
             closeSession(session, Message.error("This account does`t exist."));
             return;

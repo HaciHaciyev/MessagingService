@@ -21,13 +21,9 @@ public class PartnersService {
     }
 
     public Object listOfPartners(String username, int pageNumber, int pageSize) {
-        if (!Username.validate(username)) {
-            throw responseException(Response.Status.BAD_REQUEST, "Invalid username");
-        }
-
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
-        return outboundUserRepository.listOfPartners(username, limit, offSet)
+        return outboundUserRepository.listOfPartners(new Username(username), limit, offSet)
                 .orElseThrow(() -> responseException(Response.Status.BAD_REQUEST, "User does not exist.\uD83D\uDC7B"));
     }
 

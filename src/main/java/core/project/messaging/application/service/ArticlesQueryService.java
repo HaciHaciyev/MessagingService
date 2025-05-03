@@ -26,29 +26,17 @@ public class ArticlesQueryService {
     }
 
     public List<ArticlePreview> pageOf(int pageNumber, int pageSize, String username) {
-        if (!Username.validate(username)) {
-            throw responseException(Response.Status.BAD_REQUEST, "Invalid username");
-        }
-
-        return articleRepository.page(pageNumber, pageSize, username)
+        return articleRepository.page(pageNumber, pageSize, new Username(username))
                 .orElseThrow(() -> responseException(Response.Status.NOT_FOUND, "User not exists"));
     }
 
     public List<Article> archive(int pageNumber, int pageSize, String username) {
-        if (!Username.validate(username)) {
-            throw responseException(Response.Status.BAD_REQUEST, "Invalid username");
-        }
-
-        return articleRepository.archive(pageNumber, pageSize, username)
+        return articleRepository.archive(pageNumber, pageSize, new Username(username))
                 .orElseThrow(() -> responseException(Response.Status.NOT_FOUND, "User not exists"));
     }
 
     public List<Article> draft(int pageNumber, int pageSize, String username) {
-        if (!Username.validate(username)) {
-            throw responseException(Response.Status.BAD_REQUEST, "Invalid username");
-        }
-
-        return articleRepository.draft(pageNumber, pageSize, username)
+        return articleRepository.draft(pageNumber, pageSize, new Username(username))
                 .orElseThrow(() -> responseException(Response.Status.NOT_FOUND, "User not exists"));
     }
 }

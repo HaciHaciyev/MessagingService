@@ -61,10 +61,10 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
     }
 
     @Override
-    public Result<List<String>, Throwable> listOfPartners(String username, int limit, int offSet) {
+    public Result<List<String>, Throwable> listOfPartners(Username username, int limit, int offSet) {
         var result = jdbc.readListOf(GET_PARTNERS_USERNAMES,
                 rs -> rs.getString("username"),
-                Objects.requireNonNull(username), username, username, limit, offSet
+                Objects.requireNonNull(username.username()), username.username(), username.username(), limit, offSet
         );
         return new Result<>(result.value(), result.throwable(), result.success());
     }
@@ -85,8 +85,8 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
     }
 
     @Override
-    public Result<User, Throwable> findByUsername(String username) {
-        var result = jdbc.read(FIND_BY_USERNAME, this::userAccountMapper, username);
+    public Result<User, Throwable> findByUsername(Username username) {
+        var result = jdbc.read(FIND_BY_USERNAME, this::userAccountMapper, username.username());
         return new Result<>(result.value(), result.throwable(), result.success());
     }
 
