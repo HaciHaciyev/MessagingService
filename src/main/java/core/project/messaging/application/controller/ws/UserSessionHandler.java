@@ -17,6 +17,7 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import java.util.Map;
 import java.util.Optional;
 
 import static core.project.messaging.application.util.WSUtilities.closeSession;
@@ -54,7 +55,11 @@ public class UserSessionHandler {
 
     @OnMessage
     public final void onMessage(Session session, Message message) {
-        telemetry.startWithSpan("Messaging Message", () -> Thread.startVirtualThread(() -> {
+        Map<String, String> attributes = Map.of(
+                "message.type", message.type().toString()
+        );
+
+        telemetry.startWithSpan("Messaging Message", attributes, () -> Thread.startVirtualThread(() -> {
             Result<JsonWebToken, IllegalStateException> parseResult = authService.validateToken(session);
             if (!parseResult.success()) {
                 closeSession(session, Message.error(parseResult.throwable().getLocalizedMessage()));
