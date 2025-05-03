@@ -6,6 +6,7 @@ import core.project.messaging.application.service.WSAuthService;
 import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.value_objects.Username;
+import core.project.messaging.infrastructure.telemetry.TelemetryService;
 import core.project.messaging.infrastructure.ws.MessageDecoder;
 import core.project.messaging.infrastructure.ws.MessageEncoder;
 import core.project.messaging.infrastructure.ws.RateLimiter;
@@ -28,26 +29,32 @@ public class UserSessionHandler {
 
     private final RateLimiter rateLimiter;
 
+    private final TelemetryService telemetry;
+
     private final UserSessionService userSessionService;
 
-    UserSessionHandler(RateLimiter rateLimiter, WSAuthService authService, UserSessionService userSessionService) {
+    UserSessionHandler(RateLimiter rateLimiter,
+                       WSAuthService authService,
+                       TelemetryService telemetry,
+                       UserSessionService userSessionService) {
         this.rateLimiter = rateLimiter;
         this.authService = authService;
+        this.telemetry = telemetry;
         this.userSessionService = userSessionService;
     }
 
     @OnOpen
     public final void onOpen(Session session) {
-        Thread.startVirtualThread(() ->
+        telemetry.startWithSpan("Messaging Open", () -> Thread.startVirtualThread(() ->
                 authService.validateToken(session)
                         .handle(token -> userSessionService.onOpen(session, new Username(token.getName())),
                                 throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage())))
-        );
+        ));
     }
 
     @OnMessage
     public final void onMessage(Session session, Message message) {
-        Thread.startVirtualThread(() -> {
+        telemetry.startWithSpan("Messaging Message", () -> Thread.startVirtualThread(() -> {
             Result<JsonWebToken, IllegalStateException> parseResult = authService.validateToken(session);
             if (!parseResult.success()) {
                 closeSession(session, Message.error(parseResult.throwable().getLocalizedMessage()));
@@ -69,14 +76,14 @@ public class UserSessionHandler {
             }
 
             userSessionService.onMessage(session, username, message);
-        });
+        }));
     }
 
     @OnClose
     public final void onClose(Session session) {
-        authService.validateToken(session).handle(
+        telemetry.startWithSpan("Messaging Close", () -> authService.validateToken(session).handle(
                 token -> userSessionService.onClose(session, new Username(token.getName())),
                 throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage()))
-        );
+        ));
     }
 }
