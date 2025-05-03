@@ -28,25 +28,27 @@ public class UserSessionHandler {
 
     @OnOpen
     public final void onOpen(Session session) {
-        authService.validateToken(session)
-                .handle(token -> userSessionService.onOpen(session, new Username(token.getName())),
-                        throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage()))
-                );
+        Thread.startVirtualThread(() ->
+                authService.validateToken(session)
+                        .handle(token -> userSessionService.onOpen(session, new Username(token.getName())),
+                                throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage())))
+        );
     }
 
     @OnMessage
     public final void onMessage(Session session, Message message) {
-        authService.validateToken(session)
-                .handle(token -> userSessionService.onMessage(session, new Username(token.getName()), message),
-                        throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage()))
-                );
+        Thread.startVirtualThread(() ->
+                authService.validateToken(session)
+                        .handle(token -> userSessionService.onMessage(session, new Username(token.getName()), message),
+                                throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage())))
+        );
     }
 
     @OnClose
     public final void onClose(Session session) {
-        authService.validateToken(session)
-                .handle(token -> userSessionService.onClose(session, new Username(token.getName())),
-                        throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage()))
-                );
+        authService.validateToken(session).handle(
+                token -> userSessionService.onClose(session, new Username(token.getName())),
+                throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage()))
+        );
     }
 }

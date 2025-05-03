@@ -16,7 +16,6 @@ import jakarta.websocket.Session;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static core.project.messaging.application.util.WSUtilities.closeSession;
 import static core.project.messaging.application.util.WSUtilities.sendMessage;
@@ -39,23 +38,21 @@ public class UserSessionService {
     }
 
     public void onOpen(Session session, Username username) {
-        CompletableFuture.runAsync(() -> {
-            Result<User, Throwable> account = outboundUserRepository.findByUsername(username.username());
-            if (!account.success()) {
-                closeSession(session, Message.error("This account does`t exist."));
-                return;
-            }
-            if (sessionStorage.contains(username)) {
-                closeSession(session, Message.error("You can`t duplicate sessions."));
-                return;
-            }
+        Result<User, Throwable> account = outboundUserRepository.findByUsername(username.username());
+        if (!account.success()) {
+            closeSession(session, Message.error("This account does`t exist."));
+            return;
+        }
+        if (sessionStorage.contains(username)) {
+            closeSession(session, Message.error("You can`t duplicate sessions."));
+            return;
+        }
 
-            sessionStorage.put(session, Objects.requireNonNull(account.orElseThrow()));
-            partnershipsService
-                    .getAll(username.username())
-                    .forEach((user, message) ->
-                            sendMessage(session, Message.partnershipRequest(String.format("%s: {%s}", user, message), user)));
-        });
+        sessionStorage.put(session, Objects.requireNonNull(account.orElseThrow()));
+        partnershipsService
+                .getAll(username.username())
+                .forEach((user, message) ->
+                        sendMessage(session, Message.partnershipRequest(String.format("%s: {%s}", user, message), user)));
     }
 
     public void onMessage(Session session, Username username, Message message) {
@@ -69,7 +66,7 @@ public class UserSessionService {
             return;
         }
 
-        CompletableFuture.runAsync(() -> handleMessage(message, session, userAccount.orElseThrow()));
+        handleMessage(message, session, userAccount.orElseThrow());
     }
 
     private void handleMessage(Message message, Session session, User user) {
