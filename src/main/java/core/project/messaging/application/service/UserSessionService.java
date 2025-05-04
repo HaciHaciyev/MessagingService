@@ -49,6 +49,8 @@ public class UserSessionService {
         }
 
         sessionStorage.put(session, Objects.requireNonNull(account.orElseThrow()));
+
+        sendMessage(session, Message.error("Successful connection to messaging"));
         partnershipsService
                 .getAll(username.username())
                 .forEach((user, message) ->
