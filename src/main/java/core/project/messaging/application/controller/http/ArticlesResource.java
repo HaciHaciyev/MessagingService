@@ -2,9 +2,8 @@ package core.project.messaging.application.controller.http;
 
 import core.project.messaging.application.dto.articles.ArticleForm;
 import core.project.messaging.application.dto.articles.ArticleText;
-import core.project.messaging.application.service.ArticlesQueryService;
+import core.project.messaging.application.service.ArticlesApplicationService;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
-import core.project.messaging.domain.articles.services.ArticlesService;
 import core.project.messaging.domain.articles.values_objects.ArticlesQueryForm;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
@@ -17,14 +16,11 @@ public class ArticlesResource {
 
     private final JsonWebToken jwt;
 
-    private final ArticlesService articlesService;
+    private final ArticlesApplicationService articlesService;
 
-    private final ArticlesQueryService queryService;
-
-    ArticlesResource(JsonWebToken jwt, ArticlesService articlesService, ArticlesQueryService queryService) {
+    ArticlesResource(JsonWebToken jwt, ArticlesApplicationService articlesService) {
         this.jwt = jwt;
         this.articlesService = articlesService;
-        this.queryService = queryService;
     }
 
     @POST
@@ -60,25 +56,25 @@ public class ArticlesResource {
     @Path("/page")
     public Response pageOf(ArticlesQueryForm query) {
         nonNull(query);
-        return Response.ok(queryService.pageOf(query)).build();
+        return Response.ok(articlesService.pageOf(query)).build();
     }
 
     @GET
     @Path("home-page")
     public Response pageOf(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
-        return Response.ok(queryService.pageOf(pageNumber, pageSize, jwt.getName())).build();
+        return Response.ok(articlesService.pageOf(pageNumber, pageSize, jwt.getName())).build();
     }
 
     @GET
     @Path("/archive")
     public Response archive(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
-        return Response.ok(queryService.archive(pageNumber, pageSize, jwt.getName())).build();
+        return Response.ok(articlesService.archive(pageNumber, pageSize, jwt.getName())).build();
     }
 
     @GET
     @Path("/draft")
     public Response draft(@QueryParam("pageNumber") int pageNumber, @QueryParam("pageSize") int pageSize) {
-        return Response.ok(queryService.draft(pageNumber, pageSize, jwt.getName())).build();
+        return Response.ok(articlesService.draft(pageNumber, pageSize, jwt.getName())).build();
     }
 
     static void nonNull(Object... values) {
