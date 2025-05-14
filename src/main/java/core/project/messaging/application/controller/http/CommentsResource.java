@@ -1,6 +1,6 @@
 package core.project.messaging.application.controller.http;
 
-import core.project.messaging.application.dto.CommentForm;
+import core.project.messaging.application.dto.articles.CommentForm;
 import core.project.messaging.application.service.CommentsQueryService;
 import core.project.messaging.domain.articles.services.CommentsService;
 import io.quarkus.security.Authenticated;

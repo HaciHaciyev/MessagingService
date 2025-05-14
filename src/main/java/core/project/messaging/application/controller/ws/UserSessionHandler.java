@@ -1,6 +1,6 @@
 package core.project.messaging.application.controller.ws;
 
-import core.project.messaging.application.dto.Message;
+import core.project.messaging.application.dto.messaging.Message;
 import core.project.messaging.application.service.UserSessionService;
 import core.project.messaging.application.service.WSAuthService;
 import core.project.messaging.domain.commons.containers.Result;

@@ -1,6 +1,6 @@
 package core.project.messaging.application.util;
 
-import core.project.messaging.application.dto.Message;
+import core.project.messaging.application.dto.messaging.Message;
 import io.quarkus.logging.Log;
 import jakarta.websocket.CloseReason;
 import jakarta.websocket.Session;

@@ -1,6 +1,6 @@
 package core.project.messaging.domain.articles.repositories;
 
-import core.project.messaging.application.dto.ArticlePreview;
+import core.project.messaging.application.dto.articles.ArticlePreview;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.values_objects.ArticlesQueryForm;
 import core.project.messaging.domain.commons.containers.Result;

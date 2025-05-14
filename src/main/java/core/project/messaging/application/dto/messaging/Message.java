@@ -1,4 +1,4 @@
-package core.project.messaging.application.dto;
+package core.project.messaging.application.dto.messaging;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import core.project.messaging.application.util.JSONUtilities;

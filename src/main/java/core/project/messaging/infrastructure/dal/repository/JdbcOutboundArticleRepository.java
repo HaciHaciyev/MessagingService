@@ -3,7 +3,7 @@ package core.project.messaging.infrastructure.dal.repository;
 import com.hadzhy.jdbclight.jdbc.JDBC;
 import com.hadzhy.jdbclight.sql.ChainedWhereBuilder;
 import com.hadzhy.jdbclight.sql.Order;
-import core.project.messaging.application.dto.ArticlePreview;
+import core.project.messaging.application.dto.articles.ArticlePreview;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
 import core.project.messaging.domain.articles.events.ArticleEvents;

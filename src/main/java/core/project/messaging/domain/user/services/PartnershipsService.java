@@ -1,6 +1,6 @@
 package core.project.messaging.domain.user.services;
 
-import core.project.messaging.application.dto.Message;
+import core.project.messaging.application.dto.messaging.Message;
 import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.commons.containers.StatusPair;
 import core.project.messaging.domain.commons.tuples.Pair;

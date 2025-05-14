@@ -1,6 +1,6 @@
 package core.project.messaging.domain.articles.services;
 
-import core.project.messaging.application.dto.CommentForm;
+import core.project.messaging.application.dto.articles.CommentForm;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.enumerations.CommentType;
 import core.project.messaging.domain.articles.repositories.InboundCommentRepository;

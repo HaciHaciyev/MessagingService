@@ -1,7 +1,7 @@
 package core.project.messaging.infrastructure.ws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import core.project.messaging.application.dto.Message;
+import core.project.messaging.application.dto.messaging.Message;
 import jakarta.websocket.DecodeException;
 import jakarta.websocket.Decoder;
 

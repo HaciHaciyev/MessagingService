@@ -1,7 +1,7 @@
 package core.project.messaging.domain.articles.services;
 
-import core.project.messaging.application.dto.ArticleForm;
-import core.project.messaging.application.dto.ArticleText;
+import core.project.messaging.application.dto.articles.ArticleForm;
+import core.project.messaging.application.dto.articles.ArticleText;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;

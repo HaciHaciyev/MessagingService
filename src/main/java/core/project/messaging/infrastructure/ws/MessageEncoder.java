@@ -2,7 +2,7 @@ package core.project.messaging.infrastructure.ws;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import core.project.messaging.application.dto.Message;
+import core.project.messaging.application.dto.messaging.Message;
 import jakarta.websocket.EncodeException;
 import jakarta.websocket.Encoder;
 

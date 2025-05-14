@@ -1,4 +1,4 @@
-package core.project.messaging.application.dto;
+package core.project.messaging.application.dto.articles;
 
 import jakarta.annotation.Nullable;
 
