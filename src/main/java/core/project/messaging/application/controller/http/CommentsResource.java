@@ -1,8 +1,7 @@
 package core.project.messaging.application.controller.http;
 
 import core.project.messaging.application.dto.articles.CommentForm;
-import core.project.messaging.application.service.CommentsQueryService;
-import core.project.messaging.domain.articles.services.CommentsService;
+import core.project.messaging.application.service.CommentsApplicationService;
 import io.quarkus.security.Authenticated;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
@@ -16,14 +15,11 @@ public class CommentsResource {
 
     private final JsonWebToken jwt;
 
-    private final CommentsService commentsService;
+    private final CommentsApplicationService commentsService;
 
-    private final CommentsQueryService queryService;
-
-    CommentsResource(JsonWebToken jwt, CommentsService commentsService, CommentsQueryService queryService) {
+    CommentsResource(JsonWebToken jwt, CommentsApplicationService commentsService) {
         this.jwt = jwt;
         this.commentsService = commentsService;
-        this.queryService = queryService;
     }
 
     @POST
@@ -55,7 +51,7 @@ public class CommentsResource {
                                    @QueryParam("pageNumber") int pageNumber,
                                    @QueryParam("pageSize") int pageSize) {
         nonNull(articleID);
-        return Response.ok(queryService.pageOf(articleID, pageNumber, pageSize)).build();
+        return Response.ok(commentsService.pageOf(articleID, pageNumber, pageSize)).build();
     }
 
     @GET
@@ -65,6 +61,6 @@ public class CommentsResource {
                                   @QueryParam("pageNumber") int pageNumber,
                                   @QueryParam("pageSize") int pageSize) {
         nonNull(articleID, parentCommentID);
-        return Response.ok(queryService.pageOf(articleID, parentCommentID, pageNumber, pageSize)).build();
+        return Response.ok(commentsService.pageOf(articleID, parentCommentID, pageNumber, pageSize)).build();
     }
 }
