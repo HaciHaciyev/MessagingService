@@ -118,7 +118,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                 .ifFailure(throwable -> Log.errorf("Error saving article: %s", throwable.getMessage()));
 
         article.tags().forEach(articleTag ->
-                jdbc.write(SAVE_ARTICLE_TAGS, articleTag.value(), articleID, articleTag.value()));
+                jdbc.write(SAVE_ARTICLE_TAGS, articleID, articleTag.value()));
     }
 
     @Override
