@@ -112,7 +112,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                         article.header().value(),
                         article.summary().value(),
                         article.body().value(),
-                        article.status().toString(),
+                        article.status().name(),
                         article.events().creationDate(),
                         article.events().lastUpdateDate())
                 .ifFailure(throwable -> Log.errorf("Error saving article: %s", throwable.getMessage()));
@@ -151,7 +151,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
 
     @Override
     public void statusChange(Article article) {
-        jdbc.write(ARTICLE_STATUS, article.status().toString(), article.id().toString())
+        jdbc.write(ARTICLE_STATUS, article.status().name(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing status: %s", throwable.getMessage()));
     }
 

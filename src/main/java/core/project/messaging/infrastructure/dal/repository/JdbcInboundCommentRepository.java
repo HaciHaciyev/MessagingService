@@ -71,7 +71,7 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
                         comment.articleId().toString(),
                         comment.userId().toString(),
                         comment.text().value(),
-                        comment.reference().commentType().toString(),
+                        comment.reference().commentType().name(),
                         comment.reference().parentCommentID().toString(),
                         comment.reference().respondTo().toString(),
                         comment.events().creationDate(),
