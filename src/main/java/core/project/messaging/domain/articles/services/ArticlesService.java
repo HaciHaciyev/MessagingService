@@ -146,10 +146,7 @@ public class ArticlesService {
                 .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
-        final boolean isAuthor = user.id().equals(article.authorId());
-        if (!isAuthor) {
-            throw new IllegalArgumentException("Article status can be changed only by article author.");
-        }
+        validateForAuthorship(user, article);
 
         if (article.status().equals(ArticleStatus.ARCHIVED)) {
             article.archive();
@@ -174,10 +171,7 @@ public class ArticlesService {
                 .findByUsername(new Username(username))
                 .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
 
-        final boolean isAuthor = user.id().equals(article.authorId());
-        if (!isAuthor) {
-            throw new IllegalArgumentException("Article status can be changed only by article author.");
-        }
+        validateForAuthorship(user, article);
 
         if (Objects.nonNull(articleText.header())) {
             article.changeHeader(new Header(articleText.header()));
@@ -193,5 +187,44 @@ public class ArticlesService {
         }
 
         return article;
+    }
+
+    public Article addArticleTag(String articleID, String tag, String username) {
+        Article article = outboundArticleRepository
+                .article(UUID.fromString(articleID))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+
+        User user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+
+        validateForAuthorship(user, article);
+
+        article.addTag(new ArticleTag(tag));
+        inboundArticleRepository.updateTags(article);
+        return article;
+    }
+
+    public Article removeArticleTag(String articleID, String tag, String username) {
+        Article article = outboundArticleRepository
+                .article(UUID.fromString(articleID))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+
+        User user = outboundUserRepository
+                .findByUsername(new Username(username))
+                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+
+        validateForAuthorship(user, article);
+        ArticleTag articleTag = new ArticleTag(tag);
+        article.removeTag(articleTag);
+        inboundArticleRepository.removeTag(article, articleTag);
+        return article;
+    }
+
+    private static void validateForAuthorship(User user, Article article) {
+        final boolean isAuthor = user.id().equals(article.authorId());
+        if (!isAuthor) {
+            throw new IllegalArgumentException("Article status can be changed only by article author.");
+        }
     }
 }

@@ -168,6 +168,13 @@ public class Article {
 
     public void removeTag(ArticleTag tag) {
         Objects.requireNonNull(tag, "Tag must not be null.");
+        if (!tags.contains(tag)) {
+            throw new IllegalArgumentException("Tag not found.");
+        }
+        if (tags.size() == MIN_TAGS_COUNT) {
+            throw new IllegalArgumentException("The minimum required count opf tags is %d".formatted(MIN_TAGS_COUNT));
+        }
+
         tags.remove(tag);
     }
 

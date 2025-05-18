@@ -71,6 +71,16 @@ public class ArticlesApplicationService {
         return mapper.toDto(article);
     }
 
+    public ArticleDTO addArticleTag(String articleID, String tag, String username) {
+        Article article = articlesService.addArticleTag(articleID, tag, username);
+        return mapper.toDto(article);
+    }
+
+    public ArticleDTO removeArticleTag(String articleID, String tag, String username) {
+        Article article = articlesService.removeArticleTag(articleID, tag, username);
+        return mapper.toDto(article);
+    }
+
     public ArticleDTO viewArticle(String id, String username) {
         Article article = articlesService.viewArticle(id, username);
         return mapper.toDto(article);

@@ -45,6 +45,20 @@ public class ArticlesResource {
         return Response.accepted(articlesService.updateArticle(articleID, articleText, jwt.getName())).build();
     }
 
+    @PATCH
+    @Path("/add-article")
+    public Response addArticle(@QueryParam("articleID") String articleID, @QueryParam("tag") String tag) {
+        nonNull(articleID, tag);
+        return Response.accepted(articlesService.addArticleTag(articleID, tag, jwt.getName())).build();
+    }
+
+    @PATCH
+    @Path("/remove-tag")
+    public Response removeTag(@QueryParam("articleID") String articleID, @QueryParam("tag") String tag) {
+        nonNull(articleID, tag);
+        return Response.accepted(articlesService.removeArticleTag(articleID, tag, jwt.getName())).build();
+    }
+
     @GET
     @Path("/viewArticle")
     public Response viewArticle(@QueryParam("id") String id) {

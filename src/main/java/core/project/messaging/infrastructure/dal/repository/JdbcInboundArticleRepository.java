@@ -4,6 +4,7 @@ import com.hadzhy.jdbclight.jdbc.JDBC;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
+import core.project.messaging.domain.articles.values_objects.ArticleTag;
 import core.project.messaging.domain.articles.values_objects.Like;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -99,6 +100,13 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .build()
             .sql();
 
+    static final String REMOVE_ARTICLE_TAG = delete()
+            .from("ArticleTags")
+            .where("article_id = ?")
+            .and("tag = ?")
+            .build()
+            .toString();
+
     JdbcInboundArticleRepository() {
         this.jdbc = JDBC.instance();
     }
@@ -118,7 +126,8 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                 .ifFailure(throwable -> Log.errorf("Error saving article: %s", throwable.getMessage()));
 
         article.tags().forEach(articleTag ->
-                jdbc.write(SAVE_ARTICLE_TAGS, articleID, articleTag.value()));
+                jdbc.write(SAVE_ARTICLE_TAGS, articleID, articleTag.value())
+                        .ifFailure(throwable -> Log.errorf("Error adding article tag: %s", throwable.getMessage())));
     }
 
     @Override
@@ -171,5 +180,18 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
     public void updateBody(Article article) {
         jdbc.write(UPDATE_BODY, article.body().value(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing body: %s", throwable.getMessage()));
+    }
+
+    @Override
+    public void updateTags(Article article) {
+        article.tags().forEach(articleTag ->
+                jdbc.write(SAVE_ARTICLE_TAGS, article.id().toString(), articleTag.value())
+                        .ifFailure(throwable -> Log.errorf("Error adding article tag: %s", throwable.getMessage())));
+    }
+
+    @Override
+    public void removeTag(Article article, ArticleTag articleTag) {
+        jdbc.write(REMOVE_ARTICLE_TAG, article.id().toString(), articleTag.value())
+                .ifFailure(throwable -> Log.errorf("Error removing article tag: %s", throwable.getMessage()));
     }
 }
