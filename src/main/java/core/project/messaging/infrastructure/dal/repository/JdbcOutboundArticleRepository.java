@@ -52,7 +52,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
     static final String ARTICLE_TAGS = select()
             .column("tag")
-            .from("ArticlesTags")
+            .from("ArticleTags")
             .where("article_id = ?")
             .build()
             .sql();
