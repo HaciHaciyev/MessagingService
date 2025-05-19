@@ -1,7 +1,7 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import com.hadzhy.jdbclight.jdbc.JDBC;
-import com.hadzhy.jdbclight.sql.Order;
+import com.hadzhy.jetquerious.jdbc.JetQuerious;
+import com.hadzhy.jetquerious.sql.Order;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.enumerations.CommentType;
 import core.project.messaging.domain.articles.events.CommentEvents;
@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
-import static com.hadzhy.jdbclight.sql.SQLBuilder.select;
+import static com.hadzhy.jetquerious.sql.QueryForge.select;
 import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildLimit;
 import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildOffSet;
 
@@ -29,7 +29,7 @@ import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundA
 @ApplicationScoped
 public class JdbcOutboundCommentRepository implements OutboundCommentRepository {
 
-    private final JDBC jdbc;
+    private final JetQuerious jet;
 
     static final String IS_COMMENT_EXISTS = select()
             .column("id")
@@ -100,12 +100,12 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
             .sql();
 
     JdbcOutboundCommentRepository() {
-        this.jdbc = JDBC.instance();
+        this.jet = JetQuerious.instance();
     }
 
     @Override
     public boolean isCommentExists(UUID commentID) {
-        return jdbc.readObjectOf(IS_COMMENT_EXISTS, Integer.class, commentID.toString())
+        return jet.readObjectOf(IS_COMMENT_EXISTS, Integer.class, commentID.toString())
                 .mapSuccess(count -> count != null && count > 0)
                 .orElseGet(() -> {
                     Log.error("Error checking comment exists.");
@@ -115,13 +115,13 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
 
     @Override
     public Result<CommentInfo, Throwable> commentInfo(UUID commentID) {
-        var result = jdbc.read(COMMENT_INFO, this::commentInfoMapper, commentID.toString());
+        var result = jet.read(COMMENT_INFO, this::commentInfoMapper, commentID.toString());
         return new Result<>(result.value(), result.throwable(), result.success());
     }
 
     @Override
     public Result<Comment, Throwable> comment(UUID commentID) {
-        var result = jdbc.read(COMMENT, this::commentMapper, commentID.toString());
+        var result = jet.read(COMMENT, this::commentMapper, commentID.toString());
         return new Result<>(result.value(), result.throwable(), result.success());
     }
 
@@ -129,7 +129,7 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
     public Result<List<Comment>, Throwable> page(UUID articleID, int pageNumber, int pageSize) {
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
-        var result = jdbc.readListOf(COMMENTS, this::commentMapper, articleID.toString(), limit, offSet);
+        var result = jet.readListOf(COMMENTS, this::commentMapper, articleID.toString(), limit, offSet);
         return new Result<>(result.value(), result.throwable(), result.success());
     }
 
@@ -137,7 +137,7 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
     public Result<List<Comment>, Throwable> page(UUID articleID, UUID parentCommentID, int pageNumber, int pageSize) {
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
-        var result = jdbc.readListOf(CHILD_COMMENTS, this::commentMapper, articleID.toString(), parentCommentID.toString(), limit, offSet);
+        var result = jet.readListOf(CHILD_COMMENTS, this::commentMapper, articleID.toString(), parentCommentID.toString(), limit, offSet);
         return new Result<>(result.value(), result.throwable(), result.success());
     }
 

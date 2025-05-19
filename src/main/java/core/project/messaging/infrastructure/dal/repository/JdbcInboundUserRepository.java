@@ -1,19 +1,19 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import com.hadzhy.jdbclight.jdbc.JDBC;
+import com.hadzhy.jetquerious.jdbc.JetQuerious;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.InboundUserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.time.LocalDateTime;
 
-import static com.hadzhy.jdbclight.sql.SQLBuilder.delete;
-import static com.hadzhy.jdbclight.sql.SQLBuilder.insert;
+import static com.hadzhy.jetquerious.sql.QueryForge.delete;
+import static com.hadzhy.jetquerious.sql.QueryForge.insert;
 
 @ApplicationScoped
 public class JdbcInboundUserRepository implements InboundUserRepository {
 
-    private final JDBC jdbc;
+    private final JetQuerious jet;
 
     static final String INSERT_NEW_PARTNERSHIP = insert()
             .into("UserPartnership")
@@ -32,7 +32,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
             .sql();
 
     public JdbcInboundUserRepository() {
-        this.jdbc = JDBC.instance();
+        this.jet = JetQuerious.instance();
     }
 
     @Override
@@ -40,7 +40,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
         final boolean doNotMatch = !firstUser.partners().contains(secondUser) || !secondUser.partners().contains(firstUser);
         if (doNotMatch) throw new IllegalArgumentException("Illegal function usage.");
 
-        jdbc.write(INSERT_NEW_PARTNERSHIP,
+        jet.write(INSERT_NEW_PARTNERSHIP,
                         firstUser.id().toString(),
                         secondUser.id().toString(),
                         LocalDateTime.now())
@@ -49,7 +49,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
 
     @Override
     public void removePartnership(User firstUser, User secondUser) {
-        jdbc.write(DELETE_PARTNERSHIP,
+        jet.write(DELETE_PARTNERSHIP,
                         firstUser.id().toString(),
                         secondUser.id().toString(),
                         secondUser.id().toString(),

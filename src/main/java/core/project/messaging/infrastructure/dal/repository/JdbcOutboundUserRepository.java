@@ -1,6 +1,6 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import com.hadzhy.jdbclight.jdbc.JDBC;
+import com.hadzhy.jetquerious.jdbc.JetQuerious;
 import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.events.AccountEvents;
@@ -17,14 +17,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.hadzhy.jdbclight.sql.SQLBuilder.select;
-import static com.hadzhy.jdbclight.sql.SQLBuilder.selectDistinct;
+import static com.hadzhy.jetquerious.sql.QueryForge.select;
+import static com.hadzhy.jetquerious.sql.QueryForge.selectDistinct;
 
 @Transactional
 @ApplicationScoped
 public class JdbcOutboundUserRepository implements OutboundUserRepository {
 
-    private final JDBC jdbc;
+    private final JetQuerious jet;
 
     static final String FIND_BY_USERNAME = select()
             .all()
@@ -57,12 +57,12 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
             .sql();
 
     JdbcOutboundUserRepository() {
-        this.jdbc = JDBC.instance();
+        this.jet = JetQuerious.instance();
     }
 
     @Override
     public Result<List<String>, Throwable> listOfPartners(Username username, int limit, int offSet) {
-        var result = jdbc.readListOf(GET_PARTNERS_USERNAMES,
+        var result = jet.readListOf(GET_PARTNERS_USERNAMES,
                 rs -> rs.getString("username"),
                 Objects.requireNonNull(username.username()), username.username(), username.username(), limit, offSet
         );
@@ -71,7 +71,7 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
 
     @Override
     public boolean havePartnership(User user, User partner) {
-        return jdbc.readObjectOf(IS_PARTNERSHIP_EXISTS,
+        return jet.readObjectOf(IS_PARTNERSHIP_EXISTS,
                         Integer.class,
                         user.id().toString(),
                         partner.id().toString(),
@@ -86,7 +86,7 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
 
     @Override
     public Result<User, Throwable> findByUsername(Username username) {
-        var result = jdbc.read(FIND_BY_USERNAME, this::userAccountMapper, username.username());
+        var result = jet.read(FIND_BY_USERNAME, this::userAccountMapper, username.username());
         return new Result<>(result.value(), result.throwable(), result.success());
     }
 

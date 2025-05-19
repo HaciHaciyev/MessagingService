@@ -1,6 +1,6 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import com.hadzhy.jdbclight.jdbc.JDBC;
+import com.hadzhy.jetquerious.jdbc.JetQuerious;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.repositories.InboundCommentRepository;
 import core.project.messaging.domain.articles.values_objects.CommentLike;
@@ -10,13 +10,13 @@ import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
-import static com.hadzhy.jdbclight.sql.SQLBuilder.*;
+import static com.hadzhy.jetquerious.sql.QueryForge.*;
 
 @Transactional
 @ApplicationScoped
 public class JdbcInboundCommentRepository implements InboundCommentRepository {
 
-    private final JDBC jdbc;
+    private final JetQuerious jet;
 
     static final String SAVE_COMMENT = insert()
             .into("Comments")
@@ -61,12 +61,12 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
             .sql();
 
     JdbcInboundCommentRepository() {
-        this.jdbc = JDBC.instance();
+        this.jet = JetQuerious.instance();
     }
 
     @Override
     public void save(Comment comment) {
-        jdbc.write(SAVE_COMMENT,
+        jet.write(SAVE_COMMENT,
                         comment.id().toString(),
                         comment.articleId().toString(),
                         comment.userId().toString(),
@@ -81,25 +81,25 @@ public class JdbcInboundCommentRepository implements InboundCommentRepository {
 
     @Override
     public void deleteComment(UUID commentID, UUID authorID) {
-        jdbc.write(DELETE_COMMENT, commentID.toString(), authorID.toString())
+        jet.write(DELETE_COMMENT, commentID.toString(), authorID.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting comment: %s", throwable.getMessage()));
     }
 
     @Override
     public void updateCommentText(Comment comment) {
-        jdbc.write(UPDATE_COMMENT, comment.text().value(), comment.id().toString())
+        jet.write(UPDATE_COMMENT, comment.text().value(), comment.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error updating comment: %s", throwable.getMessage()));
     }
 
     @Override
     public void like(CommentLike commentLike) {
-        jdbc.write(COMMENT_LIKE, commentLike.commentId().toString(), commentLike.userId().toString(), commentLike.likedAt())
+        jet.write(COMMENT_LIKE, commentLike.commentId().toString(), commentLike.userId().toString(), commentLike.likedAt())
                 .ifFailure(throwable -> Log.errorf("Error updating comment likes: %s", throwable.getMessage()));
     }
 
     @Override
     public void deleteLike(UUID commentID, UUID userID) {
-        jdbc.write(DELETE_COMMENT_LIKE, commentID.toString(), userID.toString())
+        jet.write(DELETE_COMMENT_LIKE, commentID.toString(), userID.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting comment like: %s", throwable.getMessage()));
     }
 }

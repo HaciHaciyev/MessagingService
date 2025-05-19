@@ -1,6 +1,6 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import com.hadzhy.jdbclight.jdbc.JDBC;
+import com.hadzhy.jetquerious.jdbc.JetQuerious;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.entities.View;
 import core.project.messaging.domain.articles.repositories.InboundArticleRepository;
@@ -12,13 +12,13 @@ import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
-import static com.hadzhy.jdbclight.sql.SQLBuilder.*;
+import static com.hadzhy.jetquerious.sql.QueryForge.*;
 
 @Transactional
 @ApplicationScoped
 public class JdbcInboundArticleRepository implements InboundArticleRepository {
 
-    private final JDBC jdbc;
+    private final JetQuerious jet;
 
     static final String SAVE_ARTICLE = insert()
             .into("Article")
@@ -108,13 +108,13 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
             .toString();
 
     JdbcInboundArticleRepository() {
-        this.jdbc = JDBC.instance();
+        this.jet = JetQuerious.instance();
     }
 
     @Override
     public void save(Article article) {
         String articleID = article.id().toString();
-        jdbc.write(SAVE_ARTICLE,
+        jet.write(SAVE_ARTICLE,
                         articleID,
                         article.authorId().toString(),
                         article.header().value(),
@@ -126,13 +126,13 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                 .ifFailure(throwable -> Log.errorf("Error saving article: %s", throwable.getMessage()));
 
         article.tags().forEach(articleTag ->
-                jdbc.write(SAVE_ARTICLE_TAGS, articleID, articleTag.value())
+                jet.write(SAVE_ARTICLE_TAGS, articleID, articleTag.value())
                         .ifFailure(throwable -> Log.errorf("Error adding article tag: %s", throwable.getMessage())));
     }
 
     @Override
     public void updateViews(View view) {
-        jdbc.write(ARTICLE_VIEW,
+        jet.write(ARTICLE_VIEW,
                         view.id().toString(),
                         view.articleID().toString(),
                         view.readerID().toString(),
@@ -142,56 +142,56 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
 
     @Override
     public void deleteView(UUID articleID, UUID reader) {
-        jdbc.write(DELETE_VIEW, articleID.toString(), reader.toString())
+        jet.write(DELETE_VIEW, articleID.toString(), reader.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting view: %s", throwable.getMessage()));
     }
 
     @Override
     public void updateLikes(Like like) {
-        jdbc.write(ARTICLE_LIKE, like.articleID().toString(), like.userId().toString(), like.likedAt())
+        jet.write(ARTICLE_LIKE, like.articleID().toString(), like.userId().toString(), like.likedAt())
                 .ifFailure(throwable -> Log.errorf("Error deleting like: %s", throwable.getMessage()));
     }
 
     @Override
     public void deleteLike(UUID articleID, UUID userID) {
-        jdbc.write(DELETE_LIKE, articleID.toString(), userID.toString())
+        jet.write(DELETE_LIKE, articleID.toString(), userID.toString())
                 .ifFailure(throwable -> Log.errorf("Error deleting like: %s", throwable.getMessage()));
     }
 
     @Override
     public void statusChange(Article article) {
-        jdbc.write(ARTICLE_STATUS, article.status().name(), article.id().toString())
+        jet.write(ARTICLE_STATUS, article.status().name(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing status: %s", throwable.getMessage()));
     }
 
     @Override
     public void updateHeader(Article article) {
-        jdbc.write(UPDATE_HEADER, article.header().value(), article.id().toString())
+        jet.write(UPDATE_HEADER, article.header().value(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing header: %s", throwable.getMessage()));
     }
 
     @Override
     public void updateSummary(Article article) {
-        jdbc.write(UPDATE_SUMMARY, article.summary().value(), article.id().toString())
+        jet.write(UPDATE_SUMMARY, article.summary().value(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing summary: %s", throwable.getMessage()));
     }
 
     @Override
     public void updateBody(Article article) {
-        jdbc.write(UPDATE_BODY, article.body().value(), article.id().toString())
+        jet.write(UPDATE_BODY, article.body().value(), article.id().toString())
                 .ifFailure(throwable -> Log.errorf("Error changing body: %s", throwable.getMessage()));
     }
 
     @Override
     public void updateTags(Article article) {
         article.tags().forEach(articleTag ->
-                jdbc.write(SAVE_ARTICLE_TAGS, article.id().toString(), articleTag.value())
+                jet.write(SAVE_ARTICLE_TAGS, article.id().toString(), articleTag.value())
                         .ifFailure(throwable -> Log.errorf("Error adding article tag: %s", throwable.getMessage())));
     }
 
     @Override
     public void removeTag(Article article, ArticleTag articleTag) {
-        jdbc.write(REMOVE_ARTICLE_TAG, article.id().toString(), articleTag.value())
+        jet.write(REMOVE_ARTICLE_TAG, article.id().toString(), articleTag.value())
                 .ifFailure(throwable -> Log.errorf("Error removing article tag: %s", throwable.getMessage()));
     }
 }

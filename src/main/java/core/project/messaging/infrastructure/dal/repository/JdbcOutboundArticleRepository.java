@@ -1,8 +1,8 @@
 package core.project.messaging.infrastructure.dal.repository;
 
-import com.hadzhy.jdbclight.jdbc.JDBC;
-import com.hadzhy.jdbclight.sql.ChainedWhereBuilder;
-import com.hadzhy.jdbclight.sql.Order;
+import com.hadzhy.jetquerious.jdbc.JetQuerious;
+import com.hadzhy.jetquerious.sql.ChainedWhereBuilder;
+import com.hadzhy.jetquerious.sql.Order;
 import core.project.messaging.application.dto.articles.ArticlePreview;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import static com.hadzhy.jdbclight.sql.SQLBuilder.select;
-import static com.hadzhy.jdbclight.sql.SQLBuilder.withAndSelect;
+import static com.hadzhy.jetquerious.sql.QueryForge.select;
+import static com.hadzhy.jetquerious.sql.QueryForge.withAndSelect;
 
 @Transactional
 @ApplicationScoped
 public class JdbcOutboundArticleRepository implements OutboundArticleRepository {
 
-    private final JDBC jdbc;
+    private final JetQuerious jet;
 
     static final String ARTICLE = select()
             .column("a.id").as("id")
@@ -200,12 +200,12 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             .sql();
 
     JdbcOutboundArticleRepository() {
-        this.jdbc = JDBC.instance();
+        this.jet = JetQuerious.instance();
     }
 
     @Override
     public boolean isViewExists(UUID articleID, UUID userID) {
-        return jdbc.readObjectOf(VIEW, Integer.class, articleID.toString(), userID.toString())
+        return jet.readObjectOf(VIEW, Integer.class, articleID.toString(), userID.toString())
                 .mapSuccess(count -> count != null && count > 0)
                 .orElseGet(() -> {
                     Log.error("Error checking view existence.");
@@ -215,7 +215,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
     @Override
     public boolean isArticleExists(UUID articleID) {
-        return jdbc.readObjectOf(IS_ARTICLE_EXISTS, Integer.class, articleID.toString())
+        return jet.readObjectOf(IS_ARTICLE_EXISTS, Integer.class, articleID.toString())
                 .mapSuccess(count -> count != null && count > 0)
                 .orElseGet(() -> {
                     Log.error("Error checking article existence.");
@@ -230,7 +230,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
         String sql = buildQuery(query);
         if (Objects.nonNull(query.authorName()) && Objects.nonNull(query.tag())) {
-            var articlesList = jdbc.readListOf(sql,
+            var articlesList = jet.readListOf(sql,
                     this::articlePreviewMapper,
                     query.searchQuery(),
                     query.authorName(),
@@ -242,7 +242,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
         if (Objects.isNull(query.authorName()) && Objects.nonNull(query.tag())) {
-            var articlesList = jdbc.readListOf(sql,
+            var articlesList = jet.readListOf(sql,
                     this::articlePreviewMapper,
                     query.searchQuery(),
                     query.tag(),
@@ -253,7 +253,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
         if (Objects.nonNull(query.authorName())) {
-            var articlesList = jdbc.readListOf(sql,
+            var articlesList = jet.readListOf(sql,
                     this::articlePreviewMapper,
                     query.searchQuery(),
                     query.authorName(),
@@ -263,7 +263,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
             );
             return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
-        var articlesList = jdbc.readListOf(sql,
+        var articlesList = jet.readListOf(sql,
                 this::articlePreviewMapper,
                 query.searchQuery(),
                 query.sortBy().toString(),
@@ -278,15 +278,15 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
 
-        Integer countOfViews = jdbc.readObjectOf(USER_VIEWS_COUNT, Integer.class, username.username())
+        Integer countOfViews = jet.readObjectOf(USER_VIEWS_COUNT, Integer.class, username.username())
                 .orElseThrow(() -> new IllegalStateException("Can`t find user views."));
 
         if (countOfViews == 0) {
-            var articlesList = jdbc.readListOf(ARTICLES, this::articlePreviewMapper, username.username(), limit, offSet);
+            var articlesList = jet.readListOf(ARTICLES, this::articlePreviewMapper, username.username(), limit, offSet);
             return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
         }
 
-        var articlesList = jdbc.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY,
+        var articlesList = jet.readListOf(PAGE_OF_ARTICLES_BASED_ON_HISTORY,
                 this::articlePreviewMapper,
                 username.username(), limit, offSet);
         return new Result<>(articlesList.value(), articlesList.throwable(), articlesList.success());
@@ -304,11 +304,11 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
 
     @Override
     public Result<Article, Throwable> article(UUID articleID) {
-        var tagsResult = jdbc.readListOf(ARTICLE_TAGS, this::articleTagsMapper, articleID.toString());
+        var tagsResult = jet.readListOf(ARTICLE_TAGS, this::articleTagsMapper, articleID.toString());
         if (!tagsResult.success()) return Result.failure(tagsResult.throwable());
         var articleTags = new Result<>(tagsResult.value(), tagsResult.throwable(), true);
 
-        var articleResult = jdbc.read(ARTICLE, this::articleMapper, articleID.toString());
+        var articleResult = jet.read(ARTICLE, this::articleMapper, articleID.toString());
         if (!articleResult.success()) return Result.failure(articleResult.throwable());
         var article = new Result<>(articleResult.value(), articleResult.throwable(), true);
 
@@ -324,7 +324,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
         int limit = buildLimit(pageSize);
         int offSet = buildOffSet(limit, pageNumber);
 
-        var articlesResult = jdbc.readListOf(sql, this::articleMapper, username, limit, offSet);
+        var articlesResult = jet.readListOf(sql, this::articleMapper, username, limit, offSet);
         if (!articlesResult.success()) return Result.failure(articlesResult.throwable());
         return new Result<>(articlesResult.value(), articlesResult.throwable(), true);
     }
