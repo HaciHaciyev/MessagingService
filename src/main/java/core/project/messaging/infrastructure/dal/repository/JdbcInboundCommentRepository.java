@@ -6,13 +6,11 @@ import core.project.messaging.domain.articles.repositories.InboundCommentReposit
 import core.project.messaging.domain.articles.values_objects.CommentLike;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
 import static com.hadzhy.jetquerious.sql.QueryForge.*;
 
-@Transactional
 @ApplicationScoped
 public class JdbcInboundCommentRepository implements InboundCommentRepository {
 

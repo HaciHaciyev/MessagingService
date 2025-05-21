@@ -31,7 +31,7 @@ public class JdbcInboundUserRepository implements InboundUserRepository {
             .build()
             .sql();
 
-    public JdbcInboundUserRepository() {
+    JdbcInboundUserRepository() {
         this.jet = JetQuerious.instance();
     }
 

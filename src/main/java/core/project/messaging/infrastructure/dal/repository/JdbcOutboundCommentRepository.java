@@ -13,7 +13,6 @@ import core.project.messaging.domain.articles.values_objects.Reference;
 import core.project.messaging.domain.commons.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +24,6 @@ import static com.hadzhy.jetquerious.sql.QueryForge.select;
 import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildLimit;
 import static core.project.messaging.infrastructure.dal.repository.JdbcOutboundArticleRepository.buildOffSet;
 
-@Transactional
 @ApplicationScoped
 public class JdbcOutboundCommentRepository implements OutboundCommentRepository {
 

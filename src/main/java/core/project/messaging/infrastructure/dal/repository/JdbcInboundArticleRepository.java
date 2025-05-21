@@ -8,13 +8,11 @@ import core.project.messaging.domain.articles.values_objects.ArticleTag;
 import core.project.messaging.domain.articles.values_objects.Like;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 
 import java.util.UUID;
 
 import static com.hadzhy.jetquerious.sql.QueryForge.*;
 
-@Transactional
 @ApplicationScoped
 public class JdbcInboundArticleRepository implements InboundArticleRepository {
 

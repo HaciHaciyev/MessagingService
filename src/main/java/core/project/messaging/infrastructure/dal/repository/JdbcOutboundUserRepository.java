@@ -8,7 +8,6 @@ import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.*;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +19,6 @@ import java.util.UUID;
 import static com.hadzhy.jetquerious.sql.QueryForge.select;
 import static com.hadzhy.jetquerious.sql.QueryForge.selectDistinct;
 
-@Transactional
 @ApplicationScoped
 public class JdbcOutboundUserRepository implements OutboundUserRepository {
 
