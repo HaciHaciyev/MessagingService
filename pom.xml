@@ -77,9 +77,9 @@
             <artifactId>quarkus-jdbc-postgresql</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.HaciHaciyev</groupId>
-            <artifactId>JetQuerious</artifactId>
-            <version>v2.0.0</version>
+            <groupId>io.github.hacihaciyev</groupId>
+            <artifactId>jet-querious</artifactId>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
