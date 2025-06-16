@@ -6,10 +6,11 @@ import core.project.messaging.application.service.WSAuthService;
 import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.value_objects.Username;
-import core.project.messaging.infrastructure.telemetry.TelemetryService;
 import core.project.messaging.infrastructure.ws.MessageDecoder;
 import core.project.messaging.infrastructure.ws.MessageEncoder;
 import core.project.messaging.infrastructure.ws.RateLimiter;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
@@ -17,7 +18,6 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
-import java.util.Map;
 import java.util.Optional;
 
 import static core.project.messaging.application.util.WSUtilities.closeSession;
@@ -30,36 +30,32 @@ public class UserSessionHandler {
 
     private final RateLimiter rateLimiter;
 
-    private final TelemetryService telemetry;
-
     private final UserSessionService userSessionService;
 
     UserSessionHandler(RateLimiter rateLimiter,
                        WSAuthService authService,
-                       TelemetryService telemetry,
                        UserSessionService userSessionService) {
         this.rateLimiter = rateLimiter;
         this.authService = authService;
-        this.telemetry = telemetry;
         this.userSessionService = userSessionService;
     }
 
     @OnOpen
+    @WithSpan("MESSAGING OPEN")
     public final void onOpen(Session session) {
-        telemetry.startWithSpan("Messaging Open", () -> Thread.startVirtualThread(() ->
+        Thread.startVirtualThread(() ->
                 authService.validateToken(session)
                         .handle(token -> userSessionService.onOpen(session, new Username(token.getName())),
                                 throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage())))
-        ));
+        );
     }
 
     @OnMessage
+    @WithSpan("MESSAGING MESSAGE")
     public final void onMessage(Session session, Message message) {
-        Map<String, String> attributes = Map.of(
-                "message.type", message.type().toString()
-        );
+        Span.current().setAttribute("message.type", message.type().name());
 
-        telemetry.startWithSpan("Messaging Message", attributes, () -> Thread.startVirtualThread(() -> {
+        Thread.startVirtualThread(() -> {
             Result<JsonWebToken, IllegalStateException> parseResult = authService.validateToken(session);
             if (!parseResult.success()) {
                 closeSession(session, Message.error(parseResult.throwable().getLocalizedMessage()));
@@ -81,14 +77,15 @@ public class UserSessionHandler {
             }
 
             userSessionService.onMessage(session, username, message);
-        }));
+        });
     }
 
     @OnClose
+    @WithSpan("MESSAGING CLOSE")
     public final void onClose(Session session) {
-        telemetry.startWithSpan("Messaging Close", () -> authService.validateToken(session).handle(
+        authService.validateToken(session).handle(
                 token -> userSessionService.onClose(session, new Username(token.getName())),
                 throwable -> closeSession(session, Message.error(throwable.getLocalizedMessage()))
-        ));
+        );
     }
 }
