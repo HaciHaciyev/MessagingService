@@ -2,15 +2,14 @@ package core.project.messaging.application.service;
 
 import core.project.messaging.application.dto.messaging.Message;
 import core.project.messaging.domain.commons.containers.Result;
-import core.project.messaging.domain.commons.tuples.Pair;
 import core.project.messaging.domain.user.entities.User;
-import core.project.messaging.domain.user.enumerations.MessageAddressee;
+import core.project.messaging.domain.user.enumerations.InvitationResult;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.services.PartnershipsService;
+import core.project.messaging.domain.user.value_objects.PartnershipInvitation;
 import core.project.messaging.domain.user.value_objects.Username;
 import core.project.messaging.infrastructure.dal.cache.SessionStorage;
 import io.quarkus.logging.Log;
-import jakarta.annotation.Nullable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.Session;
 
@@ -110,34 +109,51 @@ public class UserSessionService {
                 return;
             }
 
-            Pair<MessageAddressee, Message> messages = partnershipsService
-                    .partnershipRequest(addresser, addresseeAccount.orElseThrow(), message);
-            send(messages, session, addresseeSession.orElseThrow());
+            var invitationResult = partnershipsService.partnershipRequest(addresser, addresseeAccount.get(), message.message());
+            if (!invitationResult.success()) {
+                sendMessage(session, Message.error(invitationResult.throwable().getMessage()));
+                return;
+            }
+
+            sendPartnershipInvitationResult(session, addressee, invitationResult, addresseeSession.get());
             return;
         }
 
-        Pair<MessageAddressee, Message> messages = partnershipsService.partnershipRequest(addresser, addressee, message);
-        send(messages, session, null);
+        var invitationResult = partnershipsService.partnershipRequest(addresser, addressee, message.message());
+        if (!invitationResult.success()) {
+            sendMessage(session, Message.error(invitationResult.throwable().getMessage()));
+            return;
+        }
+
+        sendMessage(session, Message.userInfo(invitationResult.value().message()));
     }
 
     public void onClose(Session session, Username username) {
         sessionStorage.remove(username);
     }
 
-    private static void send(Pair<MessageAddressee, Message> messages, Session addresser, @Nullable Session addressee) {
-        switch (messages.getFirst()) {
-            case FOR_ALL -> {
-                sendMessage(addresser, messages.getSecond());
-                sendMessage(addressee, messages.getSecond());
-            }
-            case ONLY_ADDRESSER -> sendMessage(addresser, messages.getSecond());
-            case ONLY_ADDRESSEE -> sendMessage(addressee, messages.getSecond());
-        }
-    }
-
     public Optional<User> extractAccount(Session session) {
         return Optional.ofNullable(session.getUserProperties().get(SessionStorage.SessionProperties.USER_ACCOUNT.key()))
                 .filter(User.class::isInstance)
                 .map(User.class::cast);
+    }
+
+    private static void sendPartnershipInvitationResult(Session session, Username addressee,
+                                                        Result<PartnershipInvitation, Throwable> invitationResult,
+                                                        Session addresseeSession) {
+
+        InvitationResult result = invitationResult.value().result();
+        String rawMessage = invitationResult.value().message();
+        if (result == InvitationResult.BOTH) {
+            Message message = Message.userInfo(rawMessage);
+            sendMessage(session, message);
+            sendMessage(addresseeSession, message);
+            return;
+        }
+
+        if (result == InvitationResult.ADDRESSEE) {
+            Message message = Message.partnershipRequest(rawMessage, addressee.username());
+            sendMessage(addresseeSession, message);
+        }
     }
 }
