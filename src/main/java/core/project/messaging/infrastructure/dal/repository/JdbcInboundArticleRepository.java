@@ -134,7 +134,7 @@ public class JdbcInboundArticleRepository implements InboundArticleRepository {
                         view.id().toString(),
                         view.articleID().toString(),
                         view.readerID().toString(),
-                        view.viewedData())
+                        view.viewedDate())
                 .ifFailure(throwable -> Log.errorf("Error saving view: %s", throwable.getMessage()));
     }
 

@@ -86,7 +86,7 @@ public class ArticlesService {
         Article article = articleResult.value();
         if (!isNotPublished) {
             article.incrementViews();
-            View view = new View(UUID.randomUUID(), article.id(), user.value().id(), LocalDateTime.now());
+            View view = View.of(UUID.randomUUID(), article.id(), user.value().id());
             inboundArticleRepository.updateViews(view);
         }
 
