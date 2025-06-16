@@ -1,5 +1,7 @@
 package core.project.messaging.domain.articles.values_objects;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,18 +15,18 @@ public record CommentText(String value) {
 
     public CommentText {
         if (value == null) {
-            throw new IllegalArgumentException("Comment value is null");
+            throw new IllegalDomainArgumentException("Comment value is null");
         }
         if (value.isBlank()) {
-            throw new IllegalArgumentException("Comment text cannot be blank.");
+            throw new IllegalDomainArgumentException("Comment text cannot be blank.");
         }
         if (value.length() > 56) {
-            throw new IllegalArgumentException("Comment text cannot be longer than 56 characters.");
+            throw new IllegalDomainArgumentException("Comment text cannot be longer than 56 characters.");
         }
 
         Matcher matcher = INVALID_CHARACTERS_PATTERN.matcher(value);
         if (matcher.matches()) {
-            throw new IllegalArgumentException("Content contains invalid characters.");
+            throw new IllegalDomainArgumentException("Content contains invalid characters.");
         }
     }
 }

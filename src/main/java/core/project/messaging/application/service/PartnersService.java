@@ -28,11 +28,7 @@ public class PartnersService {
     }
 
     public void removePartner(String username, String partner) {
-        try {
-            partnershipsService.removePartner(username, partner);
-        } catch (IllegalArgumentException e) {
-            throw responseException(Response.Status.BAD_REQUEST, e.getMessage());
-        }
+        partnershipsService.removePartner(username, partner);
     }
 
     public static int buildLimit(Integer pageSize) {

@@ -1,6 +1,7 @@
 package core.project.messaging.domain.articles.values_objects;
 
 import core.project.messaging.domain.articles.enumerations.CommentType;
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import jakarta.annotation.Nullable;
 
 import java.util.Objects;
@@ -12,7 +13,7 @@ public record Reference(CommentType commentType,
 
     public Reference {
         if (commentType == null) {
-            throw new IllegalArgumentException("Comment type must not be null");
+            throw new IllegalDomainArgumentException("Comment type must not be null");
         }
         if (commentType.equals(CommentType.CHILD)) {
             Objects.requireNonNull(parentCommentID);
@@ -22,7 +23,7 @@ public record Reference(CommentType commentType,
                 (Objects.nonNull(parentCommentID) || Objects.nonNull(respondTo));
 
         if (parentHasUnexpectedReference) {
-            throw new IllegalArgumentException("Parent type comment can`t me referenced to another comment");
+            throw new IllegalDomainArgumentException("Parent type comment can`t me referenced to another comment");
         }
     }
 }

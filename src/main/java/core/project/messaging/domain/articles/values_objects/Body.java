@@ -1,5 +1,7 @@
 package core.project.messaging.domain.articles.values_objects;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,18 +15,18 @@ public record Body(String value) {
 
     public Body {
         if (value == null) {
-            throw new IllegalArgumentException("Content must not be null.");
+            throw new IllegalDomainArgumentException("Content must not be null.");
         }
         if (value.isBlank()) {
-            throw new IllegalArgumentException("Content is blank.");
+            throw new IllegalDomainArgumentException("Content is blank.");
         }
         if (value.length() > MAX_SIZE) {
-            throw new IllegalArgumentException("Content is too long: max size %d characters.".formatted(MAX_SIZE));
+            throw new IllegalDomainArgumentException("Content is too long: max size %d characters.".formatted(MAX_SIZE));
         }
 
         Matcher matcher = INVALID_CHARACTERS_PATTERN.matcher(value);
         if (matcher.matches()) {
-            throw new IllegalArgumentException("Content contains invalid characters.");
+            throw new IllegalDomainArgumentException("Content contains invalid characters.");
         }
     }
 }

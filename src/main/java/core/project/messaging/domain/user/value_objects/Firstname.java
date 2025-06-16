@@ -1,5 +1,7 @@
 package core.project.messaging.domain.user.value_objects;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,18 +21,18 @@ public record Firstname(String firstname) {
 
     public static void validate(String firstname) {
         if (firstname == null) {
-            throw new IllegalArgumentException("Firstname must not be null.");
+            throw new IllegalDomainArgumentException("Firstname must not be null.");
         }
         if (firstname.isBlank()) {
-            throw new IllegalArgumentException("First Name should`t be blank.");
+            throw new IllegalDomainArgumentException("First Name should`t be blank.");
         }
         if (firstname.length() < MIN_SIZE || firstname.length() > MAX_SIZE) {
-            throw new IllegalArgumentException("Fist Name should`t be smaller than 3 characters and greater than 25.");
+            throw new IllegalDomainArgumentException("Fist Name should`t be smaller than 3 characters and greater than 25.");
         }
 
         Matcher matcher = FIRST_NAME_PATTERN.matcher(firstname);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("First Name should match regex.");
+            throw new IllegalDomainArgumentException("First Name should match regex.");
         }
     }
 }

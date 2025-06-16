@@ -36,7 +36,7 @@ public class ArticlesApplicationService {
     }
 
     public List<ArticlePreview> pageOf(ArticlesQueryForm query) {
-        return articleRepository.page(query).orElseThrow(() -> new IllegalArgumentException("Invalid query"));
+        return articleRepository.page(query).orElseThrow(() -> responseException(Response.Status.BAD_REQUEST, "Invalid query"));
     }
 
     public List<ArticlePreview> pageOf(int pageNumber, int pageSize, String username) {

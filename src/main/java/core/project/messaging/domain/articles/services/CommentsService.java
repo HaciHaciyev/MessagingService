@@ -8,6 +8,7 @@ import core.project.messaging.domain.articles.repositories.OutboundArticleReposi
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.commons.containers.Result;
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
@@ -42,11 +43,11 @@ public class CommentsService {
     public void create(CommentForm commentForm, String username) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find a user."));
 
         UUID articleID = UUID.fromString(commentForm.articleID());
         if (!outboundArticleRepository.isArticleExists(articleID)) {
-            throw new IllegalArgumentException("You can`t create a comment for not existed article.");
+            throw new IllegalDomainArgumentException("You can`t create a comment for not existed article.");
         }
 
         UUID parentCommentID = commentForm.parentCommentID() == null ? null : UUID.fromString(commentForm.parentCommentID());
@@ -65,15 +66,15 @@ public class CommentsService {
     public Comment edit(String commentID, String text, String username) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find a user."));
 
         Comment comment = outboundCommentRepository
                 .comment(UUID.fromString(commentID))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find a comment."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find a comment."));
 
         final boolean isAuthor = user.id().equals(comment.userId());
         if (!isAuthor) {
-            throw new IllegalArgumentException("Only author can edit a comment.");
+            throw new IllegalDomainArgumentException("Only author can edit a comment.");
         }
 
         comment.changeText(new CommentText(text));
@@ -84,15 +85,15 @@ public class CommentsService {
     public void delete(String commentID, String username) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find a user."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find a user."));
 
         Comment comment = outboundCommentRepository
                 .comment(UUID.fromString(commentID))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find a comment."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find a comment."));
 
         final boolean isAuthor = user.id().equals(comment.userId());
         if (!isAuthor) {
-            throw new IllegalArgumentException("Only author can edit a comment.");
+            throw new IllegalDomainArgumentException("Only author can edit a comment.");
         }
 
         inboundCommentRepository.deleteComment(UUID.fromString(commentID), user.id());
@@ -101,13 +102,13 @@ public class CommentsService {
     public void like(String commentID, String username) {
         UUID commentUUID = UUID.fromString(commentID);
         Comment comment = outboundCommentRepository.comment(commentUUID)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not exists."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Comment not exists."));
 
         comment.incrementLikes();
 
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalDomainArgumentException("User not found"));
 
         inboundCommentRepository.like(new CommentLike(commentUUID, user.id(), LocalDateTime.now()));
     }
@@ -115,7 +116,7 @@ public class CommentsService {
     public void deleteLike(String commentID, String username) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalDomainArgumentException("User not found"));
 
         inboundCommentRepository.deleteLike(UUID.fromString(commentID), user.id());
     }
@@ -127,17 +128,17 @@ public class CommentsService {
 
         Result<Comment, Throwable> respondedCommentInfo = outboundCommentRepository.comment(parentCommentID);
         if (!respondedCommentInfo.success()) {
-            throw new IllegalArgumentException("Can`t find responded comment.");
+            throw new IllegalDomainArgumentException("Can`t find responded comment.");
         }
 
         final boolean isDifferentArticles = !articleID.equals(respondedCommentInfo.value().articleId());
         if (isDifferentArticles) {
-            throw new IllegalArgumentException("You can`t reference comment to parent comment from another article.");
+            throw new IllegalDomainArgumentException("You can`t reference comment to parent comment from another article.");
         }
 
         final boolean isChildComment = respondedCommentInfo.value().reference().commentType().equals(CommentType.CHILD);
         if (isChildComment && !isUnderTheSameParentComment(parentCommentID, respondedCommentInfo.value())) {
-            throw new IllegalArgumentException("You can`t respond to a child comment with different parent.");
+            throw new IllegalDomainArgumentException("You can`t respond to a child comment with different parent.");
         }
     }
 
@@ -156,17 +157,17 @@ public class CommentsService {
 
         Result<CommentInfo, Throwable> parentCommentInfo = outboundCommentRepository.commentInfo(parentCommentID);
         if (!parentCommentInfo.success()) {
-            throw new IllegalArgumentException("Can`t find parent comment.");
+            throw new IllegalDomainArgumentException("Can`t find parent comment.");
         }
 
         final boolean isNotParent = !parentCommentInfo.value().commentType().equals(CommentType.PARENT);
         if (isNotParent) {
-            throw new IllegalArgumentException("You can`t reference to non-parent comment.");
+            throw new IllegalDomainArgumentException("You can`t reference to non-parent comment.");
         }
 
         final boolean isDifferentArticles = !articleID.equals(parentCommentInfo.value().commentIdentifiers().articleID());
         if (isDifferentArticles) {
-            throw new IllegalArgumentException("You can`t reference comment to parent comment from another article.");
+            throw new IllegalDomainArgumentException("You can`t reference comment to parent comment from another article.");
         }
     }
 

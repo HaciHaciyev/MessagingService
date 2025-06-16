@@ -1,5 +1,6 @@
 package core.project.messaging.domain.user.value_objects;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import io.quarkus.logging.Log;
 
 import java.util.Objects;
@@ -14,31 +15,31 @@ public record Email(String email) {
 
     public Email {
         if (Objects.isNull(email)) {
-            throw new IllegalArgumentException("Email can`t be null");
+            throw new IllegalDomainArgumentException("Email can`t be null");
         }
 
         if (email.isBlank()) {
-            throw new IllegalArgumentException("Email can`t be blank");
+            throw new IllegalDomainArgumentException("Email can`t be blank");
         }
 
         String[] splitEmail = email.split("@");
 
         if (splitEmail.length != 2) {
-            throw new IllegalArgumentException("Email can`t be formatted correctly");
+            throw new IllegalDomainArgumentException("Email can`t be formatted correctly");
         }
 
         if (splitEmail[0].isEmpty() || splitEmail[0].length() > 64) {
-            throw new IllegalArgumentException("Email can`t be formatted correctly");
+            throw new IllegalDomainArgumentException("Email can`t be formatted correctly");
         }
 
         if (splitEmail[1].isEmpty() || (splitEmail[1].length() < 3 || splitEmail[1].length() > 252)) {
-            throw new IllegalArgumentException("Email can`t be formatted correctly");
+            throw new IllegalDomainArgumentException("Email can`t be formatted correctly");
         }
 
         Matcher matcher = pattern.matcher(email);
         if (!matcher.matches()) {
             Log.errorf("Invalid email format: %s", email);
-            throw new IllegalArgumentException("Email format error");
+            throw new IllegalDomainArgumentException("Email format error");
         }
     }
 }

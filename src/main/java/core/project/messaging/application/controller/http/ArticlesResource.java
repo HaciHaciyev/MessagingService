@@ -10,6 +10,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import static core.project.messaging.application.util.JSONUtilities.responseException;
+
 @Authenticated
 @Path("/articles")
 public class ArticlesResource {
@@ -93,7 +95,7 @@ public class ArticlesResource {
 
     static void nonNull(Object... values) {
         for (Object value : values) {
-            if (value == null) throw new IllegalArgumentException("The accepted value turned out to be null.");
+            if (value == null) throw responseException(Response.Status.BAD_REQUEST, "The accepted value turned out to be null.");
         }
     }
 }

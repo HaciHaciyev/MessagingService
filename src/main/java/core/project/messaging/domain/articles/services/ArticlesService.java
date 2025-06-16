@@ -9,6 +9,7 @@ import core.project.messaging.domain.articles.repositories.InboundArticleReposit
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.commons.containers.Result;
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.Username;
@@ -44,7 +45,7 @@ public class ArticlesService {
     public Article save(ArticleForm articleForm, String username) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Account is not exists."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Account is not exists."));
 
         Set<ArticleTag> articleTags = articleForm
                 .tags()
@@ -68,19 +69,19 @@ public class ArticlesService {
     public Article viewArticle(String articleID, String username) {
         Result<User, Throwable> user = outboundUserRepository.findByUsername(new Username(username));
         if (!user.success()) {
-            throw new IllegalArgumentException("User not found.");
+            throw new IllegalDomainArgumentException("User not found.");
         }
 
         Result<Article, Throwable> articleResult = outboundArticleRepository.article(UUID.fromString(articleID));
         if (!articleResult.success()) {
-            throw new IllegalArgumentException("Article is not exists.");
+            throw new IllegalDomainArgumentException("Article is not exists.");
         }
 
         final boolean isNotPublished = !articleResult.value().status().equals(ArticleStatus.PUBLISHED);
         final boolean isNotAuthor = !articleResult.value().authorId().equals(user.value().id());
 
         if (isNotPublished && isNotAuthor) {
-            throw new IllegalArgumentException("Article not found");
+            throw new IllegalDomainArgumentException("Article not found");
         }
 
         Article article = articleResult.value();
@@ -96,7 +97,7 @@ public class ArticlesService {
     public void deleteView(String articleID, String username) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalDomainArgumentException("User not found"));
 
         inboundArticleRepository.deleteView(UUID.fromString(articleID), user.id());
     }
@@ -104,21 +105,21 @@ public class ArticlesService {
     public void likeArticle(String articleID, String username) {
         Article article = outboundArticleRepository
                 .article(UUID.fromString(articleID))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find article"));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find article"));
 
         article.incrementLikes();
 
         final boolean isNotPublished = !article.status().equals(ArticleStatus.PUBLISHED);
         if (isNotPublished) {
-            throw new IllegalArgumentException("Article not found");
+            throw new IllegalDomainArgumentException("Article not found");
         }
 
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalDomainArgumentException("User not found"));
 
         if (!outboundArticleRepository.isViewExists(article.id(), user.id())) {
-            throw new IllegalArgumentException("If a user has never read this article, he is not able to like it.");
+            throw new IllegalDomainArgumentException("If a user has never read this article, he is not able to like it.");
         }
 
         Like like = new Like(article.id(), user.id(), LocalDateTime.now());
@@ -128,23 +129,23 @@ public class ArticlesService {
     public void deleteLike(String articleID, String username) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalDomainArgumentException("User not found"));
 
         inboundArticleRepository.deleteLike(UUID.fromString(articleID), user.id());
     }
 
     public Article changeStatus(String articleID, ArticleStatus status, String username) {
         if (status.equals(ArticleStatus.DRAFT)) {
-            throw new IllegalArgumentException("You can`t draft article after it was published or archived.");
+            throw new IllegalDomainArgumentException("You can`t draft article after it was published or archived.");
         }
 
         Article article = outboundArticleRepository
                 .article(UUID.fromString(articleID))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find article."));
 
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find user."));
 
         validateForAuthorship(user, article);
 
@@ -160,16 +161,16 @@ public class ArticlesService {
 
     public Article updateArticle(String articleID, ArticleText articleText, String username) {
         if (Objects.isNull(articleText.header()) && Objects.isNull(articleText.summary()) && Objects.isNull(articleText.body())) {
-            throw new IllegalArgumentException("Seriously?...");
+            throw new IllegalDomainArgumentException("Seriously?...");
         }
 
         Article article = outboundArticleRepository
                 .article(UUID.fromString(articleID))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find article."));
 
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find user."));
 
         validateForAuthorship(user, article);
 
@@ -192,11 +193,11 @@ public class ArticlesService {
     public Article addArticleTag(String articleID, String tag, String username) {
         Article article = outboundArticleRepository
                 .article(UUID.fromString(articleID))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find article."));
 
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find user."));
 
         validateForAuthorship(user, article);
 
@@ -208,11 +209,11 @@ public class ArticlesService {
     public Article removeArticleTag(String articleID, String tag, String username) {
         Article article = outboundArticleRepository
                 .article(UUID.fromString(articleID))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find article."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find article."));
 
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("Can`t find user."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("Can`t find user."));
 
         validateForAuthorship(user, article);
         ArticleTag articleTag = new ArticleTag(tag);
@@ -224,7 +225,7 @@ public class ArticlesService {
     private static void validateForAuthorship(User user, Article article) {
         final boolean isAuthor = user.id().equals(article.authorId());
         if (!isAuthor) {
-            throw new IllegalArgumentException("Article status can be changed only by article author.");
+            throw new IllegalDomainArgumentException("Article status can be changed only by article author.");
         }
     }
 }

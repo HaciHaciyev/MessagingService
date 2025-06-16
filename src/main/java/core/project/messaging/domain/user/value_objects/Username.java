@@ -1,5 +1,7 @@
 package core.project.messaging.domain.user.value_objects;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,15 +14,15 @@ public record Username(String username) {
 
     public Username {
         if (Objects.isNull(username)) {
-            throw new IllegalArgumentException("Username cannot be null");
+            throw new IllegalDomainArgumentException("Username cannot be null");
         }
         if (username.isBlank()) {
-            throw new IllegalArgumentException("Username cannot be blank");
+            throw new IllegalDomainArgumentException("Username cannot be blank");
         }
 
         Matcher matcher = pattern.matcher(username);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Username contains invalid characters");
+            throw new IllegalDomainArgumentException("Username contains invalid characters");
         }
     }
 

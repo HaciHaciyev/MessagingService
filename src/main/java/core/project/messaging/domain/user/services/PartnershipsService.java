@@ -3,6 +3,7 @@ package core.project.messaging.domain.user.services;
 import core.project.messaging.application.dto.messaging.Message;
 import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.commons.containers.StatusPair;
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import core.project.messaging.domain.commons.tuples.Pair;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.enumerations.MessageAddressee;
@@ -135,14 +136,14 @@ public class PartnershipsService {
     public void removePartner(String username, String partner) {
         User user = outboundUserRepository
                 .findByUsername(new Username(username))
-                .orElseThrow(() -> new IllegalArgumentException("User does`t exists."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("User does`t exists."));
 
         User partnerAccount = outboundUserRepository
                 .findByUsername(new Username(partner))
-                .orElseThrow(() -> new IllegalArgumentException("User does not exist."));
+                .orElseThrow(() -> new IllegalDomainArgumentException("User does not exist."));
 
         if (!outboundUserRepository.havePartnership(user, partnerAccount)) {
-            throw new IllegalArgumentException("This partnership not exists.");
+            throw new IllegalDomainArgumentException("This partnership not exists.");
         }
 
         inboundUserRepository.removePartnership(user, partnerAccount);

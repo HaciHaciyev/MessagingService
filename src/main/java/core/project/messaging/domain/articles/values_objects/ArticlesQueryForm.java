@@ -1,5 +1,6 @@
 package core.project.messaging.domain.articles.values_objects;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import core.project.messaging.domain.user.value_objects.Username;
 import jakarta.annotation.Nullable;
 
@@ -17,14 +18,14 @@ public record ArticlesQueryForm(String searchQuery,
 
     public ArticlesQueryForm {
         if (searchQuery == null) {
-            throw new IllegalArgumentException("Search query can`t be null.");
+            throw new IllegalDomainArgumentException("Search query can`t be null.");
         }
         sortBy = Objects.requireNonNullElse(sortBy, SortBy.VIEWS_DESC);
 
         validateSearchQuery(searchQuery);
 
         if (Objects.nonNull(authorName) && !Username.validate(authorName)) {
-            throw new IllegalArgumentException("Author name is invalid.");
+            throw new IllegalDomainArgumentException("Author name is invalid.");
         }
 
         if (Objects.nonNull(tag)) {
@@ -46,7 +47,7 @@ public record ArticlesQueryForm(String searchQuery,
         validateSearchQuery(search);
 
         if (Objects.nonNull(query.authorName()) && !Username.validate(query.authorName())) {
-            throw new IllegalArgumentException("Author name is invalid.");
+            throw new IllegalDomainArgumentException("Author name is invalid.");
         }
 
         if (Objects.nonNull(query.tag())) {
@@ -56,13 +57,13 @@ public record ArticlesQueryForm(String searchQuery,
 
     static void validateSearchQuery(String search) {
         if (search.isBlank()) {
-            throw new IllegalArgumentException("Search is blank");
+            throw new IllegalDomainArgumentException("Search is blank");
         }
         if (search.length() < SEARCH_QUERY_MIN_SIZE) {
-            throw new IllegalArgumentException("Search is too short: min size 3 characters");
+            throw new IllegalDomainArgumentException("Search is too short: min size 3 characters");
         }
         if (search.length() > SEARCH_QUERY_MAX_SIZE) {
-            throw new IllegalArgumentException("Search is too long: max size 64 characters");
+            throw new IllegalDomainArgumentException("Search is too long: max size 64 characters");
         }
     }
 }

@@ -1,5 +1,7 @@
 package core.project.messaging.domain.user.value_objects;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
+
 public class Rating {
     private final double rating;
     private final double ratingDeviation;
@@ -9,7 +11,7 @@ public class Rating {
         this.ratingDeviation = ratingDeviation;
         this.volatility = volatility;
         if (rating <= 0 || ratingDeviation <= 0 || volatility < 0.3 || volatility > 1.2) {
-            throw new IllegalArgumentException("Invalid number.");
+            throw new IllegalDomainArgumentException("Invalid number.");
         }
 
         this.rating = rating;
