@@ -4,12 +4,8 @@ import com.hadzhy.jetquerious.jdbc.JetQuerious;
 import com.hadzhy.jetquerious.sql.Order;
 import core.project.messaging.domain.articles.entities.Comment;
 import core.project.messaging.domain.articles.enumerations.CommentType;
-import core.project.messaging.domain.articles.events.CommentEvents;
 import core.project.messaging.domain.articles.repositories.OutboundCommentRepository;
-import core.project.messaging.domain.articles.values_objects.CommentIdentifiers;
-import core.project.messaging.domain.articles.values_objects.CommentInfo;
-import core.project.messaging.domain.articles.values_objects.CommentText;
-import core.project.messaging.domain.articles.values_objects.Reference;
+import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.commons.containers.Result;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -162,7 +158,7 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
                 UUID.fromString(rs.getString("respond_to_comment"))
         );
 
-        CommentEvents commentEvents = new CommentEvents(
+        CommentDates commentDates = new CommentDates(
                 rs.getObject("creation_date", Timestamp.class).toLocalDateTime(),
                 rs.getObject("last_updated", Timestamp.class).toLocalDateTime()
         );
@@ -172,7 +168,7 @@ public class JdbcOutboundCommentRepository implements OutboundCommentRepository 
                 new CommentText(rs.getString("text")),
                 reference,
                 rs.getInt("likes_count"),
-                commentEvents
+                commentDates
         );
     }
 }

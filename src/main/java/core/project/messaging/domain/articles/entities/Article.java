@@ -1,11 +1,8 @@
 package core.project.messaging.domain.articles.entities;
 
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
-import core.project.messaging.domain.articles.events.ArticleEvents;
-import core.project.messaging.domain.articles.values_objects.ArticleTag;
-import core.project.messaging.domain.articles.values_objects.Body;
-import core.project.messaging.domain.articles.values_objects.Header;
-import core.project.messaging.domain.articles.values_objects.Summary;
+import core.project.messaging.domain.articles.values_objects.*;
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -23,23 +20,23 @@ public class Article {
     private Summary summary;
     private Body body;
     private ArticleStatus status;
-    private ArticleEvents events;
+    private ArticleDates events;
 
     public static final int MIN_TAGS_COUNT = 3;
     public static final int MAX_TAGS_COUNT = 8;
 
     private Article(UUID id, UUID authorId, Set<ArticleTag> tags, long views, long likes,
                     Header header, Summary summary, Body body,
-                    ArticleStatus status, ArticleEvents events) {
+                    ArticleStatus status, ArticleDates events) {
 
-        if (id == null) throw new IllegalArgumentException("Article id cannot be null.");
-        if (authorId == null) throw new IllegalArgumentException("Author ID cannot be null.");
-        if (tags == null) throw new IllegalArgumentException("Article tags cannot be null.");
-        if (header == null) throw new IllegalArgumentException("Article header cannot be null.");
-        if (summary == null) throw new IllegalArgumentException("Article summary cannot be null.");
-        if (body == null) throw new IllegalArgumentException("Article body cannot be null.");
-        if (status == null) throw new IllegalArgumentException("Article status cannot be null.");
-        if (events == null) throw new IllegalArgumentException("Article events cannot be null.");
+        if (id == null) throw new IllegalDomainArgumentException("Article id cannot be null.");
+        if (authorId == null) throw new IllegalDomainArgumentException("Author ID cannot be null.");
+        if (tags == null) throw new IllegalDomainArgumentException("Article tags cannot be null.");
+        if (header == null) throw new IllegalDomainArgumentException("Article header cannot be null.");
+        if (summary == null) throw new IllegalDomainArgumentException("Article summary cannot be null.");
+        if (body == null) throw new IllegalDomainArgumentException("Article body cannot be null.");
+        if (status == null) throw new IllegalDomainArgumentException("Article status cannot be null.");
+        if (events == null) throw new IllegalDomainArgumentException("Article events cannot be null.");
 
         this.id = id;
         this.authorId = authorId;
@@ -62,12 +59,12 @@ public class Article {
             ArticleStatus status) {
 
         if (status != null && status.equals(ArticleStatus.ARCHIVED))
-            throw new IllegalArgumentException("Article can`t be created with archived status.");
+            throw new IllegalDomainArgumentException("Article can`t be created with archived status.");
         if (tags.size() < MIN_TAGS_COUNT || tags.size() > MAX_TAGS_COUNT)
-            throw new IllegalArgumentException("You need at least create 3 tags for Article and no more than 8.");
+            throw new IllegalDomainArgumentException("You need at least create 3 tags for Article and no more than 8.");
 
         return new Article(UUID.randomUUID(), authorId, tags, 0L, 0L,
-                header, summary, body, status, ArticleEvents.defaultEvents());
+                header, summary, body, status, ArticleDates.defaultEvents());
     }
 
     public static Article fromRepository(
@@ -80,9 +77,9 @@ public class Article {
             Summary summary,
             Body body,
             ArticleStatus status,
-            ArticleEvents events) {
+            ArticleDates events) {
 
-        if (views < 0 || likes < 0) throw new IllegalArgumentException("Views | likes can`t be negative.");
+        if (views < 0 || likes < 0) throw new IllegalDomainArgumentException("Views | likes can`t be negative.");
         return new Article(id, authorId, tags, views, likes, header, summary, body, status, events);
     }
 
@@ -94,7 +91,7 @@ public class Article {
         return authorId;
     }
 
-    public ArticleEvents events() {
+    public ArticleDates events() {
         return events;
     }
 
@@ -119,7 +116,8 @@ public class Article {
     }
 
     public void changeHeader(Header header) {
-        Objects.requireNonNull(header, "Header cannot be null.");
+        if (header == null)
+            throw new IllegalDomainArgumentException("Header can`t be null.");
         this.header = header;
     }
 
@@ -128,7 +126,8 @@ public class Article {
     }
 
     public void changeSummary(Summary summary) {
-        Objects.requireNonNull(summary, "Summary must not be null.");
+        if (summary == null)
+            throw new IllegalDomainArgumentException("Summary must not be null.");
         this.summary = summary;
     }
 
@@ -137,7 +136,8 @@ public class Article {
     }
 
     public void changeBody(Body body) {
-        Objects.requireNonNull(body, "Body must not be null.");
+        if (body == null)
+            throw new IllegalDomainArgumentException("Body must not be null.");
         this.body = body;
     }
 
@@ -158,22 +158,18 @@ public class Article {
     }
 
     public void addTag(ArticleTag tag) {
-        Objects.requireNonNull(tag, "Tag must not be null.");
-        if (tags.size() == MAX_TAGS_COUNT) {
-            throw new IllegalArgumentException("Max size of tags: %d".formatted(MAX_TAGS_COUNT));
-        }
+        if (tag == null) throw new IllegalDomainArgumentException("Tag must not be null.");
+        if (tags.size() == MAX_TAGS_COUNT)
+            throw new IllegalDomainArgumentException("Max size of tags: %d".formatted(MAX_TAGS_COUNT));
 
         tags.add(tag);
     }
 
     public void removeTag(ArticleTag tag) {
-        Objects.requireNonNull(tag, "Tag must not be null.");
-        if (!tags.contains(tag)) {
-            throw new IllegalArgumentException("Tag not found.");
-        }
-        if (tags.size() == MIN_TAGS_COUNT) {
-            throw new IllegalArgumentException("The minimum required count opf tags is %d".formatted(MIN_TAGS_COUNT));
-        }
+        if (tag == null) throw new IllegalDomainArgumentException("Tag must not be null.");
+        if (!tags.contains(tag)) throw new IllegalDomainArgumentException("Tag not found.");
+        if (tags.size() == MIN_TAGS_COUNT)
+            throw new IllegalDomainArgumentException("The minimum required count opf tags is %d".formatted(MIN_TAGS_COUNT));
 
         tags.remove(tag);
     }

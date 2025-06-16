@@ -6,7 +6,6 @@ import com.hadzhy.jetquerious.sql.Order;
 import core.project.messaging.application.dto.articles.ArticlePreview;
 import core.project.messaging.domain.articles.entities.Article;
 import core.project.messaging.domain.articles.enumerations.ArticleStatus;
-import core.project.messaging.domain.articles.events.ArticleEvents;
 import core.project.messaging.domain.articles.repositories.OutboundArticleRepository;
 import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.commons.containers.Result;
@@ -328,7 +327,7 @@ public class JdbcOutboundArticleRepository implements OutboundArticleRepository 
     }
 
     private Article articleMapper(ResultSet rs) throws SQLException {
-        ArticleEvents events = new ArticleEvents(
+        ArticleDates events = new ArticleDates(
                 rs.getObject("creation_date", Timestamp.class).toLocalDateTime(),
                 rs.getObject("last_updated", Timestamp.class).toLocalDateTime()
         );

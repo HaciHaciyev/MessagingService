@@ -3,7 +3,6 @@ package core.project.messaging.infrastructure.dal.repository;
 import com.hadzhy.jetquerious.jdbc.JetQuerious;
 import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
-import core.project.messaging.domain.user.events.AccountEvents;
 import core.project.messaging.domain.user.repositories.OutboundUserRepository;
 import core.project.messaging.domain.user.value_objects.*;
 import io.quarkus.logging.Log;
@@ -89,7 +88,7 @@ public class JdbcOutboundUserRepository implements OutboundUserRepository {
     }
 
     private User userAccountMapper(final ResultSet rs) throws SQLException {
-        var events = new AccountEvents(
+        var events = new AccountDates(
                 rs.getObject("creation_date", Timestamp.class).toLocalDateTime(),
                 rs.getObject("last_updated_date", Timestamp.class).toLocalDateTime()
         );

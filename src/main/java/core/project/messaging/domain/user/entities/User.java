@@ -1,6 +1,5 @@
 package core.project.messaging.domain.user.entities;
 
-import core.project.messaging.domain.user.events.AccountEvents;
 import core.project.messaging.domain.user.value_objects.*;
 
 import java.util.HashSet;
@@ -17,11 +16,11 @@ public class User {
     private final Password password;
     private boolean isEnable;
     private Rating rating;
-    private final AccountEvents accountEvents;
+    private final AccountDates accountDates;
     private final Set<User> partners;
 
     public User(UUID id, Firstname firstname, Surname surname, Username username, Email email,
-                Password password, boolean isEnable, Rating rating, AccountEvents accountEvents) {
+                Password password, boolean isEnable, Rating rating, AccountDates accountDates) {
         Objects.requireNonNull(id);
         Objects.requireNonNull(firstname);
         Objects.requireNonNull(surname);
@@ -29,7 +28,7 @@ public class User {
         Objects.requireNonNull(email);
         Objects.requireNonNull(password);
         Objects.requireNonNull(rating);
-        Objects.requireNonNull(accountEvents);
+        Objects.requireNonNull(accountDates);
 
         this.id = id;
         this.firstname = firstname;
@@ -39,7 +38,7 @@ public class User {
         this.password = password;
         this.isEnable = isEnable;
         this.rating = rating;
-        this.accountEvents = accountEvents;
+        this.accountDates = accountDates;
         this.partners = new HashSet<>();
     }
 
@@ -71,8 +70,8 @@ public class User {
         return isEnable;
     }
 
-    public AccountEvents accountEvents() {
-        return accountEvents;
+    public AccountDates accountEvents() {
+        return accountDates;
     }
 
     public boolean isEnabled() {
@@ -113,13 +112,13 @@ public class User {
 
         return isEnable == that.isEnable && Objects.equals(id, that.id) && Objects.equals(username, that.username) &&
                 Objects.equals(email, that.email) && Objects.equals(password, that.password) &&
-                Objects.equals(rating, that.rating) && Objects.equals(accountEvents, that.accountEvents);
+                Objects.equals(rating, that.rating) && Objects.equals(accountDates, that.accountDates);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                id, username, email, password, isEnable, rating, accountEvents
+                id, username, email, password, isEnable, rating, accountDates
         );
     }
 
@@ -147,8 +146,8 @@ public class User {
                 email.email(),
                 enables,
                 rating.rating(),
-                accountEvents.creationDate().toString(),
-                accountEvents.lastUpdateDate().toString()
+                accountDates.creationDate().toString(),
+                accountDates.lastUpdateDate().toString()
         );
     }
 }

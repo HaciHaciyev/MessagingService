@@ -1,9 +1,10 @@
 package core.project.messaging.domain.articles.entities;
 
-import core.project.messaging.domain.articles.events.CommentEvents;
+import core.project.messaging.domain.articles.values_objects.CommentDates;
 import core.project.messaging.domain.articles.values_objects.CommentIdentifiers;
 import core.project.messaging.domain.articles.values_objects.CommentText;
 import core.project.messaging.domain.articles.values_objects.Reference;
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -14,19 +15,19 @@ public class Comment {
     private CommentText text;
     private int likes;
     private final Reference reference;
-    private CommentEvents events;
+    private CommentDates events;
 
     private Comment(
             CommentIdentifiers commentIdentifiers,
             CommentText value,
             Reference reference,
             int likes,
-            CommentEvents events) {
+            CommentDates events) {
 
-        if (commentIdentifiers == null) throw new IllegalArgumentException("Comment identifiers can't be null.");
-        if (value == null) throw new IllegalArgumentException("Comment text cannot be null.");
-        if (reference == null) throw new IllegalArgumentException("Reference cannot be null.");
-        if (likes < 0) throw new IllegalArgumentException("LikesCount can`t be negative.");
+        if (commentIdentifiers == null) throw new IllegalDomainArgumentException("Comment identifiers can't be null.");
+        if (value == null) throw new IllegalDomainArgumentException("Comment text cannot be null.");
+        if (reference == null) throw new IllegalDomainArgumentException("Reference cannot be null.");
+        if (likes < 0) throw new IllegalDomainArgumentException("LikesCount can`t be negative.");
 
         this.commentIdentifiers = commentIdentifiers;
         this.text = value;
@@ -35,7 +36,7 @@ public class Comment {
     }
 
     public static Comment of(CommentIdentifiers commentIdentifiers, CommentText value, Reference reference) {
-        return new Comment(commentIdentifiers, value, reference, 0, new CommentEvents(LocalDateTime.now(), LocalDateTime.now()));
+        return new Comment(commentIdentifiers, value, reference, 0, new CommentDates(LocalDateTime.now(), LocalDateTime.now()));
     }
 
     public static Comment fromRepository(
@@ -43,7 +44,7 @@ public class Comment {
             CommentText value,
             Reference reference,
             int likesCount,
-            CommentEvents events) {
+            CommentDates events) {
 
         return new Comment(commentIdentifiers, value, reference, likesCount, events);
     }
@@ -89,7 +90,7 @@ public class Comment {
         return reference;
     }
 
-    public CommentEvents events() {
+    public CommentDates events() {
         return events;
     }
 
