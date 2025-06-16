@@ -1,4 +1,4 @@
-package core.project.messaging.infrastructure.exceptions;
+package core.project.messaging.infrastructure.exception_handler;
 
 import core.project.messaging.domain.commons.exceptions.DomainValidationException;
 import jakarta.ws.rs.core.Response;
