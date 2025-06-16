@@ -18,7 +18,7 @@ public class User {
     private boolean isEnable;
     private Rating rating;
     private final AccountDates accountDates;
-    private final Set<User> partners;
+    private final Set<UUID> partners;
 
     public User(UUID id, Firstname firstname, Surname surname, Username username, Email email,
                 Password password, boolean isEnable, Rating rating, AccountDates accountDates) {
@@ -79,25 +79,25 @@ public class User {
         return this.rating;
     }
 
-    public Set<User> partners() {
+    public Set<UUID> partners() {
         return new HashSet<>(partners);
     }
 
     public boolean containsPartner(final User user) {
-        return partners.contains(user);
+        return partners.contains(user.id());
     }
 
     public void addPartner(final User partner) {
         if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
         if (partner.username.equals(this.username)) return;
 
-        this.partners.add(partner);
+        this.partners.add(partner.id());
         if (!partner.containsPartner(this)) partner.addPartner(this);
     }
 
     public void removePartner(final User partner) {
         if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
-        partners.remove(partner);
+        partners.remove(partner.id());
         partner.removePartner(this);
     }
 
