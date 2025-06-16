@@ -1,7 +1,6 @@
 package core.project.messaging.domain.user.value_objects;
 
 import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
-import io.quarkus.logging.Log;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -38,7 +37,6 @@ public record Email(String email) {
 
         Matcher matcher = pattern.matcher(email);
         if (!matcher.matches()) {
-            Log.errorf("Invalid email format: %s", email);
             throw new IllegalDomainArgumentException("Email format error");
         }
     }

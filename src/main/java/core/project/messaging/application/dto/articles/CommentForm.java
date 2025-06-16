@@ -1,6 +1,6 @@
 package core.project.messaging.application.dto.articles;
 
-import jakarta.annotation.Nullable;
+import core.project.messaging.domain.commons.annotations.Nullable;
 
 public record CommentForm(String articleID,
                           String text,

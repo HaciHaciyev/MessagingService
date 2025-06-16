@@ -1,8 +1,8 @@
 package core.project.messaging.domain.articles.values_objects;
 
+import core.project.messaging.domain.commons.annotations.Nullable;
 import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import core.project.messaging.domain.user.value_objects.Username;
-import jakarta.annotation.Nullable;
 
 import java.util.Objects;
 
