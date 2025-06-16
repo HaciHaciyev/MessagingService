@@ -1,5 +1,6 @@
 package core.project.messaging.domain.user.entities;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
 import core.project.messaging.domain.user.value_objects.*;
 
 import java.util.HashSet;
@@ -21,14 +22,14 @@ public class User {
 
     public User(UUID id, Firstname firstname, Surname surname, Username username, Email email,
                 Password password, boolean isEnable, Rating rating, AccountDates accountDates) {
-        Objects.requireNonNull(id);
-        Objects.requireNonNull(firstname);
-        Objects.requireNonNull(surname);
-        Objects.requireNonNull(username);
-        Objects.requireNonNull(email);
-        Objects.requireNonNull(password);
-        Objects.requireNonNull(rating);
-        Objects.requireNonNull(accountDates);
+        if (id == null) throw new IllegalDomainArgumentException("Id can't be null.");
+        if (firstname == null) throw new IllegalDomainArgumentException("Firstname can't be null.");
+        if (surname == null) throw new IllegalDomainArgumentException("Surname can't be null.");
+        if (username == null) throw new IllegalDomainArgumentException("Username can't be null.");
+        if (email == null) throw new IllegalDomainArgumentException("Email can't be null.");
+        if (password == null) throw new IllegalDomainArgumentException("Password can't be null.");
+        if (rating == null) throw new IllegalDomainArgumentException("Rating can't be null.");
+        if (accountDates == null) throw new IllegalDomainArgumentException("AccountDates can't be null.");
 
         this.id = id;
         this.firstname = firstname;
@@ -74,10 +75,6 @@ public class User {
         return accountDates;
     }
 
-    public boolean isEnabled() {
-        return isEnable;
-    }
-
     public Rating rating() {
         return this.rating;
     }
@@ -91,7 +88,7 @@ public class User {
     }
 
     public void addPartner(final User partner) {
-        Objects.requireNonNull(partner);
+        if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
         if (partner.username.equals(this.username)) return;
 
         this.partners.add(partner);
@@ -99,7 +96,7 @@ public class User {
     }
 
     public void removePartner(final User partner) {
-        Objects.requireNonNull(partner);
+        if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
         partners.remove(partner);
         partner.removePartner(this);
     }

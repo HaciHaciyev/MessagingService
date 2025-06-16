@@ -1,7 +1,8 @@
 package core.project.messaging.domain.commons.containers;
 
+import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
+
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 public class StatusPair<T> {
@@ -14,7 +15,7 @@ public class StatusPair<T> {
     }
 
     public static <T> StatusPair<T> ofTrue(T value) {
-        Objects.requireNonNull(value);
+        if (value == null) throw new IllegalDomainArgumentException("Value cannot be null.");
         return new StatusPair<>(true, value);
     }
 
