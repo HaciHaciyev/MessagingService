@@ -102,7 +102,7 @@ public class User {
         if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
         if (!isEnable) throw new IllegalDomainStateException("Can`t remove partner from unverified account.");
         partners.remove(partner.id());
-        partner.removePartner(this);
+        if (partner.containsPartner(this)) partner.removePartner(this);
     }
 
     @Override
