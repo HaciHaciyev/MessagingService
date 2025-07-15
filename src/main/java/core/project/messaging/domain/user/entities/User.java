@@ -1,6 +1,7 @@
 package core.project.messaging.domain.user.entities;
 
 import core.project.messaging.domain.commons.exceptions.IllegalDomainArgumentException;
+import core.project.messaging.domain.commons.exceptions.IllegalDomainStateException;
 import core.project.messaging.domain.user.value_objects.*;
 
 import java.util.HashSet;
@@ -89,6 +90,7 @@ public class User {
 
     public void addPartner(final User partner) {
         if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
+        if (!isEnable) throw new IllegalDomainStateException("Can`t add partner to unverified account.");
         if (partner.username.equals(this.username)) return;
 
         this.partners.add(partner.id());
@@ -97,6 +99,7 @@ public class User {
 
     public void removePartner(final User partner) {
         if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
+        if (!isEnable) throw new IllegalDomainStateException("Can`t remove partner from unverified account.");
         partners.remove(partner.id());
         partner.removePartner(this);
     }
