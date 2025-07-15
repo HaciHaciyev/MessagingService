@@ -91,6 +91,7 @@ public class User {
     public void addPartner(final User partner) {
         if (partner == null) throw new IllegalDomainArgumentException("Partner can`t be null.");
         if (!isEnable) throw new IllegalDomainStateException("Can`t add partner to unverified account.");
+        if (!partner.isEnable) throw new IllegalDomainStateException("Partner account is not verified.");
         if (partner.username.equals(this.username)) return;
 
         this.partners.add(partner.id());
