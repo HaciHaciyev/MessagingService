@@ -20,6 +20,9 @@ public record CommentText(String value) {
         if (value.isBlank()) {
             throw new IllegalDomainArgumentException("Comment text cannot be blank.");
         }
+        if (value.length() < 3) {
+            throw new IllegalDomainArgumentException("");
+        }
         if (value.length() > 56) {
             throw new IllegalDomainArgumentException("Comment text cannot be longer than 56 characters.");
         }
