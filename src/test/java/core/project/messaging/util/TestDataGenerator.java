@@ -90,6 +90,17 @@ public class TestDataGenerator {
         );
     }
 
+    public static Article article(ArticleStatus status, int tagsCount) {
+        return Article.of(
+                UUID.randomUUID(),
+                generateTags(tagsCount),
+                generateHeader(),
+                generateSummary(),
+                generateBody(),
+                status
+        );
+    }
+
     public static Body generateBody() {
         while (true) {
             var bodyResult = Result.ofThrowable(() -> new Body(faker.lorem().characters()));
@@ -116,7 +127,7 @@ public class TestDataGenerator {
 
     public static Set<ArticleTag> generateTags() {
         Set<ArticleTag> tags = new HashSet<>();
-        int count = ThreadLocalRandom.current().nextInt(3, 9);
+        int count = ThreadLocalRandom.current().nextInt(4, 7);
 
         for (int i = 0; i < count; i++) {
             String tagName = faker.book().genre();
@@ -124,6 +135,10 @@ public class TestDataGenerator {
         }
 
         return tags;
+    }
+
+    public static ArticleTag generateTag() {
+        return new ArticleTag(faker.book().genre());
     }
 
     public static Set<ArticleTag> generateTags(int count) {
