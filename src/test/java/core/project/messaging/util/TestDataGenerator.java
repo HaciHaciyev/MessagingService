@@ -1,11 +1,18 @@
 package core.project.messaging.util;
 
+import core.project.messaging.domain.articles.entities.Article;
+import core.project.messaging.domain.articles.entities.Comment;
+import core.project.messaging.domain.articles.enumerations.ArticleStatus;
+import core.project.messaging.domain.articles.enumerations.CommentType;
+import core.project.messaging.domain.articles.values_objects.*;
 import core.project.messaging.domain.commons.containers.Result;
 import core.project.messaging.domain.user.entities.User;
 import core.project.messaging.domain.user.value_objects.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import net.datafaker.Faker;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -58,12 +65,81 @@ public class TestDataGenerator {
         );
     }
 
+    public static Comment parentTypeComment() {
+        return Comment.of(
+                new CommentIdentifiers(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()),
+                generateCommentText(),
+                new Reference(CommentType.PARENT, null, null)
+        );
+    }
+
+    public static Comment childTypeComment(UUID parentCommentID, UUID respondTo) {
+        return Comment.of(
+                new CommentIdentifiers(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()),
+                generateCommentText(),
+                new Reference(CommentType.PARENT, parentCommentID, respondTo)
+        );
+    }
+
+    public static Article article(ArticleStatus status) {
+        return Article.of(
+                UUID.randomUUID(),
+                generateTags(),
+                generateHeader(),
+                generateSummary(),
+                generateBody(),
+                status
+        );
+    }
+
+    public static Body generateBody() {
+        while (true) {
+            var bodyResult = Result.ofThrowable(() -> new Body(faker.lorem().characters()));
+            if (!bodyResult.success()) continue;
+            return bodyResult.value();
+        }
+    }
+
+    public static Summary generateSummary() {
+        while (true) {
+            var summaryResult = Result.ofThrowable(() -> new Summary(faker.lorem().characters()));
+            if (!summaryResult.success()) continue;
+            return summaryResult.value();
+        }
+    }
+
+    public static Header generateHeader() {
+        while (true) {
+            var headerResult = Result.ofThrowable(() -> new Header(faker.lorem().characters()));
+            if (!headerResult.success()) continue;
+            return headerResult.value();
+        }
+    }
+
+    public static Set<ArticleTag> generateTags() {
+        Set<ArticleTag> tags = new HashSet<>();
+        int count = random.nextInt(3, 9);
+
+        for (int i = 0; i < count; i++) {
+            String tagName = faker.book().genre();
+            tags.add(new ArticleTag(tagName));
+        }
+
+        return tags;
+    }
+
+    public static CommentText generateCommentText() {
+        while (true) {
+            var commentTextResult = Result.ofThrowable(() -> new CommentText(faker.lorem().characters()));
+            if (!commentTextResult.success()) continue;
+            return commentTextResult.value();
+        }
+    }
+
     public static Username generateUsername() {
         while (true) {
             var usernameResult = Result.ofThrowable(() -> new Username(faker.name().firstName()));
-            if (!usernameResult.success()) {
-                continue;
-            }
+            if (!usernameResult.success()) continue;
             return usernameResult.value();
         }
     }
