@@ -108,7 +108,7 @@ public class TestDataGenerator {
 
     public static Header generateHeader() {
         while (true) {
-            var headerResult = Result.ofThrowable(() -> new Header(faker.lorem().characters()));
+            var headerResult = Result.ofThrowable(() -> new Header(faker.lorem().characters(1, 128)));
             if (!headerResult.success()) continue;
             return headerResult.value();
         }
@@ -117,6 +117,17 @@ public class TestDataGenerator {
     public static Set<ArticleTag> generateTags() {
         Set<ArticleTag> tags = new HashSet<>();
         int count = ThreadLocalRandom.current().nextInt(3, 9);
+
+        for (int i = 0; i < count; i++) {
+            String tagName = faker.book().genre();
+            tags.add(new ArticleTag(tagName));
+        }
+
+        return tags;
+    }
+
+    public static Set<ArticleTag> generateTags(int count) {
+        Set<ArticleTag> tags = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
             String tagName = faker.book().genre();
