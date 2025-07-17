@@ -79,7 +79,7 @@ public class Comment {
     }
 
     public void changeText(CommentText commentValue) {
-        Objects.requireNonNull(commentValue, "Comment text cannot be null.");
+        if (commentValue == null) throw new IllegalDomainArgumentException("Comment value can`t be null");
         this.text = commentValue;
     }
 
