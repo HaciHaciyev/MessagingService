@@ -74,6 +74,7 @@ public class Comment {
     }
 
     public void decrementLikes() {
+        if (likes == 0) throw new IllegalDomainArgumentException("Likes count is already zero");
         this.likes--;
     }
 
