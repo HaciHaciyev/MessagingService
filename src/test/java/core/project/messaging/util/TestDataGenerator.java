@@ -21,8 +21,6 @@ public class TestDataGenerator {
 
     static Faker faker = new Faker();
 
-    static ThreadLocalRandom random = ThreadLocalRandom.current();
-
     public static User user(Username username, boolean isVerified) {
         return new User(
                 UUID.randomUUID(),
@@ -118,7 +116,7 @@ public class TestDataGenerator {
 
     public static Set<ArticleTag> generateTags() {
         Set<ArticleTag> tags = new HashSet<>();
-        int count = random.nextInt(3, 9);
+        int count = ThreadLocalRandom.current().nextInt(3, 9);
 
         for (int i = 0; i < count; i++) {
             String tagName = faker.book().genre();
@@ -130,7 +128,7 @@ public class TestDataGenerator {
 
     public static CommentText generateCommentText() {
         while (true) {
-            var commentTextResult = Result.ofThrowable(() -> new CommentText(faker.lorem().characters()));
+            var commentTextResult = Result.ofThrowable(() -> new CommentText(faker.lorem().characters(3, 56)));
             if (!commentTextResult.success()) continue;
             return commentTextResult.value();
         }
